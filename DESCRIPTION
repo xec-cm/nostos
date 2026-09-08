@@ -1,0 +1,38 @@
+Package: recoverome
+Title: Infrastructure for Longitudinal Microbiome Recovery Analysis
+Version: 0.1.0
+Authors@R:
+    person(given = "Francesc",
+           family = "Catala-Moll",
+           role = c("aut", "cre"),
+           email = "fcatala@irsicaixa.es",
+           comment = c(ORCID = "0000-0002-2354-8648"))
+Description: Establishes the package infrastructure and documented design for
+    longitudinal microbiome recovery analysis. Defines conventions for working
+    with 'TreeSummarizedExperiment' objects, sample annotations, and named
+    analysis records. Includes an introductory container example and development
+    documentation; analytical recovery methods are not implemented in this
+    initial experimental release.
+License: MIT + file LICENSE
+URL: https://github.com/xec-cm/recoverome,
+    https://xec-cm.github.io/recoverome/
+BugReports: https://github.com/xec-cm/recoverome/issues
+Depends:
+    R (>= 4.6.0)
+Suggests:
+    knitr,
+    rmarkdown,
+    S4Vectors,
+    SummarizedExperiment,
+    testthat (>= 3.0.0),
+    TreeSummarizedExperiment
+VignetteBuilder: knitr
+biocViews: Software, Microbiome, Metagenomics, TimeCourse
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+Config/testthat/edition: 3
+Config/Needs/check: rcmdcheck, BiocCheck, yaml, jsonlite
+Config/Needs/website: pkgdown
+Config/Needs/quality: lintr, roxygen2
+Config/Needs/coverage: covr, xml2

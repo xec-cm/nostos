@@ -1,0 +1,9 @@
+defaultBranch: devel
+branchName: 'codex/issue-${issue.number}'
+openDraftPR: true
+autoLinkIssue: true
+copyIssueDescriptionToPR: true
+copyIssueLabelsToPR: true
+conventionalPrTitles: true
+conventionalStyle: semver-no-gitmoji
+silent: false

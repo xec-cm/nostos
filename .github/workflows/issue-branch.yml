@@ -1,0 +1,59 @@
+name: Create Issue Branch
+
+on:
+  issues:
+    types: [assigned]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-branch-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Verify the assigning collaborator
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.permission.outputs.allowed }}
+    steps:
+      - name: Check repository permission
+        id: permission
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            core.setOutput('allowed', 'false');
+            if (context.payload.issue?.pull_request) return;
+            const username = context.payload.sender?.login;
+            if (!username) return;
+            try {
+              const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                ...context.repo,
+                username
+              });
+              const allowed = ['admin', 'maintain', 'write'].includes(data.permission);
+              core.setOutput('allowed', String(allowed));
+              if (!allowed) core.notice('Branch creation requires repository write permission.');
+            } catch (error) {
+              if ([403, 404].includes(error.status)) {
+                core.notice('Repository write permission could not be verified; no branch will be created.');
+              } else {
+                throw error;
+              }
+            }
+
+  create:
+    name: Create the issue branch and draft pull request
+    needs: authorize
+    if: needs.authorize.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Create the branch and draft pull request
+        uses: robvanderleek/create-issue-branch@1327274ffa72a698c514c5542edb05322c8e8308 # main, pinned 2026-08-03
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

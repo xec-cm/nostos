@@ -1,0 +1,18 @@
+url: https://xec-cm.github.io/recoverome/
+template:
+  bootstrap: 5
+development:
+  mode: release
+reference:
+  - title: Package overview
+    contents:
+      - recoverome-package
+articles:
+  - title: Getting started
+    navbar: ~
+    contents:
+      - recoverome
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]

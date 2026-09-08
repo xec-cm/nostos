@@ -1,0 +1,145 @@
+---
+title: "Recovery analysis: data structure and planned workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Recovery analysis: data structure and planned workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Current status
+
+`recoverome` 0.1.0 is an experimental scaffold. Recovery functions are not
+implemented yet. This vignette constructs a valid input object and explains
+the intended contracts. It does not calculate recovery outcomes.
+
+## A small longitudinal input
+
+The planned analysis unit is an episode within a subject, with a perturbation
+defined by events. Sample measurements and sample metadata remain in a
+`TreeSummarizedExperiment` (TSE).
+
+This deliberately small example has two features and three samples from one
+subject. The time coordinate is days relative to an illustrative event at
+day zero. It demonstrates structure only; it is not sufficient to establish
+sustained recovery or to calibrate a statistical method.
+
+```{r input-tse}
+counts <- matrix(
+  c(80L, 20L, 75L, 25L, 40L, 60L),
+  nrow = 2L,
+  dimnames = list(c("feature_a", "feature_b"), c("s1", "s2", "s3"))
+)
+
+sample_data <- S4Vectors::DataFrame(
+  subject_id = rep("participant_1", 3L),
+  day = c(-7, -1, 7),
+  phase = c("before", "before", "after"),
+  row.names = colnames(counts)
+)
+
+tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = counts),
+  colData = sample_data
+)
+
+methods::validObject(tse)
+SummarizedExperiment::assay(tse, "counts")
+SummarizedExperiment::colData(tse)
+```
+
+A phylogenetic tree is not needed to construct this object. Any future method
+that requires a tree will need to declare and validate that requirement.
+
+## Episodes, events, and references
+
+An **episode** identifies the observation period relevant to one perturbation
+and one subject. An **event** records a dated occurrence or interval, such as
+the start and end of antibiotic exposure. Repeated perturbations need distinct
+episode identities even when they occur in the same subject.
+
+A **reference** records what return means for a named analysis. It may be based
+on selected pre-event samples, but the exact eligibility rules and the samples
+actually used must remain visible. A reference profile and a recovery margin
+are different concepts: the former defines the comparison target, while the
+latter defines an acceptable deviation under the chosen rule.
+
+The initial contracts will keep these records in
+`S4Vectors::metadata(tse)$recoverome$analyses[[analysis_id]]`. Sample-level
+annotations will be placed in `colData()` columns with the prefix
+`rec_<analysis>_`; for example, `rec_antibiotic_deviation`. Analysis IDs will be
+simple, stable identifiers validated to prevent prefix collisions. Detailed
+record schemas will be settled with their implementation.
+
+## Proposed analysis interface
+
+The following block sketches the planned workflow. **It is not executable with
+this version of recoverome.** Objects such as `episodes`, `events`, `reference`,
+and `recovery_rule` denote future validated inputs; their schemas are not
+presented here as implemented interfaces.
+
+```{r planned-workflow, eval=FALSE}
+tse <- setup_recovery(
+  tse,
+  analysis_id = "antibiotic",
+  episodes = episodes,
+  events = events
+)
+tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
+tse <- add_deviation(tse, analysis_id = "antibiotic")
+tse <- add_recovery(tse, analysis_id = "antibiotic", rule = recovery_rule)
+
+validate_recovery(tse, analysis_id = "antibiotic")
+recovery_results(tse, analysis_id = "antibiotic", level = "episode")
+plot_recovery(tse, analysis_id = "antibiotic")
+```
+
+The four setup/add functions are intended to return an updated TSE. Extraction,
+plotting, and validation have separate roles and must not silently alter an
+analysis. Statistical fitting is a future layer outside this initial interface.
+
+## Filtering preserves analysis history
+
+Ordinary TSE subsetting already selects samples and their sample annotations:
+
+```{r subset-tse}
+after_event <- tse[, SummarizedExperiment::colData(tse)$day > 0]
+colnames(after_event)
+SummarizedExperiment::colData(after_event)
+```
+
+This example has no recoverome analysis attached. In the planned contract,
+subsetting an annotated TSE will preserve analysis history and its original
+sample and feature scope. Removing a reference sample or a follow-up visit
+must not cause an automatic refit or a new recovery time.
+
+The planned validator will identify mismatches between the present data and
+the recorded analysis scope. A result computed from the original data remains
+a historical result; it must not be presented as a new analysis of the subset.
+Intentional recomputation will require an explicit analysis operation.
+
+## Interpretation boundaries
+
+Observed similarity at one visit does not establish a sustained return. A rule
+based on repeated visits must also state the relevant duration and admissible
+gaps. Sparse observations cannot establish continuous behavior between visits
+without additional assumptions.
+
+Likewise, the absence of an observed recovery by the end of follow-up does not
+establish that recovery will never occur. Methods for uncertainty, incomplete
+follow-up, and comparisons between groups will need dedicated statistical
+validation before implementation claims can be made.
+
+The intended outcome is an explicit, auditable description of recovery under
+a stated definition. Recovery to baseline is not a clinical diagnosis or a
+claim that all microbial functions have returned.
+
+## Session information
+
+```{r session-info}
+sessionInfo()
+```

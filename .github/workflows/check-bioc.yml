@@ -1,0 +1,94 @@
+name: R-CMD-check-bioc
+
+on:
+  push:
+    branches: [devel]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-bioc-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TZ: UTC
+  R_KEEP_PKG_SOURCE: "yes"
+
+jobs:
+  bioc-config:
+    name: Resolve compatible R and Bioconductor versions
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+        with:
+          r-version: release
+      - name: Install resolver dependencies
+        shell: Rscript --vanilla {0}
+        run: install.packages(c("yaml", "jsonlite"), repos = "https://cloud.r-project.org")
+      - name: Resolve matrix from the official Bioconductor configuration
+        id: matrix
+        shell: bash
+        run: Rscript --vanilla dev/resolve-bioc.R >> "$GITHUB_OUTPUT"
+
+  check:
+    name: ${{ matrix.channel }} / ${{ matrix.os }} / R ${{ matrix.r }}
+    needs: bioc-config
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.bioc-config.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    env:
+      R_BIOC_VERSION: ${{ matrix.bioc }}
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+        with:
+          r-version: ${{ matrix.r }}
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+      - name: Install package and check dependencies
+        uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+        with:
+          needs: check
+          extra-packages: any::BiocManager
+          cache-version: bioc-${{ matrix.bioc }}-1
+      - name: Confirm Bioconductor repositories
+        shell: Rscript --vanilla {0}
+        run: |
+          repositories <- BiocManager::repositories(version = Sys.getenv("R_BIOC_VERSION"))
+          print(repositories)
+          print(sessionInfo())
+      - name: Build and check the package, including vignettes
+        shell: bash
+        run: Rscript --vanilla dev/check-package.R
+      - name: Report Bioconductor readiness
+        if: matrix.channel == 'devel'
+        shell: bash
+        run: Rscript --vanilla dev/check-bioc.R
+      - name: Preserve Bioconductor readiness report
+        if: always() && matrix.channel == 'devel'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bioccheck-readiness
+          path: bioccheck-report.txt
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve check logs on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: check-${{ matrix.channel }}-${{ matrix.os }}
+          path: check
+          if-no-files-found: warn
+          retention-days: 14
