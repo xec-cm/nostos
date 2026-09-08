@@ -36,7 +36,9 @@ request. Do not describe checks that were not run as passing.
 
 Edit `README.Rmd`, not the generated `README.md`. Keep generated documentation
 in sync using the project's generation workflow and verify it with
-`dev/check-generated.R`.
+`dev/check-generated.R`. Use the roxygen2 version pinned in
+`Config/Needs/quality` in `DESCRIPTION` when regenerating documentation so
+local output matches CI.
 
 ## Code and documentation
 
