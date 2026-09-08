@@ -54,6 +54,6 @@ jobs:
       pull-requests: write
     steps:
       - name: Create the branch and draft pull request
-        uses: robvanderleek/create-issue-branch@1327274ffa72a698c514c5542edb05322c8e8308 # main, pinned 2026-08-03
+        uses: robvanderleek/create-issue-branch@5491ae55f543a952d4bf34a956eeff4aed31aca8 # main, pinned 2026-08-03
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
