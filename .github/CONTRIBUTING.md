@@ -7,7 +7,8 @@ from proposals.
 
 ## Before changing the interface
 
-Read [the architecture contract](../dev/architecture.md) and the repository's
+Read [the architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)
+and the repository's
 `AGENTS.md`. Discuss substantial API or statistical changes in an issue before
 investing in an implementation. State the intended user question, estimand,
 input requirements, and limitations.
@@ -35,7 +36,9 @@ request. Do not describe checks that were not run as passing.
 
 Edit `README.Rmd`, not the generated `README.md`. Keep generated documentation
 in sync using the project's generation workflow and verify it with
-`dev/check-generated.R`.
+`dev/check-generated.R`. Use the roxygen2 version pinned in
+`Config/Needs/quality` in `DESCRIPTION` when regenerating documentation so
+local output matches CI.
 
 ## Code and documentation
 
@@ -65,4 +68,4 @@ without reproducible results and a clear comparison.
 Explain the problem, the resulting behavior, and how the change was checked.
 Identify generated files and any checks that could not run. All contributions
 are covered by the repository's license and
-[Code of Conduct](../CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/xec-cm/recoverome/blob/devel/CODE_OF_CONDUCT.md).
