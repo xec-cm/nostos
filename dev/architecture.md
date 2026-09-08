@@ -46,6 +46,19 @@ Specific input schemas, accepted assays, distance definitions, and tree
 requirements must be documented and tested when their consuming functions are
 implemented. They must not be implied to work before that point.
 
+## Tidy interoperability
+
+Tidy interoperability is an optional integration layer. TSE already inherits
+from `SingleCellExperiment`; do not replace it with a plain SCE or introduce
+a new public container solely to access `tidySingleCellExperiment` methods.
+Core operations should remain usable without a tidy wrapper or dependency.
+
+Before documenting a tidy operation as supported, verify that it preserves
+the TSE class, tree links, sample identities, and analysis annotations. Tidy
+filtering and mutation must follow the same historical-scope and invalidation
+contracts as base subsetting and accessor-based edits. No tidy integration is
+implemented or required by this scaffold.
+
 ## Storage
 
 The intended metadata namespace is:
