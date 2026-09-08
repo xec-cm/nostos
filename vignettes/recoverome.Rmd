@@ -37,6 +37,7 @@ counts <- matrix(
 
 sample_data <- S4Vectors::DataFrame(
   subject_id = rep("participant_1", 3L),
+  episode_id = rep("episode_1", 3L),
   day = c(-7, -1, 7),
   phase = c("before", "before", "after"),
   row.names = colnames(counts)
@@ -73,21 +74,47 @@ The initial contracts will keep these records in
 annotations will be placed in `colData()` columns with the prefix
 `rec_<analysis>_`; for example, `rec_antibiotic_deviation`. Analysis IDs will be
 simple, stable identifiers validated to prevent prefix collisions. Detailed
-record schemas will be settled with their implementation.
+registration schemas are proposed in
+[RFC 001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md).
+The following tables illustrate that proposal with one episode and a point
+event. Constructing these tables does not register an analysis.
+
+```{r registration-inputs}
+episodes <- data.frame(
+  episode_id = "episode_1",
+  subject_id = "participant_1",
+  origin_event_id = "exposure_1",
+  origin_boundary = "start"
+)
+events <- data.frame(
+  event_id = "exposure_1",
+  episode_id = "episode_1",
+  start_time = 0,
+  end_time = 0
+)
+```
+
+Each sample is explicitly assigned to an episode by its `episode_id` column.
+The proposed registration accepts numeric times with a declared unit and
+coordinate origin. Analysis IDs match `^[a-z][a-z0-9]*$`; the corresponding
+`rec_<analysis>_` prefix is reserved, and setup creates no sample result columns.
 
 ## Proposed analysis interface
 
 The following block sketches the planned workflow. **It is not executable with
-this version of recoverome.** Objects such as `episodes`, `events`, `reference`,
-and `recovery_rule` denote future validated inputs; their schemas are not
-presented here as implemented interfaces.
+this version of recoverome.** The episode/event tables above illustrate the
+registration proposal. `reference` and `recovery_rule` remain future inputs
+whose analytical definitions require separate design decisions.
 
 ```{r planned-workflow, eval=FALSE}
 tse <- setup_recovery(
   tse,
   analysis_id = "antibiotic",
   episodes = episodes,
-  events = events
+  events = events,
+  time_col = "day",
+  time_unit = "days",
+  time_origin = "days relative to exposure start within each participant"
 )
 tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
 tse <- add_deviation(tse, analysis_id = "antibiotic")
