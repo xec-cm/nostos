@@ -1,7 +1,15 @@
-name: Feature or method proposal
-description: Propose a concrete user workflow, contract, or analytical method.
+name: Feature request
+description: Describe a user need for triage before design or implementation.
 title: "[Proposal]: "
+labels: [enhancement]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        This form captures a user need. It does not accept a design or make
+        implementation Ready. Use a design RFC for API, contract, or
+        methodological decisions. RFCs become accepted when the maintainer
+        merges their short design-document PR; a feature issue is not that PR.
   - type: textarea
     id: question
     attributes:
@@ -13,7 +21,7 @@ body:
     id: proposal
     attributes:
       label: Proposed behavior
-      description: Describe inputs, outputs, and how this fits the current design.
+      description: Describe the desired workflow and how it fits the MVP scope.
     validations:
       required: true
   - type: textarea

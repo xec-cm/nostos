@@ -1,6 +1,7 @@
 name: Bug report
 description: Report a reproducible problem in the current package or docs.
 title: "[Bug]: "
+labels: [bug]
 body:
   - type: markdown
     attributes:
@@ -28,5 +29,12 @@ body:
       label: Environment and output
       description: Include relevant errors and sessionInfo() output.
       render: text
+    validations:
+      required: false
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact and workaround
+      description: Explain which workflow is affected and any known workaround.
     validations:
       required: false

@@ -25,6 +25,10 @@ jobs:
           script: |
             core.setOutput('allowed', 'false');
             if (context.payload.issue?.pull_request) return;
+            if (context.payload.issue?.state !== 'open') {
+              core.notice('Branch creation requires an open issue.');
+              return;
+            }
             const username = context.payload.sender?.login;
             if (!username) return;
             try {

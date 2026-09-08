@@ -5,6 +5,8 @@ on:
     branches: [devel]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * 1'
 
 permissions:
   contents: read
@@ -92,3 +94,21 @@ jobs:
           path: check
           if-no-files-found: warn
           retention-days: 14
+
+  package-checks:
+    name: R package checks
+    needs: [bioc-config, check]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the resolver and every matrix job to succeed
+        env:
+          BIOC_CONFIG_RESULT: ${{ needs.bioc-config.result }}
+          MATRIX_RESULT: ${{ needs.check.result }}
+        shell: bash
+        run: |
+          if [[ "$BIOC_CONFIG_RESULT" != "success" || "$MATRIX_RESULT" != "success" ]]; then
+            printf '::error::R package checks require a successful resolver (%s) and matrix (%s).\n' \
+              "$BIOC_CONFIG_RESULT" "$MATRIX_RESULT"
+            exit 1
+          fi

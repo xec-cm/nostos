@@ -3,6 +3,57 @@
 recoverome is an experimental R package. The current version is a scaffold;
 planned analysis functions must not be described as implemented.
 
+The next release target is the experimental GitHub MVP, version 0.2.0, with
+the seven functions in `dev/architecture.md`. Bioconductor preparation is a
+later milestone. Do not expand the statistical scope while implementing the
+development workflow.
+
+Only the maintainer decides and publishes releases. Do not release at
+intermediate milestones. A future Bioconductor preparation phase targets
+0.99.0; it is not the current version or an accepted Bioconductor release.
+
+## Issue and review workflow
+
+- Read `dev/development-workflow.md` before starting issue work.
+- Use the `recoverome Development` project states: `Backlog`, `Ready`,
+  `In progress`, `Review`, and `Done`. These are project fields, not labels.
+- The project is https://github.com/users/xec-cm/projects/10. Native auto-add
+  covers issues only: keep one card per issue and link its PR. Dependabot PRs
+  remain in the normal PR list. The maintainer reviews native priorities and
+  the Ready queue weekly; use the P0–P3 meanings in the workflow document.
+- Keep at most two issues in `In progress` and `Review` combined. Draft PRs
+  count toward this limit once work starts; do not start a third issue while
+  an earlier one waits for review.
+- Start implementation only from `Ready`: scope and acceptance criteria must
+  be clear, blocking dependencies resolved, and any required short design RFC
+  accepted through its document PR merged into `devel` by the maintainer.
+  A comment, label, or closed RFC issue without that merge is insufficient.
+- Assignment prepares the issue branch `codex/issue-N` and a draft PR against
+  `devel`. Reuse that branch and PR rather than creating duplicates.
+- If the branch exists but PR creation failed, reassignment will not repair
+  it. Check for an existing PR and create one missing draft PR against `devel`
+  with `Closes #N`, reusing the branch without deleting or recreating it.
+- Assignment does not launch an agent. Agent sessions require an explicit
+  user instruction or an already authorized task covering that work.
+- Work in an isolated worktree on the assigned branch. Preserve existing
+  branch commits and user changes; do not reset or force-push them.
+- Obtain technical review from an independent agent before maintainer review.
+  Record the reviewer/session, reviewed commit, scope, checks, and findings in
+  the PR. Keep the issue `In progress` until review is complete and findings
+  are resolved, with no required change left open.
+  Then move it to `Review`. Refresh review after material changes.
+- The maintainer reviews methodological decisions and performs every squash
+  merge. Agents must never merge PRs or enable auto-merge.
+- Include `Closes #N` so the maintainer merge closes the issue and native
+  project automation sets `Done`. Verify that result; moving to `Done` alone
+  never closes the issue. RFC document PRs follow the same completion path.
+- Required checks are `R package checks`, `quality`, and
+  `Build the documentation site`; the branch must be up to date with `devel`.
+  Passing CI is not a substitute for independent or maintainer review.
+- If GitHub visibly requests `Approve workflows to run` for a PR created or
+  updated with `GITHUB_TOKEN`, report that exact action to the maintainer.
+  Do not change credentials or authentication to bypass the waiting state.
+
 ## Scope and changes
 
 - Read `dev/architecture.md` before changing data contracts or public APIs.
@@ -12,7 +63,9 @@ planned analysis functions must not be described as implemented.
 - Keep planned and implemented functionality clearly separated in docs.
 - Do not add runtime libraries until implemented code uses them.
 - Do not make Git commits, create branches, or publish changes unless the task
-  authorizes those actions.
+  authorizes those actions. Existing user authorization persists; do not ask
+  again for routine steps already covered by the active task. Merge authority
+  remains with the maintainer.
 
 ## R implementation
 
@@ -36,6 +89,15 @@ planned analysis functions must not be described as implemented.
   use available functions and make no unsupported analytical claims.
 - Use meaningful tests for implemented behavior and failure modes. Do not add
   tests that merely encode placeholder outputs.
+- For numerical code, include small deterministic R examples with independently
+  checkable expected values and justified tolerances. Use coverage to find
+  untested behavior, without an arbitrary percentage target.
+- Update documentation and `NEWS.md` for user-visible behavior changes. Explain
+  in the PR when an internal change needs no NEWS entry or additional tests.
+- Justify each new dependency and add it only when implemented code uses it.
+- Regenerate documentation with the roxygen2 version pinned in `DESCRIPTION`
+  (`Config/Needs/quality` and `Config/roxygen2/version`). Change a pin only as an
+  intentional tooling change with regenerated output checked in the same PR.
 - Run checks appropriate to the change and report their actual outcomes. Run
   the package check before the Bioconductor check, which uses its built
   package artifact:
