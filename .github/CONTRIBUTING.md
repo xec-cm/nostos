@@ -7,7 +7,8 @@ from proposals.
 
 ## Before changing the interface
 
-Read [the architecture contract](../dev/architecture.md) and the repository's
+Read [the architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)
+and the repository's
 `AGENTS.md`. Discuss substantial API or statistical changes in an issue before
 investing in an implementation. State the intended user question, estimand,
 input requirements, and limitations.
@@ -65,4 +66,4 @@ without reproducible results and a clear comparison.
 Explain the problem, the resulting behavior, and how the change was checked.
 Identify generated files and any checks that could not run. All contributions
 are covered by the repository's license and
-[Code of Conduct](../CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/xec-cm/recoverome/blob/devel/CODE_OF_CONDUCT.md).
