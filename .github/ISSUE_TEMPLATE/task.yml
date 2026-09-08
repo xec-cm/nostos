@@ -1,0 +1,72 @@
+name: Implementation task
+description: Define bounded work with acceptance criteria and explicit dependencies.
+title: "[Task]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New work enters Backlog. Move it to Ready only after dependencies are
+        resolved and any required RFC document PR has been maintainer-merged.
+        Assignment prepares codex/issue-N and a draft PR; it does not launch
+        an agent session. Keep In progress plus Review at two issues or fewer.
+        Review requires completed independent technical review and resolved
+        findings. Merge with Closes #N closes the issue and automatically sets
+        Done; changing project status alone does not close an issue.
+  - type: dropdown
+    id: type
+    attributes:
+      label: Work type
+      description: Triage applies the corresponding existing issue label.
+      options:
+        - enhancement
+        - bug
+        - documentation
+        - design
+        - testing
+        - infrastructure
+        - dependencies
+        - release
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective and scope
+      description: Describe one reviewable outcome and what is outside this task.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List observable criteria that determine when the task is complete.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and accepted design
+      description: Link blocking issues and merged RFC document PRs, or explain none.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Tests, documentation, and release notes
+      description: Include small numerical R examples when relevant, docs, and NEWS.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies_new
+    attributes:
+      label: New package dependencies
+      description: Justify additions used by this work, or state that none are planned.
+    validations:
+      required: true
+  - type: textarea
+    id: review
+    attributes:
+      label: Review focus
+      description: Identify technical risks and methodological decisions for review.
+    validations:
+      required: false

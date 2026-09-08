@@ -1,0 +1,72 @@
+name: Design RFC
+description: Propose a contract, API, or methodology decision for maintainer review.
+title: "[RFC]: "
+labels: [design]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every RFC produces a short design document through a reviewed PR.
+        Acceptance requires the maintainer to merge that document into devel.
+        Dependent implementation cannot become Ready before the merge. An
+        issue comment, label, or closure alone does not constitute acceptance.
+        Use Closes #N in the document PR so merge closes this issue and native
+        project automation sets Done. Keep In progress until independent
+        technical review is complete and findings are resolved; Review then
+        means ready for the maintainer.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and decision needed
+      description: State the user need and the specific decision to resolve.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and non-goals
+      description: Identify affected MVP functions or contracts and exclusions.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed contract or behavior
+      description: Describe inputs, outputs, invariants, and failure behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Assumptions and methodological implications
+      description: State relevant assumptions and the questions needing review.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and tradeoffs
+      description: Explain considered alternatives and why this proposal is preferred.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Acceptance and validation evidence
+      description: Define document acceptance criteria and later implementation checks.
+    validations:
+      required: true
+  - type: textarea
+    id: document
+    attributes:
+      label: Design document and PR
+      description: State the intended document path or link an existing draft PR.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and related work
+      description: Link blocking issues, earlier RFCs, sources, and affected tasks.
+    validations:
+      required: true
