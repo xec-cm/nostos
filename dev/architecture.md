@@ -5,6 +5,12 @@ No recovery analysis functions are implemented in this version. The decisions
 below guide subsequent implementation; illustrative schemas are not stable
 public interfaces.
 
+[RFC 001](rfcs/001-registration-validation.md) specifies the proposed
+registration and validation contract for issues #6--#8. Its maintainer merge
+accepts that design for implementation. The package remains a scaffold until
+those implementations are delivered; later analytical stages need their own
+accepted RFCs.
+
 ## Purpose and scope
 
 recoverome is intended to attach explicit recovery analyses to longitudinal
@@ -42,9 +48,19 @@ benchmark claims, or placeholder result objects into the scaffold.
 - Record time units and event origins explicitly. Do not infer units from the
   size of a numeric value or equate a visit index with elapsed time.
 
-Specific input schemas, accepted assays, distance definitions, and tree
-requirements must be documented and tested when their consuming functions are
-implemented. They must not be implied to work before that point.
+Under RFC 001, sample IDs come from `colnames(tse)` and feature IDs from
+`rownames(tse)`. Both must be unique and explicit. Literal `colData()` column
+selectors supply subject, episode and numeric time. An episode value of `NA`
+excludes a sample; otherwise it identifies exactly one declared episode.
+Multiple episodes per subject are allowed. Each episode explicitly selects the
+start or end boundary of a declared event as its origin. Numeric times require
+an explicit unit and a coordinate-system description. No sample assignment,
+calendar conversion or analytical eligibility is inferred at registration.
+
+RFC 001 defines the registration input schemas. Accepted assays, distance
+definitions and analytical tree requirements must be documented and tested
+when their consuming functions are implemented. They must not be implied to
+work before that point.
 
 ## Tidy interoperability
 
@@ -80,11 +96,19 @@ both the user's definition and the identities of the eligible data actually
 used. Provenance captures the information needed to interpret or reproduce the
 analysis, including the original sample and feature scope.
 
+The diagram above shows intended stages, not preallocated empty records.
+RFC 001 adds schema versions, source-column bindings, a snapshot of included
+sample metadata, the original full container scope, and registration provenance.
+Registration stores no assay values or fingerprints and creates no result
+columns. Each analysis starts with an empty exact-name `owned_columns` manifest;
+later result functions must extend ownership when they add sample columns.
+
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
-analysis `antibiotic` can own `rec_antibiotic_deviation`. Analysis IDs must be
-simple, stable identifiers. Validate names and collisions so separate analyses
-cannot overwrite each other or collide with user columns.
+analysis `antibiotic` can own `rec_antibiotic_deviation`. RFC 001 requires analysis
+IDs to match `^[a-z][a-z0-9]*$`; underscores are excluded to prevent overlapping
+prefixes. An existing analysis ID or existing column under its proposed prefix
+blocks registration. There is no implicit overwrite or replacement operation.
 
 Keep one authoritative representation of each result. If an extraction method
 creates a convenient table, it should derive that view from the stored record
@@ -114,6 +138,15 @@ for each operation will be specified with its implementation.
 Recomputation is explicit. It should use a new named analysis or a documented
 replacement operation that makes invalidation of dependent results visible.
 Dependent records must not survive upstream changes as if still current.
+
+For registration, validation returns a base list containing a versioned
+summary and diagnostics as `S4Vectors::DataFrame` objects. Structural validity,
+completion of checks, source-metadata changes and current sample/feature scope
+are separate report fields. Removing samples preserves historical episode
+records; changing a retained sample's source metadata produces a dependency
+finding. The registration validator does not claim to detect changes in assay
+values or validate future analytical stages. Unsupported records are reported
+as incompletely checked. See RFC 001 for exact codes, schemas and examples.
 
 ## Analytical boundaries
 

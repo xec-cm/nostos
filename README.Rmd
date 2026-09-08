@@ -75,14 +75,21 @@ data through existing Bioconductor workflows.
 | `validate_recovery()` | Check whether an analysis still matches its data. |
 
 The following is **non-executable proposed API**, not a working example.
-Function arguments may change during implementation.
+The design requires maintainer acceptance and subsequent implementation.
+
+[RFC 001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md)
+specifies the registration and validation proposal. Sample-to-episode membership
+is explicit in `colData()`; times use a declared numeric coordinate system.
 
 ```{r proposed-api, eval=FALSE}
 tse <- setup_recovery(
   tse,
   analysis_id = "antibiotic",
   episodes = episodes,
-  events = events
+  events = events,
+  time_col = "day",
+  time_unit = "days",
+  time_origin = "days relative to exposure start within each participant"
 )
 tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
 tse <- add_deviation(tse, analysis_id = "antibiotic")
@@ -101,7 +108,9 @@ claims from that toy dataset.
 
 - Sample annotations will use `rec_<analysis>_` prefixes in `colData()`;
   for example, `rec_antibiotic_deviation`. Analysis IDs will be simple, stable
-  identifiers validated to prevent collisions with other analyses or columns.
+  identifiers matching `^[a-z][a-z0-9]*$`, preventing overlapping prefixes.
+  Registration reserves the prefix and records history in metadata; sample
+  result columns belong to later analytical stages.
 - Episode, event, reference, and provenance records will live in named
   analyses under `metadata(tse)$recoverome`.
 - Filtering a TSE will retain historical analysis records with their original
