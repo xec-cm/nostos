@@ -6,14 +6,15 @@
 \alias{recoverome-package}
 \title{Infrastructure for longitudinal microbiome recovery analysis}
 \description{
-This experimental package currently provides its development infrastructure
-and documents the proposed recovery analysis interface. Recovery estimation
-functions are not implemented in this initial release.
+This experimental package registers named analyses with \code{\link[=setup_recovery]{setup_recovery()}},
+validating explicit sample membership, episodes, events, and numeric time.
+Reference estimation, deviation measurement, recovery classification, and
+post-registration validation remain planned.
 }
 \details{
 The intended workflow enriches a TreeSummarizedExperiment with sample-level
 annotations and named analysis records. See the introductory vignette for
-a runnable container example and the project website for development status.
+a runnable registration example and the project website for development status.
 }
 \seealso{
 Useful links:

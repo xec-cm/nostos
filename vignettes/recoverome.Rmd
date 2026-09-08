@@ -1,8 +1,8 @@
 ---
-title: "Recovery analysis: data structure and planned workflow"
+title: "Register an analysis and preserve its history"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Recovery analysis: data structure and planned workflow}
+  %\VignetteIndexEntry{Register an analysis and preserve its history}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -13,20 +13,21 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ## Current status
 
-`recoverome` 0.1.0 is an experimental scaffold. Recovery functions are not
-implemented yet. This vignette constructs a valid input object and explains
-the intended contracts. It does not calculate recovery outcomes.
+The experimental development version provides `setup_recovery()`. This
+vignette registers an analysis and inspects its stored history. Reference
+estimation, deviation and recovery calculations, extraction, plotting, and
+`validate_recovery()` remain planned.
 
 ## A small longitudinal input
 
-The planned analysis unit is an episode within a subject, with a perturbation
+The registration unit is an episode within a subject, with a perturbation
 defined by events. Sample measurements and sample metadata remain in a
 `TreeSummarizedExperiment` (TSE).
 
 This deliberately small example has two features and three samples from one
-subject. The time coordinate is days relative to an illustrative event at
-day zero. It demonstrates structure only; it is not sufficient to establish
-sustained recovery or to calibrate a statistical method.
+subject. The time coordinate is days since enrolment, with an illustrative
+exposure beginning on day 10. It demonstrates structure only; it cannot establish
+sustained recovery or calibrate a statistical method.
 
 ```{r input-tse}
 counts <- matrix(
@@ -38,8 +39,8 @@ counts <- matrix(
 sample_data <- S4Vectors::DataFrame(
   subject_id = rep("participant_1", 3L),
   episode_id = rep("episode_1", 3L),
-  day = c(-7, -1, 7),
-  phase = c("before", "before", "after"),
+  day = c(3, 10, 17),
+  phase = c("before", "during", "after"),
   row.names = colnames(counts)
 )
 
@@ -56,28 +57,17 @@ SummarizedExperiment::colData(tse)
 A phylogenetic tree is not needed to construct this object. Any future method
 that requires a tree will need to declare and validate that requirement.
 
-## Episodes, events, and references
+## Declare episodes and events
 
 An **episode** identifies the observation period relevant to one perturbation
 and one subject. An **event** records a dated occurrence or interval, such as
 the start and end of antibiotic exposure. Repeated perturbations need distinct
 episode identities even when they occur in the same subject.
 
-A **reference** records what return means for a named analysis. It may be based
-on selected pre-event samples, but the exact eligibility rules and the samples
-actually used must remain visible. A reference profile and a recovery margin
-are different concepts: the former defines the comparison target, while the
-latter defines an acceptable deviation under the chosen rule.
-
-The initial contracts will keep these records in
-`S4Vectors::metadata(tse)$recoverome$analyses[[analysis_id]]`. Sample-level
-annotations will be placed in `colData()` columns with the prefix
-`rec_<analysis>_`; for example, `rec_antibiotic_deviation`. Analysis IDs will be
-simple, stable identifiers validated to prevent prefix collisions. Detailed
-registration schemas are proposed in
+The episode selects the start or end of one of its events as its origin.
+The tables below declare one episode and an exposure interval. Required
+schemas and time rules are defined in the accepted
 [RFC 001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md).
-The following tables illustrate that proposal with one episode and a point
-event. Constructing these tables does not register an analysis.
 
 ```{r registration-inputs}
 episodes <- data.frame(
@@ -89,33 +79,92 @@ episodes <- data.frame(
 events <- data.frame(
   event_id = "exposure_1",
   episode_id = "episode_1",
-  start_time = 0,
-  end_time = 0
+  start_time = 10,
+  end_time = 14
 )
+episodes
+events
 ```
 
 Each sample is explicitly assigned to an episode by its `episode_id` column.
-The proposed registration accepts numeric times with a declared unit and
-coordinate origin. Analysis IDs match `^[a-z][a-z0-9]*$`; the corresponding
-`rec_<analysis>_` prefix is reserved, and setup creates no sample result columns.
+An `NA` episode explicitly excludes that sample from this named analysis;
+each declared episode must still have an included sample. Registration accepts
+finite numeric times with a declared unit and coordinate origin. Calendar
+times need an explicit conversion by the caller before registration.
 
-## Proposed analysis interface
+## Register and inspect the snapshot
 
-The following block sketches the planned workflow. **It is not executable with
-this version of recoverome.** The episode/event tables above illustrate the
-registration proposal. `reference` and `recovery_rule` remain future inputs
-whose analytical definitions require separate design decisions.
+`setup_recovery()` checks the identities, episode membership, and event
+references, then returns the TSE with a named registration. Analysis IDs match
+`^[a-z][a-z0-9]*$`. The corresponding `rec_<analysis>_` prefix is reserved for
+future result columns; registration creates none.
 
-```{r planned-workflow, eval=FALSE}
-tse <- setup_recovery(
+```{r register-analysis}
+tse <- recoverome::setup_recovery(
   tse,
   analysis_id = "antibiotic",
   episodes = episodes,
   events = events,
   time_col = "day",
   time_unit = "days",
-  time_origin = "days relative to exposure start within each participant"
+  time_origin = "days since enrolment within each participant"
 )
+
+registration <- S4Vectors::metadata(tse)$recoverome$analyses$antibiotic
+registration$registration$samples
+registration$episodes
+registration$events
+registration$scope
+registration$owned_columns
+```
+
+The stored tables are `S4Vectors::DataFrame` objects. The sample snapshot
+contains included samples in their original order; the scope records all
+original sample and feature IDs, including any excluded samples. This is
+historical metadata, and must not be edited as a second current data source.
+Registration also records its source column names, the time declaration, the
+package version, and a UTC registration timestamp.
+
+Here the event origin is day 10, so the implied relative sample times are
+`-7`, `0`, and `7` days. Registration retains the supplied coordinates without
+creating a second time column. It neither selects an assay nor reads or
+fingerprints its values.
+
+Calling setup again with the same analysis ID is an error, even with identical
+inputs. A pre-existing column beginning with `rec_antibiotic_` also blocks this
+registration. Another unused name can register an independent analysis.
+
+## Filtering preserves analysis history
+
+Ordinary TSE subsetting selects features, samples, and their annotations while
+preserving the original registration. This subset contains one feature and
+only the sample collected after the exposure:
+
+```{r subset-tse}
+after_event <- tse["feature_a", "s3", drop = FALSE]
+rownames(after_event)
+colnames(after_event)
+history <- S4Vectors::metadata(after_event)$recoverome$analyses$antibiotic
+history$scope
+identical(history, registration)
+```
+
+The stored scope still identifies both features and all three samples, and the
+entire registration is unchanged. The snapshot describes the original data;
+filtering does not make it a new registration of the subset.
+
+The planned `validate_recovery()` will distinguish reduced scope from changes
+to consumed sample metadata. It is not available in this version. Registration
+alone makes no claim about the suitability of assay values for a later method.
+
+## Planned analytical stages
+
+A **reference** will record the comparison target and eligible samples; a
+recovery rule will define an acceptable deviation and observational requirements.
+Their analytical definitions require separate design decisions. The following
+is **non-executable proposed API**; these six functions are not implemented.
+
+```{r planned-workflow, eval=FALSE}
 tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
 tse <- add_deviation(tse, analysis_id = "antibiotic")
 tse <- add_recovery(tse, analysis_id = "antibiotic", rule = recovery_rule)
@@ -125,29 +174,9 @@ recovery_results(tse, analysis_id = "antibiotic", level = "episode")
 plot_recovery(tse, analysis_id = "antibiotic")
 ```
 
-The four setup/add functions are intended to return an updated TSE. Extraction,
-plotting, and validation have separate roles and must not silently alter an
-analysis. Statistical fitting is a future layer outside this initial interface.
-
-## Filtering preserves analysis history
-
-Ordinary TSE subsetting already selects samples and their sample annotations:
-
-```{r subset-tse}
-after_event <- tse[, SummarizedExperiment::colData(tse)$day > 0]
-colnames(after_event)
-SummarizedExperiment::colData(after_event)
-```
-
-This example has no recoverome analysis attached. In the planned contract,
-subsetting an annotated TSE will preserve analysis history and its original
-sample and feature scope. Removing a reference sample or a follow-up visit
-must not cause an automatic refit or a new recovery time.
-
-The planned validator will identify mismatches between the present data and
-the recorded analysis scope. A result computed from the original data remains
-a historical result; it must not be presented as a new analysis of the subset.
-Intentional recomputation will require an explicit analysis operation.
+The add functions are intended to return a TSE. Extraction, plotting, and
+validation have separate roles and must not silently alter an analysis.
+Statistical fitting is a future layer outside this initial interface.
 
 ## Interpretation boundaries
 

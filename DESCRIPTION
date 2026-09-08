@@ -7,25 +7,28 @@ Authors@R:
            role = c("aut", "cre"),
            email = "fcatala@irsicaixa.es",
            comment = c(ORCID = "0000-0002-2354-8648"))
-Description: Establishes the package infrastructure and documented design for
-    longitudinal microbiome recovery analysis. Defines conventions for working
-    with 'TreeSummarizedExperiment' objects, sample annotations, and named
-    analysis records. Includes an introductory container example and development
-    documentation; analytical recovery methods are not implemented in this
-    initial experimental release.
+Description: Registers named longitudinal microbiome recovery analyses in
+    'TreeSummarizedExperiment' objects. Validates explicit sample membership,
+    episodes, event origins, and numeric time coordinates, recording original
+    scope and provenance while preserving the container. Includes executable
+    registration examples and development documentation; reference estimation,
+    deviation measurement, and recovery classification remain planned.
 License: MIT + file LICENSE
 URL: https://github.com/xec-cm/recoverome,
     https://xec-cm.github.io/recoverome/
 BugReports: https://github.com/xec-cm/recoverome/issues
 Depends:
     R (>= 4.6.0)
+Imports:
+    methods,
+    S4Vectors,
+    SummarizedExperiment,
+    TreeSummarizedExperiment,
+    utils
 Suggests:
     knitr,
     rmarkdown,
-    S4Vectors,
-    SummarizedExperiment,
-    testthat (>= 3.0.0),
-    TreeSummarizedExperiment
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 biocViews: Software, Microbiome, Metagenomics, TimeCourse
 Encoding: UTF-8

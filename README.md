@@ -16,10 +16,10 @@ reproducible: what reference a sample is compared with, what counts as a
 return, how long that return must persist, and what the sampling
 schedule can support.
 
-Version 0.1.0 is an experimental package scaffold. It provides project
-documentation and development infrastructure. **It does not yet
-implement recovery analysis functions.** The interface below is a design
-proposal.
+The experimental development version provides `setup_recovery()` to
+register a named analysis with explicit episodes, events, and sample
+membership. Reference estimation, recovery outcomes, plotting,
+extraction, and the standalone validator are not implemented yet.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
 [architecture
@@ -44,7 +44,7 @@ perturbation and a prespecified reference. Recovery to a personal
 baseline describes similarity to that baseline; it does not establish
 health or functional restoration.
 
-## Install the development scaffold
+## Install the development version
 
 The development branch is `devel`. There is no CRAN or Bioconductor
 release.
@@ -54,81 +54,115 @@ install.packages("remotes")
 remotes::install_github("xec-cm/recoverome", ref = "devel")
 ```
 
-## Planned workflow
+## Register an analysis
 
-The proposed interface extends a `TreeSummarizedExperiment` (TSE).
-Functions that add analysis information will return a TSE, retaining the
-original assays and sample identities. This allows recovery annotations
-to travel with the data through existing Bioconductor workflows.
-
-| Planned function | Responsibility |
-|:---|:---|
-| `setup_recovery()` | Register a named analysis, episodes, and events. |
-| `add_reference()` | Record the reference definition and eligible samples. |
-| `add_deviation()` | Attach deviations from the registered reference. |
-| `add_recovery()` | Attach outcomes under an explicit recovery rule. |
-| `recovery_results()` | Extract results at the requested analysis level. |
-| `plot_recovery()` | Display observations and the recovery definition. |
-| `validate_recovery()` | Check whether an analysis still matches its data. |
-
-The following is **non-executable proposed API**, not a working example.
-The design requires maintainer acceptance and subsequent implementation.
-
-[RFC
-001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md)
-specifies the registration and validation proposal. Sample-to-episode
-membership is explicit in `colData()`; times use a declared numeric
-coordinate system.
+`setup_recovery()` takes a `TreeSummarizedExperiment` (TSE) and returns
+it with a registration in its metadata. It preserves assays and sample
+annotations. Here, three samples belong to one episode, whose origin is
+the start of an exposure interval. All times are numeric days since
+enrolment.
 
 ``` r
-tse <- setup_recovery(
+counts <- matrix(
+  c(80L, 20L, 75L, 25L, 40L, 60L),
+  nrow = 2L,
+  dimnames = list(c("feature_a", "feature_b"), c("s1", "s2", "s3"))
+)
+tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = counts),
+  colData = S4Vectors::DataFrame(
+    subject_id = rep("participant_1", 3L),
+    episode_id = rep("episode_1", 3L),
+    day = c(3, 10, 17),
+    row.names = colnames(counts)
+  )
+)
+episodes <- data.frame(
+  episode_id = "episode_1",
+  subject_id = "participant_1",
+  origin_event_id = "exposure_1",
+  origin_boundary = "start"
+)
+events <- data.frame(
+  event_id = "exposure_1",
+  episode_id = "episode_1",
+  start_time = 10,
+  end_time = 14
+)
+```
+
+The episode and event tables are supplied explicitly. Registration
+checks their identities and references, records the time declaration,
+and stores normalized `S4Vectors::DataFrame` tables. It does not select
+reference samples or calculate recovery.
+
+``` r
+tse <- recoverome::setup_recovery(
   tse,
   analysis_id = "antibiotic",
   episodes = episodes,
   events = events,
   time_col = "day",
   time_unit = "days",
-  time_origin = "days relative to exposure start within each participant"
+  time_origin = "days since enrolment within each participant"
 )
-tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
-tse <- add_deviation(tse, analysis_id = "antibiotic")
-tse <- add_recovery(tse, analysis_id = "antibiotic", rule = recovery_rule)
-
-validate_recovery(tse, analysis_id = "antibiotic")
-recovery_results(tse, analysis_id = "antibiotic", level = "episode")
-plot_recovery(tse, analysis_id = "antibiotic")
+registration <- S4Vectors::metadata(tse)$recoverome$analyses$antibiotic
+registration$registration$samples
+#> DataFrame with 3 rows and 4 columns
+#>     sample_id    subject_id  episode_id      time
+#>   <character>   <character> <character> <numeric>
+#> 1          s1 participant_1   episode_1         3
+#> 2          s2 participant_1   episode_1        10
+#> 3          s3 participant_1   episode_1        17
 ```
 
-The [introductory
+Filtering keeps the original registration snapshot. The retained sample
+below is `s3`, while the stored sample scope still contains all three
+original IDs.
+
+``` r
+follow_up <- tse[, "s3", drop = FALSE]
+colnames(follow_up)
+#> [1] "s3"
+S4Vectors::metadata(follow_up)$recoverome$analyses$antibiotic$scope$sample_ids
+#> [1] "s1" "s2" "s3"
+```
+
+See the [introductory
 vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
-contains an executable example of the input TSE structure. It makes no
-recovery claims from that toy dataset.
+for the stored records and filtering example in more detail. This small
+dataset illustrates registration only; it does not establish recovery.
 
-## Data and result contracts
+## Available and planned workflow
 
-- Sample annotations will use `rec_<analysis>_` prefixes in `colData()`;
-  for example, `rec_antibiotic_deviation`. Analysis IDs will be simple,
-  stable identifiers matching `^[a-z][a-z0-9]*$`, preventing overlapping
-  prefixes. Registration reserves the prefix and records history in
-  metadata; sample result columns belong to later analytical stages.
-- Episode, event, reference, and provenance records will live in named
-  analyses under `metadata(tse)$recoverome`.
-- Filtering a TSE will retain historical analysis records with their
-  original scope. It will not silently recompute a reference or recovery
-  outcome.
-- Validation will make differences between the current data and the
-  original analysis scope explicit before results are reused.
+| Function | Status | Responsibility |
+|:---|:---|:---|
+| `setup_recovery()` | Available | Register a named analysis, episodes, and events. |
+| `add_reference()` | Planned | Record the reference definition and eligible samples. |
+| `add_deviation()` | Planned | Attach deviations from the registered reference. |
+| `add_recovery()` | Planned | Attach outcomes under an explicit recovery rule. |
+| `recovery_results()` | Planned | Extract results at the requested analysis level. |
+| `plot_recovery()` | Planned | Display observations and the recovery definition. |
+| `validate_recovery()` | Planned | Check records, dependencies, and current scope. |
 
-These are intended contracts, not implemented behavior in this scaffold.
-Statistical fitting, group comparisons, and recovery-time uncertainty
-methods are outside the initial seven-function interface and require
-separate design and validation.
+Analysis IDs match `^[a-z][a-z0-9]*$`. Registration reserves the
+corresponding `rec_<analysis>_` prefix but creates no sample result
+columns. A repeated analysis ID or an existing column under its prefix
+is an error; use a new analysis name to register another analysis.
+
+[RFC
+001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md)
+defines registration and the planned validation report. Filtering does
+not enrol new samples or reinterpret the historical record. Statistical
+fitting, group comparisons, and recovery-time uncertainty methods
+require separate design and validation.
 
 ## Development and contributions
 
-The next step is to implement and validate the data contracts before
-adding analytical methods. No benchmark performance or statistical
-guarantees are claimed for this version.
+The next steps are the standalone registration validator and
+preservation checks, followed by separately designed analytical stages.
+No benchmark performance or statistical guarantees are claimed for this
+version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and
 contribution guidelines. Please use the [issue
