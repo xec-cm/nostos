@@ -12,8 +12,9 @@ Description: Registers named longitudinal microbiome recovery analyses in
     episodes, event origins, and numeric time coordinates, recording original
     scope and provenance while preserving the container. Diagnoses registration
     consistency, metadata changes, and historical scope without modifying data.
-    Includes executable examples and development documentation; reference estimation,
-    deviation measurement, and recovery classification remain planned.
+    Attaches explicit personal reference profiles from selected baseline samples,
+    recording their support and input provenance. Deviation measurement and
+    recovery classification remain planned.
 License: MIT + file LICENSE
 URL: https://github.com/xec-cm/recoverome,
     https://xec-cm.github.io/recoverome/
@@ -22,13 +23,16 @@ Depends:
     R (>= 4.6.0)
 Imports:
     cli (>= 3.2.0),
+    digest,
     methods,
     S4Vectors,
     SummarizedExperiment,
     TreeSummarizedExperiment,
     utils
 Suggests:
+    DelayedArray,
     knitr,
+    Matrix,
     rmarkdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr

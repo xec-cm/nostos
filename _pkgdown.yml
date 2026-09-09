@@ -10,6 +10,9 @@ reference:
   - title: Register an analysis
     contents:
       - setup_recovery
+  - title: Attach a personal reference
+    contents:
+      - add_reference
   - title: Validate a registration
     contents:
       - validate_recovery

@@ -13,10 +13,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ## Current status
 
-The experimental development version provides `setup_recovery()` and
-`validate_recovery()`. This vignette registers an analysis and diagnoses its
-stored history after filtering or changing metadata. Reference estimation,
-deviation and recovery calculations, extraction, and plotting remain planned.
+The experimental development version provides `setup_recovery()`,
+`validate_recovery()` and `add_reference()`. This vignette registers an analysis,
+diagnoses its registration history, and attaches an explicit personal reference.
+Deviation and recovery calculations, extraction, and plotting remain planned.
 
 ## A small longitudinal input
 
@@ -209,20 +209,94 @@ one column. The report keeps the historical episodes, reports zero retained
 registered samples, and leaves dependencies `not_checked`. It does not invent
 broken episodes or enrol the excluded sample.
 
+## Attach an explicit personal baseline
+
+`add_reference()` implements the reference contract in
+[RFC 002](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/002-personal-baseline-deviation.md).
+Give sample IDs rather than an inferred baseline window. Here `s1` belongs to
+`e1` and `s4` to `e2`. Both precede their own origin event's start; `s4` at day 34
+is eligible before start 40, even though `e2` selects end 42 as its origin.
+
+```{r repeated-reference}
+referenced <- recoverome::add_reference(
+  repeated_tse,
+  analysis_id = "repeated",
+  reference = c("s1", "s4"),
+  assay = "counts",
+  preprocessing = "synthetic counts; no upstream transformations"
+)
+reference <- S4Vectors::metadata(referenced)$recoverome$analyses$repeated$reference
+reference$baseline_samples
+reference$profiles
+reference$episodes
+```
+
+The episode profiles are `(1/3, 2/3)` and `(7/15, 8/15)`. Each has one selected
+sample, so support is `single_sample` and its baseline diameter is `NA`. Multiple
+selected samples would first be divided by their own selected-feature total,
+then averaged with equal sample weight. A larger read total gives no extra
+weight. Distinct samples at the same time count separately for this mean;
+aggregate technical replicates explicitly upstream if needed.
+
+Use `features` to declare a non-empty subcomposition, or leave it `NULL` to use
+all currently retained features. Consumed values must be finite, non-negative
+integer/double measurements with a finite positive sample total. Zeros are
+allowed; no pseudocount, implicit feature filtering or missing-value deletion
+is applied. Sparse and delayed matrix inputs are supported through extraction
+of the requested block; its conversion can realize that block in memory.
+The function makes no bound on backend I/O or memory use.
+
+Reference selection never borrows samples from another episode. Passing
+`reference = character()` records `missing_baseline` for every episode, without
+zero-filled profiles. One baseline permits a descriptive reference but estimates
+no variability. With multiple baselines, `baseline_diameter` is the maximum
+pairwise Bray--Curtis dissimilarity of their compositions; it is not a recovery
+cutoff or uncertainty interval. The function creates no deviation columns.
+
+### Preserve the realized reference after filtering
+
+The definition, baseline identities, profiles and input fingerprints remain
+historical when baseline samples are later removed:
+
+```{r reference-history}
+reference_subset <- referenced[, c("s2", "s3", "s5"), drop = FALSE]
+subset_reference <- S4Vectors::metadata(reference_subset)$recoverome$analyses$repeated$reference
+identical(subset_reference, reference)
+```
+
+This retained record describes the original selected baselines. A later new
+calculation that depends on those inputs requires them to remain available;
+subsetting does not silently rebuild a reference. Use a new named analysis and
+explicit selection to define a different reference. Repeating `add_reference()`
+for the same analysis errors, even when the arguments are identical.
+
+The registration validator has not yet been extended to analytical stages:
+
+```{r reference-validation-boundary}
+reference_report <- recoverome::validate_recovery(referenced, analysis_id = "repeated")
+reference_report$summary
+unique(reference_report$diagnostics$code)
+```
+
+`STAGE_UNSUPPORTED` and incomplete validation are expected here. Registration
+findings can still be reported, but this diagnostic does not yet verify reference
+fingerprints or assay changes. `add_reference()` validates the inputs it consumes
+when building the reference. Subsequent stage-aware dependency validation belongs
+to issue #12; a created reference must not be presented as fully validated by
+this registration-only report.
+
 ## Planned analytical stages
 
-A **reference** will record the comparison target and eligible samples; a
-recovery rule will define an acceptable deviation and observational requirements.
-Their analytical definitions require separate design decisions. The following
-is **non-executable proposed API**; these five functions are not implemented.
+A recovery rule will define an acceptable deviation and observational requirements.
+The following is **non-executable proposed API**; these four functions are not
+implemented. Their accepted design contracts remain distinct from available code.
 
 ```{r planned-workflow, eval=FALSE}
-tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
-tse <- add_deviation(tse, analysis_id = "antibiotic")
-tse <- add_recovery(tse, analysis_id = "antibiotic", rule = recovery_rule)
+analysed <- add_deviation(referenced, analysis_id = "repeated")
+analysed <- add_recovery(analysed, analysis_id = "repeated", rule = recovery_rule)
 
-recovery_results(tse, analysis_id = "antibiotic", level = "episode")
-plot_recovery(tse, analysis_id = "antibiotic")
+recovery_results(analysed, analysis_id = "repeated", level = "episode")
+plot_recovery(analysed, analysis_id = "repeated")
 ```
 
 The add functions are intended to return a TSE. Extraction, plotting, and
