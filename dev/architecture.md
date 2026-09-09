@@ -1,12 +1,12 @@
 # Architecture contract
 
 Status: the experimental development version implements named analysis
-registration through `setup_recovery()`. The standalone validator and the
-remaining analytical stages are planned.
+registration through `setup_recovery()` and registration diagnostics through
+`validate_recovery()`. The remaining analytical stages are planned.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
-validation contract for issues #6--#8. Setup implements its registration
-portion; validation and further preservation checks follow separately. Later
+validation contract for issues #6--#8. Registration and its validator are
+implemented; further preservation checks follow separately. Later
 analytical stages need their own accepted RFCs.
 
 ## Purpose and scope
@@ -25,7 +25,7 @@ The initial public interface is limited to seven functions:
 | `add_recovery()` | Planned | Add outcomes under a recorded recovery rule. |
 | `recovery_results()` | Planned | Extract the requested results with their scope. |
 | `plot_recovery()` | Planned | Display data and analysis annotations. |
-| `validate_recovery()` | Planned | Diagnose consistency and scope mismatches. |
+| `validate_recovery()` | Available | Diagnose registration consistency and scope mismatches. |
 
 Statistical model fitting is a future layer outside these seven functions.
 Do not introduce exported fitting stubs, unvalidated estimators, synthetic
@@ -125,8 +125,8 @@ analysis metadata must retain the scope of the analysis as originally run.
 Subsetting must not silently rebuild a reference, recalculate deviations,
 reclassify an episode, or refit a model.
 
-The planned validator must distinguish current object scope from original
-analysis scope. Later analytical stages will need diagnostics for:
+The validator distinguishes current object scope from original analysis scope.
+Later analytical stages will need diagnostics for:
 
 - Removal of a sample used to estimate a reference.
 - Removal of a visit used to assess persistence or an episode endpoint.
@@ -143,15 +143,14 @@ Recomputation is explicit. It should use a new named analysis or a documented
 replacement operation that makes invalidation of dependent results visible.
 Dependent records must not survive upstream changes as if still current.
 
-The planned registration validator will return a base list containing a versioned
+The registration validator returns a base list containing a versioned
 summary and diagnostics as `S4Vectors::DataFrame` objects. Structural validity,
 completion of checks, source-metadata changes and current sample/feature scope
-will be separate report fields. Removing samples preserves historical episode
+are separate report fields. Removing samples preserves historical episode
 records; changing a retained sample's consumed source metadata will produce a
-dependency finding. Registration validation will not detect changes in assay
-values or validate future analytical stages. Unsupported records will be
-reported as incompletely checked. See RFC 001 for exact codes, schemas and
-examples; `validate_recovery()` is not yet available.
+dependency finding. Registration validation does not detect changes in assay
+values or validate future analytical stages. Unsupported records are reported
+as incompletely checked. See RFC 001 for exact codes, schemas and examples.
 
 ## Analytical boundaries
 
@@ -172,9 +171,9 @@ distinctions without claiming those methods already exist.
 
 ## Implementation sequence
 
-Registration is implemented. The next steps are:
+Registration and its validator are implemented. The next steps are:
 
-1. Implement its standalone validator and extend preservation checks.
+1. Extend integration checks for TSE preservation and historical scope.
 2. Implement reference attachment under a separately accepted contract.
 3. Add a documented deviation method and provenance requirements.
 4. Implement a prespecified observation-based recovery rule.

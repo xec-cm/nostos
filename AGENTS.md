@@ -1,8 +1,9 @@
 # Repository instructions
 
 recoverome is an experimental R package. The development version implements
-`setup_recovery()` for named analysis registration. The other six functions
-in the planned API, including `validate_recovery()`, are not implemented yet.
+`setup_recovery()` for named analysis registration and `validate_recovery()`
+for structural and historical-scope diagnostics. The other five functions in
+the planned API are not implemented yet.
 
 The next release target is the experimental GitHub MVP, version 0.2.0, with
 the seven functions in `dev/architecture.md`. Bioconductor preparation is a
@@ -76,6 +77,11 @@ intermediate milestones. A future Bioconductor preparation phase targets
   one argument per line for long signatures/calls, and visibly separated stages.
   Keep helpers purposeful and dependencies explicit; do not imitate historical
   slot access, implicit coercion or error-handling problems.
+- Keep control flow shallow. Use guards for cases that cannot proceed and
+  consecutive blocks for independent work. Split functions by cohesive
+  responsibilities before nesting loops and conditionals several levels deep.
+  Review nesting and readability explicitly even when tests and CI pass;
+  preserve all independently checkable diagnostics when using early returns.
 - Use `cli::cli_abort()` through `.recovery_abort()` for recoverome errors.
   Write glue-style templates with semantic markup and interpolate values;
   do not assemble templates from user data. Keep the interpolation environment

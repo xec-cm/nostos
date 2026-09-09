@@ -1,5 +1,9 @@
 # recoverome (development version)
 
+- Add `validate_recovery()` for registration structure, consumed metadata
+  dependencies, and historical scope, returning typed diagnostic tables without
+  changing the input or inspecting assay values.
+
 - Add `setup_recovery()` to register named analyses with explicit sample
   membership, episode and event tables, and declared numeric time coordinates.
 - Store normalized registration tables, original sample and feature scope,

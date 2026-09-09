@@ -8,8 +8,9 @@
 \description{
 This experimental package registers named analyses with \code{\link[=setup_recovery]{setup_recovery()}},
 validating explicit sample membership, episodes, events, and numeric time.
-Reference estimation, deviation measurement, recovery classification, and
-post-registration validation remain planned.
+\code{\link[=validate_recovery]{validate_recovery()}} diagnoses registered structure, consumed metadata, and
+historical scope without modifying the object. Reference estimation, deviation
+measurement, recovery classification, extraction, and plotting remain planned.
 }
 \details{
 The intended workflow enriches a TreeSummarizedExperiment with sample-level

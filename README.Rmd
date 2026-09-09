@@ -24,8 +24,9 @@ that return must persist, and what the sampling schedule can support.
 
 The experimental development version provides `setup_recovery()` to register
 a named analysis with explicit episodes, events, and sample membership.
-Reference estimation, recovery outcomes, plotting, extraction, and the
-standalone validator are not implemented yet.
+`validate_recovery()` diagnoses the registered structure, changes to consumed
+metadata, and the relationship between current and original scope. Reference
+estimation, deviation, recovery outcomes, plotting, and extraction remain planned.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
 [architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)
@@ -104,7 +105,14 @@ is `s3`, while the stored sample scope still contains all three original IDs.
 follow_up <- tse[, "s3", drop = FALSE]
 colnames(follow_up)
 S4Vectors::metadata(follow_up)$recoverome$analyses$antibiotic$scope$sample_ids
+report <- recoverome::validate_recovery(follow_up, analysis_id = "antibiotic")
+report$summary
 ```
+
+The registration remains structurally valid, with unchanged retained metadata
+and a reduced sample scope: one of the three registered samples remains. The
+report does not modify the object or check assay values. Its diagnostics
+separate missing historical observations from changed metadata or broken records.
 
 See the [introductory vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
 for the stored records and filtering example in more detail. This small
@@ -120,7 +128,7 @@ dataset illustrates registration only; it does not establish recovery.
 | `add_recovery()` | Planned | Attach outcomes under an explicit recovery rule. |
 | `recovery_results()` | Planned | Extract results at the requested analysis level. |
 | `plot_recovery()` | Planned | Display observations and the recovery definition. |
-| `validate_recovery()` | Planned | Check records, dependencies, and current scope. |
+| `validate_recovery()` | Available | Diagnose registration records, metadata changes, and current scope. |
 
 Analysis IDs match `^[a-z][a-z0-9]*$`. Registration reserves the corresponding
 `rec_<analysis>_` prefix but creates no sample result columns. A repeated
@@ -128,15 +136,15 @@ analysis ID or an existing column under its prefix is an error; use a new
 analysis name to register another analysis.
 
 [RFC 001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md)
-defines registration and the planned validation report. Filtering does not
+defines registration and its validation report. Filtering does not
 enrol new samples or reinterpret the historical record. Statistical fitting,
 group comparisons, and recovery-time uncertainty methods require separate
 design and validation.
 
 ## Development and contributions
 
-The next steps are the standalone registration validator and preservation
-checks, followed by separately designed analytical stages. No benchmark
+The next steps are further preservation checks and separately designed
+analytical stages. No benchmark
 performance or statistical guarantees are claimed for this version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and contribution

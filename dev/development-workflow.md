@@ -4,8 +4,9 @@ This document defines how recoverome work moves from a proposal to a reviewed
 change. It does not select statistical methods or make unimplemented API
 functions available.
 
-The development version implements `setup_recovery()` for registration; the
-other six functions remain planned. The next target is an experimental
+The development version implements `setup_recovery()` for registration and
+`validate_recovery()` for registration diagnostics; the other five functions
+remain planned. The next target is an experimental
 **0.2.0 MVP released on GitHub**. Its public API target is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
@@ -139,6 +140,11 @@ The technical review record must contain:
 
 The reviewer must confirm that findings are resolved and no required change
 remains open before the issue enters `Review`.
+
+The reviewer also checks readability against `dev/r-style.md`: shallow control
+flow, cohesive responsibilities and clear data flow. Passing tests or moving
+nested code into a helper does not replace this inspection. Resolve unnecessary
+deep nesting and ensure guard clauses preserve shared diagnostic bookkeeping.
 
 The reviewer assesses implementation against the accepted contract. Unresolved
 methodological questions are referred to the maintainer rather than decided
