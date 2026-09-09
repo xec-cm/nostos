@@ -1,7 +1,8 @@
 # Contributing to recoverome
 
 Thank you for contributing. The experimental development version provides
-`setup_recovery()` for named analysis registration; the remaining six functions
+`setup_recovery()` for registration and `validate_recovery()` for registration
+diagnostics; the remaining five functions
 are planned. Contributions should make a concrete, reviewable improvement
 and distinguish implemented behavior from proposals.
 

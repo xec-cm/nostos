@@ -13,10 +13,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ## Current status
 
-The experimental development version provides `setup_recovery()`. This
-vignette registers an analysis and inspects its stored history. Reference
-estimation, deviation and recovery calculations, extraction, plotting, and
-`validate_recovery()` remain planned.
+The experimental development version provides `setup_recovery()` and
+`validate_recovery()`. This vignette registers an analysis and diagnoses its
+stored history after filtering or changing metadata. Reference estimation,
+deviation and recovery calculations, extraction, and plotting remain planned.
 
 ## A small longitudinal input
 
@@ -136,9 +136,37 @@ The stored scope still identifies both features and all three samples, and the
 entire registration is unchanged. The snapshot describes the original data;
 filtering does not make it a new registration of the subset.
 
-The planned `validate_recovery()` will distinguish reduced scope from changes
-to consumed sample metadata. It is not available in this version. Registration
-alone makes no claim about the suitability of assay values for a later method.
+`validate_recovery()` reports these distinctions without modifying the TSE.
+Its return value is a list with `report_schema_version = 1L`, a `summary`
+DataFrame, and a `diagnostics` DataFrame. Diagnostic IDs are a list-column.
+
+```{r validate-history}
+report <- recoverome::validate_recovery(after_event, analysis_id = "antibiotic")
+report$summary
+report$diagnostics
+```
+
+The record remains structurally valid and validation is complete. Both scopes
+are reduced; the included-sample counts are three originally and one retained.
+Dependencies are unchanged because the retained sample still matches the
+recorded metadata. This does not certify the cells of removed samples.
+
+Changing that retained sample's time is a separate finding:
+
+```{r changed-metadata}
+changed <- after_event
+annotation <- SummarizedExperiment::colData(changed)
+annotation[[example_data$time_col]] <- annotation[[example_data$time_col]] + 1
+SummarizedExperiment::colData(changed) <- annotation
+changed_report <- recoverome::validate_recovery(changed, analysis_id = "antibiotic")
+changed_report$summary
+changed_report$diagnostics
+```
+
+The historical snapshot remains structurally valid, while dependencies are
+now changed. The diagnostic identifies `s3`; validation neither repairs the
+metadata nor updates the stored snapshot. Registration validation does not
+read assay values or establish their suitability for a later method.
 
 ## Repeated episodes and an excluded sample
 
@@ -171,19 +199,28 @@ There are five registered rows and six original sample IDs. The corresponding
 relative times are `-7`, `0`, `7`, `-8`, and `1` days. These arithmetic examples
 illustrate explicit origins and membership, without defining recovery.
 
+```{r excluded-only}
+excluded_only <- repeated_tse[, "s6", drop = FALSE]
+recoverome::validate_recovery(excluded_only, analysis_id = "repeated")$summary
+```
+
+Here none of the five registered samples remains, although the TSE still has
+one column. The report keeps the historical episodes, reports zero retained
+registered samples, and leaves dependencies `not_checked`. It does not invent
+broken episodes or enrol the excluded sample.
+
 ## Planned analytical stages
 
 A **reference** will record the comparison target and eligible samples; a
 recovery rule will define an acceptable deviation and observational requirements.
 Their analytical definitions require separate design decisions. The following
-is **non-executable proposed API**; these six functions are not implemented.
+is **non-executable proposed API**; these five functions are not implemented.
 
 ```{r planned-workflow, eval=FALSE}
 tse <- add_reference(tse, analysis_id = "antibiotic", reference = reference)
 tse <- add_deviation(tse, analysis_id = "antibiotic")
 tse <- add_recovery(tse, analysis_id = "antibiotic", rule = recovery_rule)
 
-validate_recovery(tse, analysis_id = "antibiotic")
 recovery_results(tse, analysis_id = "antibiotic", level = "episode")
 plot_recovery(tse, analysis_id = "antibiotic")
 ```

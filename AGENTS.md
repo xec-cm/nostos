@@ -1,8 +1,9 @@
 # Repository instructions
 
 recoverome is an experimental R package. The development version implements
-`setup_recovery()` for named analysis registration. The other six functions
-in the planned API, including `validate_recovery()`, are not implemented yet.
+`setup_recovery()` for named analysis registration and `validate_recovery()`
+for structural and historical-scope diagnostics. The other five functions in
+the planned API are not implemented yet.
 
 The next release target is the experimental GitHub MVP, version 0.2.0, with
 the seven functions in `dev/architecture.md`. Bioconductor preparation is a

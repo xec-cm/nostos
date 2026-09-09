@@ -10,8 +10,9 @@ Authors@R:
 Description: Registers named longitudinal microbiome recovery analyses in
     'TreeSummarizedExperiment' objects. Validates explicit sample membership,
     episodes, event origins, and numeric time coordinates, recording original
-    scope and provenance while preserving the container. Includes executable
-    registration examples and development documentation; reference estimation,
+    scope and provenance while preserving the container. Diagnoses registration
+    consistency, metadata changes, and historical scope without modifying data.
+    Includes executable examples and development documentation; reference estimation,
     deviation measurement, and recovery classification remain planned.
 License: MIT + file LICENSE
 URL: https://github.com/xec-cm/recoverome,
