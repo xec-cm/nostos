@@ -29,8 +29,14 @@ preserved, and sample IDs are distinct from subject and episode IDs.
 ## Proposed interface and selection
 
 ```r
-add_reference(tse, analysis_id, reference, assay, features = NULL,
-              preprocessing = "unspecified")
+add_reference(
+  tse,
+  analysis_id,
+  reference,
+  assay,
+  features = NULL,
+  preprocessing = "unspecified"
+)
 add_deviation(tse, analysis_id)
 ```
 
@@ -38,6 +44,16 @@ These signatures are proposals. Both functions return a TSE without changing
 assays, trees, links, identities, unrelated annotations or other analyses.
 `analysis_id` identifies an existing supported registration. No new exported
 selector, reference class, method registry or replacement function is added.
+
+The data flow keeps registration, reference estimation and deviation separate:
+
+| Operation | Reads | Adds to the TSE |
+|:----------|:------|:----------------|
+| `setup_recovery()` (RFC 001) | Sample membership, times, episodes and events. | The named registration and original scope; no assay-derived result. |
+| `add_reference()` | That registration, explicit baseline IDs and selected assay/features. | Episode profiles, support and their dependencies in `reference`. |
+| `add_deviation()` | The fixed reference, its dependencies and retained included samples with a profile. | Deviation/status in `colData()` and a `deviation` record describing their provenance. |
+
+### Baseline selection
 
 - `reference` is an explicit character vector of sample IDs, including
   `character()` when no baseline information is supplied. IDs must be unique,
@@ -60,14 +76,16 @@ selector, reference class, method registry or replacement function is added.
   interface. A later explicit cross-episode mapping would require a separate
   contract about its scientific interpretation and dependencies.
 
+### Assay and feature selection
+
 `assay` is a literal, non-empty scalar name occurring exactly once in
 `assayNames(tse)`. There is no default assay or inference from its name.
 `features` is `NULL` for all currently retained features, or a non-empty unique
 character vector of current feature IDs. IDs follow RFC 001's rules. Record
 the resolved non-empty feature set and its order; match later data by these
-IDs, never by position. Zero retained features is an error. One selected feature is allowed but gives a necessarily constant
-composition and zero deviations; document that uninformative case rather
-than inventing variation.
+IDs, never by position. Zero retained features is an error. One selected
+feature is allowed but gives a necessarily constant composition and zero
+deviations; document that uninformative case rather than inventing variation.
 
 Input row/column reordering is harmless. Current identities must be a subset
 of the registered identities, with no duplicates or newly added IDs; retained
@@ -76,6 +94,11 @@ feature subset defines a new reference for that subcomposition. It does not
 rewrite the original registration scope.
 
 ## Assay values and preprocessing
+
+`add_reference()` reads only selected baseline columns. `add_deviation()` reads
+only retained included samples whose episode has a reference. Invalid assay
+cells in excluded samples, unselected features or samples with no reference
+are not consumed and do not create an assay-validity claim.
 
 The selected assay must supply an integer or double matrix through public
 matrix-like extraction/coercion. Base, sparse or delayed storage is acceptable
@@ -102,16 +125,13 @@ prevalence filtering or time smoothing is performed. Such preprocessing must
 be explicit upstream. `preprocessing` is a non-empty character scalar recording
 the caller's description or a pipeline/version reference. Its default
 `"unspecified"` records absent information; it does not assert raw counts or
-validate the description. Store it unchanged with the definition. Closure removes sample totals from the numerical
-profile; it does not remove sampling uncertainty or measurement bias, and
-it cannot recover absolute microbial load. [Morton et al. (2019)][morton]
+validate the description. Store it unchanged with the definition.
+
+Closure removes sample totals from the numerical profile; it does not remove
+sampling uncertainty or measurement bias, and it cannot recover absolute
+microbial load. [Morton et al. (2019)][morton]
 demonstrate why the same proportions can arise under different absolute
 abundance changes. No phylogenetic tree is required or consumed.
-
-`add_reference()` reads only selected baseline columns. `add_deviation()` reads
-only retained included samples whose episode has a reference. Invalid assay
-cells in excluded samples, unselected features or samples with no reference
-are not consumed and do not create an assay-validity claim.
 
 ## Numerical definitions and strength of support
 
@@ -170,8 +190,11 @@ Keep the existing analysis and namespace schema versions from RFC 001. Add
 versioned `reference` and `deviation` subrecords; do not preallocate them at
 registration. An unrecognized version or existing target stage is an error
 for an add operation. Reference addition also rejects any existing deviation
-or recovery stage; deviation addition rejects an existing recovery stage. Check all consumed inputs before changing the TSE;
-a failed call leaves the entire object unchanged.
+or recovery stage; deviation addition rejects an existing recovery stage.
+Check all consumed inputs before changing the TSE; a failed call leaves the
+entire object unchanged.
+
+### Reference record
 
 The reference subrecord is a plain list with these authoritative fields:
 
@@ -189,6 +212,8 @@ The reference subrecord is a plain list with these authoritative fields:
 The profile matrix is the reference result; the source assay remains the
 source of measurements. Do not store a second copy of sample compositions
 or baseline-to-profile deviations in metadata.
+
+### Deviation columns and record
 
 `add_deviation()` creates exactly two authoritative sample columns:
 
@@ -211,55 +236,7 @@ DataFrame of computed `sample_id`, `input_sha256`, a DataFrame of all realized
 are dependency evidence, not duplicate numeric result tables. Extraction must
 read the owned columns and join reference information by episode ID.
 
-## Dependency checks, filtering and replacement
-
-Only analytical stages introduce assay fingerprints; RFC 001 registration
-still neither selects nor hashes assays. `recoverome_inputs_v1` uses the
-following fixed recipe on a canonical plain-R projection `value`:
-
-```r
-digest::digest(value, algo = "sha256", serialize = TRUE,
-               serializeVersion = 2, skip = "auto", ascii = FALSE)
-```
-
-Version 2 materializes ALTREP values; `skip = "auto"` omits the serialization
-header containing the R writer version. These choices follow the
-[R serialization specification][serialization] and [digest documentation][digest].
-Unmodified version-3 serialization is unsuitable here: equal values can have
-different ALTREP representations and environment-dependent headers. Add a
-justified `digest` dependency only when a later stage implements this recipe;
-this RFC adds no dependency or hashing code to the package.
-
-Source `value` is a named list of `sample_id`, `feature_ids`, and `values`, in
-that order. Use recorded feature order, UTF-8 strings, and an attribute-free
-plain double vector with positive zero for all zero values. Integer/double
-storage and sparse/dense representations with the same values compare equally.
-Scaling counts is a source change even if closure gives the same composition.
-Output projections contain `sample_id`, `deviation`, `status` in that order;
-missing deviations are replaced by canonical `NA_real_` before hashing.
-
-Parent projections contain `registration`, `episodes`, `events`, `scope` in
-RFC 001 field order. Rebuild tables as named lists of their required core
-columns in contract order, without row names, annotations or S4 attributes;
-rebuild `source_columns` as named subject/episode/time bindings. Exclude later
-stages and `owned_columns`. The reference projection uses its field order
-listed above, excluding `fingerprint`. Rebuild its tables the same way and
-represent `profiles` as a named list of `feature_ids`, `episode_ids`, and
-column-major double `values`. Recursively rebuild remaining lists/vectors with
-contractual names/types/order, UTF-8 strings, and canonical numeric NA/zero;
-retain no classes or incidental attributes. No assay backing object is hashed.
-
-A format compatibility fixture is the plain named list
-`list(sample_id = enc2utf8("s\u00e9"), feature_ids = c("f1", "f2", "f3"),
-values = c(0, 0.25, 0.75), missing = NA_real_, n = 3L)`.
-Its expected SHA-256 under this recipe is fixed as
-`0ebcc76956478405e0d59c09fd5ac022c6f231bd1677471c913c63132d574406`.
-An unknown format or an environment that fails this compatibility check makes
-fingerprint comparisons `not_checked` and validation incomplete; never report
-a data change solely from incompatible encoding. The implementation must test
-ordinary/ALTREP values, encoding, canonical NA/zero and this independent
-expected digest. These fingerprints detect ordinary dependency edits, not
-adversarial changes; manual snapshot editing remains unsupported.
+## Dependency checks and historical scope
 
 Before `add_deviation()`, require every selected baseline and selected feature
 to remain available, the selected assay name to remain unambiguous, and all
@@ -301,6 +278,62 @@ No replacement is supported in this first workflow. Repeated add calls error,
 including identical calls. Use a new named analysis to change selection,
 preprocessing, feature scope or method, then explicitly rerun dependent stages.
 Do not delete an upstream record while retaining downstream results as current.
+
+## Fingerprint format
+
+Only analytical stages introduce assay fingerprints; RFC 001 registration
+still neither selects nor hashes assays. `recoverome_inputs_v1` uses the
+following fixed recipe on a canonical plain-R projection `value`:
+
+```r
+digest::digest(
+  value,
+  algo = "sha256",
+  serialize = TRUE,
+  serializeVersion = 2,
+  skip = "auto",
+  ascii = FALSE
+)
+```
+
+Version 2 materializes ALTREP values; `skip = "auto"` omits the serialization
+header containing the R writer version. These choices follow the
+[R serialization specification][serialization] and [digest documentation][digest].
+Unmodified version-3 serialization is unsuitable here: equal values can have
+different ALTREP representations and environment-dependent headers. Add a
+justified `digest` dependency only when a later stage implements this recipe;
+this RFC adds no dependency or hashing code to the package.
+
+Source `value` is a named list of `sample_id`, `feature_ids`, and `values`, in
+that order. Use recorded feature order, UTF-8 strings, and an attribute-free
+plain double vector with positive zero for all zero values. Integer/double
+storage and sparse/dense representations with the same values compare equally.
+Scaling counts is a source change even if closure gives the same composition.
+Output projections contain `sample_id`, `deviation`, `status` in that order;
+missing deviations are replaced by canonical `NA_real_` before hashing.
+
+Parent projections contain `registration`, `episodes`, `events`, `scope` in
+RFC 001 field order. Rebuild tables as named lists of their required core
+columns in contract order, without row names, annotations or S4 attributes;
+rebuild `source_columns` as named subject/episode/time bindings. Exclude later
+stages and `owned_columns`. The reference projection uses its field order
+listed above, excluding `fingerprint`. Rebuild its tables the same way and
+represent `profiles` as a named list of `feature_ids`, `episode_ids`, and
+column-major double `values`. Recursively rebuild remaining lists/vectors with
+contractual names/types/order, UTF-8 strings, and canonical numeric NA/zero;
+retain no classes or incidental attributes. No assay backing object is hashed.
+
+A format compatibility fixture is the plain named list
+`list(sample_id = enc2utf8("s\u00e9"), feature_ids = c("f1", "f2", "f3"),
+values = c(0, 0.25, 0.75), missing = NA_real_, n = 3L)`.
+Its expected SHA-256 under this recipe is fixed as
+`0ebcc76956478405e0d59c09fd5ac022c6f231bd1677471c913c63132d574406`.
+An unknown format or an environment that fails this compatibility check makes
+fingerprint comparisons `not_checked` and validation incomplete; never report
+a data change solely from incompatible encoding. The implementation must test
+ordinary/ALTREP values, encoding, canonical NA/zero and this independent
+expected digest. These fingerprints detect ordinary dependency edits, not
+adversarial changes; manual snapshot editing remains unsupported.
 
 ## Worked examples and acceptance evidence
 
