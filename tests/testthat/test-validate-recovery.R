@@ -345,6 +345,39 @@ test_that("broken snapshot relationships are structural findings", {
   }
 })
 
+test_that("registration provenance requires a real UTC date and time", {
+  tse <- register_fixture(registration_fixture())
+  invalid_timestamps <- c(
+    "2026-02-30T25:99:99Z",
+    "2026-02-29T12:34:56Z",
+    "2026-09-09T24:00:00Z"
+  )
+
+  for (timestamp in invalid_timestamps) {
+    invalid <- tse
+    record <- registration_record(invalid)
+    record$provenance$registered_at <- timestamp
+    S4Vectors::metadata(invalid)$recoverome$analyses$antibiotic <- record
+    before <- serialize(invalid, NULL)
+
+    report <- validate_recovery(invalid)
+
+    expect_identical(report$summary$structural_valid, FALSE, info = timestamp)
+    findings <- expect_validation_diagnostic(report, "REGISTRATION_RECORD_INVALID", "error")
+    expect_identical(findings$component, "provenance")
+    expect_identical(serialize(invalid, NULL), before)
+  }
+
+  record <- registration_record(tse)
+  record$provenance$registered_at <- "2024-02-29T23:59:59Z"
+  S4Vectors::metadata(tse)$recoverome$analyses$antibiotic <- record
+
+  report <- validate_recovery(tse)
+
+  expect_validation_state(report)
+  expect_identical(nrow(report$diagnostics), 0L)
+})
+
 test_that("unreadable namespaces produce global findings without guessed analyses", {
   tse <- register_fixture(registration_fixture())
   duplicate_namespace <- tse
