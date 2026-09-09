@@ -1,4 +1,4 @@
-.recovery_validate_analysis <- function(analysis_id, analyses, current) {
+.recovery_validate_analysis <- function(analysis_id, analyses, current, analytical = FALSE) {
   summary <- .recovery_validation_summary(analysis_id)
   if (!analysis_id %in% names(analyses)) {
     summary$structural_valid <- FALSE
@@ -12,7 +12,8 @@
     return(list(summary = summary, findings = findings))
   }
 
-  record <- .recovery_validation_record(analyses[[analysis_id]])
+  stored <- analyses[[analysis_id]]
+  record <- .recovery_validation_record(stored, analytical = analytical)
   current_valid <- current$container_valid && current$samples$valid && current$features$valid
   summary$structural_valid <- if (current_valid) record$structural_valid else FALSE
   summary$validation_complete <- current_valid && record$complete
@@ -23,10 +24,24 @@
   findings <- c(record$findings, counts$findings)
 
   # Apply known global failures before skipping unsupported comparisons.
-  if (!record$supported || !current$container_valid) {
+  if (!record$supported) {
     return(list(summary = summary, findings = findings))
   }
 
+  result <- list(summary = summary, findings = findings)
+  if (current$container_valid) {
+    result <- .recovery_analysis_current(analysis_id, record, current, result)
+  }
+  if (analytical) {
+    result <- .recovery_analysis_stages(analysis_id, stored, record, current, result)
+  }
+
+  result
+}
+
+.recovery_analysis_current <- function(analysis_id, record, current, result) {
+  summary <- result$summary
+  findings <- result$findings
   sample_scope <- .recovery_validation_scope(
     current$samples,
     record$scope[["sample_ids"]],

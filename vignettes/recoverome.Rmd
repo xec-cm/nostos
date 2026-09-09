@@ -15,8 +15,8 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 The experimental development version provides `setup_recovery()`,
 `validate_recovery()`, `add_reference()` and `add_deviation()`. This vignette
-registers an analysis, diagnoses its registration history, attaches explicit
-personal references and calculates sample deviations. Recovery classification,
+registers an analysis, attaches explicit personal references, calculates sample
+deviations and checks their dependencies while preserving historical records. Recovery classification,
 extraction and plotting remain planned.
 
 ## A small longitudinal input
@@ -271,20 +271,20 @@ subsetting does not silently rebuild a reference. Use a new named analysis and
 explicit selection to define a different reference. Repeating `add_reference()`
 for the same analysis errors, even when the arguments are identical.
 
-The registration validator has not yet been extended to analytical stages:
+Validate the reference and its current baseline dependencies:
 
-```{r reference-validation-boundary}
+```{r reference-validation}
 reference_report <- recoverome::validate_recovery(referenced, analysis_id = "repeated")
 reference_report$summary
 unique(reference_report$diagnostics$code)
 ```
 
-`STAGE_UNSUPPORTED` and incomplete validation are expected here. Registration
-findings can still be reported, but this diagnostic does not yet verify reference
-fingerprints or assay changes. `add_reference()` validates the inputs it consumes
-when building the reference. Subsequent stage-aware dependency validation belongs
-to issue #12; a created reference must not be presented as fully validated by
-this registration-only report.
+The reference is structurally valid, validation is complete and dependencies
+are unchanged. Its two single-sample baselines produce an informational support
+finding, not an estimate of uncertainty. The validator compares the reference
+fingerprint, registration parent and baseline measurements; it never estimates
+the profiles again. Recovery records and unsupported schemas still require
+checks outside the implemented scope.
 
 ## Calculate deviations from the fixed references
 
@@ -366,11 +366,76 @@ filtering nor reordering recomputes the reference or the deviations. Calling
 `add_deviation()` again errors, even with the same inputs. A changed definition
 requires a new named analysis and explicit calculation of its stages.
 
-`add_deviation()` checks its own dependencies when it calculates. The separate
-`validate_recovery()` function still reports analytical stages as unsupported
-and incompletely checked until issue #12; it does not yet diagnose later edits
-to saved deviations or baseline assay values. Keep that distinction when
-interpreting its report on an analysed or filtered TSE.
+## Validate sources, outputs and historical scope
+
+`add_deviation()` checks dependencies when it calculates. `validate_recovery()`
+checks the saved reference and deviations later without modifying the TSE.
+The report retains the registration columns and adds analytical diagnostics;
+no additional persistent result store or mutable validation flag is created.
+
+```{r validate-deviations}
+current_report <- recoverome::validate_recovery(analysed, analysis_id = "repeated")
+current_report$summary
+
+historical_report <- recoverome::validate_recovery(retained, analysis_id = "repeated")
+historical_report$summary
+historical_report$diagnostics
+```
+
+The full analysis has unchanged dependencies and complete validation. The
+filtered analysis still has readable historical records, but the removed
+baselines and samples prevent all original source/output comparisons. Its
+validation is incomplete and dependencies are `not_checked`, rather than a
+claim that its reference is unchanged for a new analysis of that subset.
+Retained outputs are still checked where possible.
+
+A current source edit is different from removal:
+
+```{r changed-analytical-source}
+source_changed <- analysed
+SummarizedExperiment::assay(source_changed, "counts")[, "s2"] <- c(4L, 3L)
+source_report <- recoverome::validate_recovery(source_changed, analysis_id = "repeated")
+source_report$summary
+source_report$diagnostics
+```
+
+This is a comparable input change, so dependencies are `changed` while
+validation can remain complete. The stored reference and deviation structure
+are intact. The original `s2` deviation remains `2/21`; the validator does not
+replace it with a fresh calculation. Multiplying baseline counts would also
+be a source change even if their proportions stayed identical.
+
+An edited output remains detectable when source inputs are missing:
+
+```{r missing-input-and-edited-output}
+output_changed <- retained
+SummarizedExperiment::colData(output_changed)$rec_repeated_deviation[1L] <- 0.5
+before_validation <- serialize(output_changed, NULL)
+output_report <- recoverome::validate_recovery(output_changed, analysis_id = "repeated")
+output_report$summary
+output_report$diagnostics
+stopifnot(identical(serialize(output_changed, NULL), before_validation))
+```
+
+Here `s5` still has status `computed`, but its stored value no longer agrees
+with the original output fingerprint. The report gives `structural_valid = FALSE`,
+`dependencies = "changed"` and incomplete validation because other historical
+inputs remain unavailable. Both findings matter: missing inputs do not hide
+the independently detectable output change.
+
+In general, known changes take precedence over unavailable comparisons in the
+`dependencies` summary. A comparison that detects a difference can be complete;
+a missing or unreadable required input cannot. Unknown schemas or fingerprint
+formats remain incomplete, and an unknown encoding is not treated as proof
+that values changed. Other interpretable stages and analyses are still checked.
+
+Checks use recorded identities, consumed assay blocks, parent records and owned
+outputs. Unrelated annotations and assays are not dependencies. Registration-only
+analyses still need no assay access. Source/result hashes detect ordinary edits;
+manual rewriting of stored snapshots is unsupported. No validation state proves
+biological recovery. See the
+[analytical diagnostic guide](https://github.com/xec-cm/recoverome/blob/devel/dev/analytical-validation.md)
+for the code catalogue and detection boundaries.
 
 ## Planned analytical stages
 

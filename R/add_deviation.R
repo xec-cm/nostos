@@ -50,8 +50,8 @@
 #' A deviation describes composition over the fixed features. It supplies no
 #' threshold, uncertainty interval or classification of recovery or health.
 #' `"missing_baseline"` is an explicit lack of a reference, not structural failure.
-#' [validate_recovery()] still supplies registration-only diagnostics; analytical
-#' dependency diagnostics are a later implementation stage.
+#' [validate_recovery()] checks the saved records, current inputs and retained
+#' authoritative outputs without recomputing deviations or repairing history.
 #'
 #' @section Errors:
 #' Reusing either result column or an existing deviation/recovery stage is an

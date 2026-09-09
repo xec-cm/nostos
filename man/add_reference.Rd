@@ -85,9 +85,9 @@ stored snapshots are not intended for manual editing.
 No reference is borrowed from another episode. Profiles describe the selected
 measured compositions and do not estimate a latent healthy state. This function
 does not compute deviations, recovery outcomes, intervals, or thresholds.
-\code{\link[=validate_recovery]{validate_recovery()}} currently checks registration only and reports analytical
-stages as incompletely checked; analytical dependency diagnostics in
-\code{validate_recovery()} are not yet implemented.
+\code{\link[=validate_recovery]{validate_recovery()}} checks the stored registration, reference and deviation
+stages, including historical input availability and dependency fingerprints.
+It never rebuilds a reference from the current subset.
 }
 \section{Errors}{
 

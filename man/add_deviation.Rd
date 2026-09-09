@@ -65,8 +65,8 @@ selecting the columns normally. It never refits profiles or recomputes results.
 A deviation describes composition over the fixed features. It supplies no
 threshold, uncertainty interval or classification of recovery or health.
 \code{"missing_baseline"} is an explicit lack of a reference, not structural failure.
-\code{\link[=validate_recovery]{validate_recovery()}} still supplies registration-only diagnostics; analytical
-dependency diagnostics are a later implementation stage.
+\code{\link[=validate_recovery]{validate_recovery()}} checks the saved records, current inputs and retained
+authoritative outputs without recomputing deviations or repairing history.
 }
 \section{Errors}{
 

@@ -1,11 +1,13 @@
-#' Validate registration structure, dependencies and historical scope
+#' Validate stored analyses, dependencies and historical scope
 #'
-#' Diagnose named registrations against the current TreeSummarizedExperiment
-#' without changing the object, rewriting history, or reading assay values.
+#' Diagnose named registrations, references and deviations against the current
+#' TreeSummarizedExperiment without changing the object or recomputing results.
+#' Registration-only analyses do not read assay values.
 #'
 #' @param tse A [TreeSummarizedExperiment::TreeSummarizedExperiment] containing
-#'   zero or more registrations created with [setup_recovery()]. Subsets with
-#'   no current samples or features are supported for historical validation.
+#'   zero or more registrations created with [setup_recovery()], optionally with
+#'   [add_reference()] and [add_deviation()] stages. Subsets with no current
+#'   samples or features are supported for historical validation.
 #' @param analysis_id `NULL` to inspect all named analyses, or one analysis ID
 #'   matching `^[a-z][a-z0-9]*$`. An unknown name produces a report finding.
 #'
@@ -45,9 +47,45 @@
 #' Episode and event references are checked against the historical snapshot.
 #' Filtering away all observations of an episode does not break that history.
 #' No record is repaired, sorted, recomputed, or timestamped by validation.
-#' Registration validation does not inspect assay values or certify analytical
-#' eligibility, baseline estimates, deviations, or recovery outcomes. Populated
-#' analytical stages require a later validator and produce `STAGE_UNSUPPORTED`.
+#' Registration-only validation reads no assay values. With analytical stages,
+#' validation checks supported schema-1 reference/deviation records, canonical
+#' fingerprint formats, saved parent/self fingerprints, consumed source hashes
+#' and retained owned output hashes. It does not refit profiles, close samples
+#' to recompute deviations, or reconstruct missing output values. Unsupported
+#' recovery stages remain incomplete while earlier independent checks continue.
+#'
+#' Only fixed reference features and samples recorded as baseline or computed
+#' deviation inputs are requested from an assay. Unselected features, excluded
+#' samples and samples without a profile are not consumed. A numeric invalidity
+#' or an external read failure in one sample does not hide other checkable source
+#' hashes or outputs. Base, sparse and delayed matrix-like assays are supported
+#' through public extraction/coercion; backend I/O is not controlled.
+#'
+#' Across stages, a known change takes precedence over unavailable comparisons;
+#' `"not_checked"` takes precedence over `"unchanged"`. Unknown/incompatible
+#' fingerprint formats prevent affected comparisons and never establish a change
+#' solely from encoding. Removing required baseline inputs, fixed features or
+#' realized deviation samples leaves their historical records intact and makes
+#' the affected checks incomplete. Reordering does not change dependencies.
+#'
+#' Analytical diagnostics include `REFERENCE_RECORD_INVALID` and
+#' `DEVIATION_RECORD_INVALID` for malformed records; `FINGERPRINT_CHANGED` for
+#' inconsistent saved self/parent chains; `ANALYTICAL_INPUT_CHANGED` for changed
+#' sources; and `RESULT_INCONSISTENT` for altered, missing, ambiguous or invalid
+#' owned results. These have error severity. Comparable fingerprint differences
+#' alone do not make validation incomplete. Missing, ambiguous or invalid assay
+#' inputs use `ASSAY_MISSING`, `ASSAY_AMBIGUOUS`, or `ASSAY_VALUES_INVALID` and
+#' establish a change with incomplete comparisons. `ASSAY_READ_FAILED` and
+#' `FINGERPRINT_FORMAT_UNSUPPORTED` report unavailable checks without asserting
+#' an input change. Reference/deviation components and complete affected IDs
+#' distinguish these findings from the registration diagnostics.
+#'
+#' `REFERENCE_INPUT_MISSING` and `DEVIATION_SAMPLE_MISSING` are historical
+#' availability findings with info severity. `BASELINE_SUPPORT_LIMITED` describes
+#' missing, single-sample or single-time support; it does not establish structural
+#' failure or quantify uncertainty. Source changes and saved-result inconsistency
+#' remain separate findings. The validator supplies no recovery classification,
+#' scientific adequacy guarantee or repair operation.
 #'
 #' Diagnostic codes, column types and enumerated states are stable contracts;
 #' message wording and diagnostic order are not. Severity describes an individual
@@ -55,7 +93,7 @@
 #' raise `recoverome_error_input` through [cli::cli_abort()]. Missing analyses,
 #' malformed stored records and formal S4 validity failures are report findings.
 #'
-#' @seealso [setup_recovery()]
+#' @seealso [setup_recovery()], [add_reference()], [add_deviation()]
 #' @export
 #' @examples
 #' data("recovery_examples", package = "recoverome")
@@ -139,13 +177,14 @@ validate_recovery <- function(tse, analysis_id = NULL) {
     container_valid = container_valid,
     samples = samples,
     features = features,
-    annotation = annotation
+    annotation = annotation,
+    tse = tse
   )
 
   summaries <- vector("list", length(selected))
   for (index in seq_along(selected)) {
     selected_id <- selected[[index]]
-    result <- .recovery_validate_analysis(selected_id, analyses, current)
+    result <- .recovery_validate_analysis(selected_id, analyses, current, analytical = TRUE)
     summaries[[index]] <- result$summary
     local_findings <- lapply(result$findings, function(finding) {
       finding$analysis_id <- selected_id

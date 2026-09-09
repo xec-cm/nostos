@@ -16,7 +16,7 @@ reference:
   - title: Calculate sample deviations
     contents:
       - add_deviation
-  - title: Validate a registration
+  - title: Validate an analysis
     contents:
       - validate_recovery
   - title: Synthetic example data
