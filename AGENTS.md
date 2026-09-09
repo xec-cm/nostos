@@ -77,6 +77,11 @@ intermediate milestones. A future Bioconductor preparation phase targets
   one argument per line for long signatures/calls, and visibly separated stages.
   Keep helpers purposeful and dependencies explicit; do not imitate historical
   slot access, implicit coercion or error-handling problems.
+- Keep control flow shallow. Use guards for cases that cannot proceed and
+  consecutive blocks for independent work. Split functions by cohesive
+  responsibilities before nesting loops and conditionals several levels deep.
+  Review nesting and readability explicitly even when tests and CI pass;
+  preserve all independently checkable diagnostics when using early returns.
 - Use `cli::cli_abort()` through `.recovery_abort()` for recoverome errors.
   Write glue-style templates with semantic markup and interpolate values;
   do not assemble templates from user data. Keep the interpolation environment

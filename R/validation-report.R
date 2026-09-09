@@ -59,15 +59,13 @@
     !is.na(value) && nzchar(trimws(value, whitespace = "[\\h\\v]"))
 }
 
-.recovery_valid_ids <- function(value, unique = FALSE, allow_na = FALSE) {
-  if (!is.character(value) || !is.null(dim(value))) {
+.recovery_valid_ids <- function(value, unique = FALSE) {
+  if (!is.character(value) || !is.null(dim(value)) || anyNA(value)) {
     return(FALSE)
   }
 
-  present <- !is.na(value)
-  (allow_na || all(present)) &&
-    all(nzchar(value[present])) &&
-    all(trimws(value[present], whitespace = "[\\h\\v]") == value[present]) &&
+  all(nzchar(value)) &&
+    all(trimws(value, whitespace = "[\\h\\v]") == value) &&
     (!unique || !anyDuplicated(value))
 }
 

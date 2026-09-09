@@ -141,6 +141,11 @@ The technical review record must contain:
 The reviewer must confirm that findings are resolved and no required change
 remains open before the issue enters `Review`.
 
+The reviewer also checks readability against `dev/r-style.md`: shallow control
+flow, cohesive responsibilities and clear data flow. Passing tests or moving
+nested code into a helper does not replace this inspection. Resolve unnecessary
+deep nesting and ensure guard clauses preserve shared diagnostic bookkeeping.
+
 The reviewer assesses implementation against the accepted contract. Unresolved
 methodological questions are referred to the maintainer rather than decided
 implicitly in a code review. After material changes, obtain an updated review

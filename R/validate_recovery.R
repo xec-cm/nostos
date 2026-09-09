@@ -134,81 +134,23 @@ validate_recovery <- function(tse, analysis_id = NULL) {
     features <- .recovery_validation_axis(rownames(tse), nrow(tse), "feature")
     findings <- c(findings, samples$findings, features$findings)
   }
-  summaries <- list()
-  for (selected_id in selected) {
-    summary <- .recovery_validation_summary(selected_id)
-    if (!selected_id %in% names(analyses)) {
-      summary$structural_valid <- FALSE
-      summary$validation_complete <- FALSE
-      local_findings <- .recovery_finding(
-        "ANALYSIS_NOT_FOUND",
-        "analysis_id",
-        "Requested analysis {.val {selected_id}} does not exist.",
-        ids = selected_id
-      )
-    } else {
-      record <- .recovery_validation_record(analyses[[selected_id]])
-      local_findings <- record$findings
-      summary$structural_valid <- record$structural_valid
-      summary$validation_complete <- record$complete
-      if (!is.null(record$samples) && record$samples$valid[["sample_id"]]) {
-        summary$n_registered <- as.integer(nrow(record$samples$value))
-        if (container_valid && samples$valid) {
-          summary$n_retained <- as.integer(sum(record$samples$value$sample_id %in% samples$ids))
-          if (summary$n_registered > 0L && summary$n_retained == 0L) {
-            local_findings <- c(local_findings, .recovery_finding(
-              "REGISTERED_SAMPLES_ABSENT",
-              "registration$samples",
-              "No originally included sample remains in the current object.",
-              severity = "info"
-            ))
-          }
-        }
-      }
-      if (record$supported && container_valid) {
-        sample_scope <- .recovery_validation_scope(
-          samples,
-          record$scope[["sample_ids"]],
-          "sample"
-        )
-        feature_scope <- .recovery_validation_scope(
-          features,
-          record$scope[["feature_ids"]],
-          "feature"
-        )
-        dependencies <- .recovery_check_dependencies(
-          SummarizedExperiment::colData(tse),
-          samples,
-          record
-        )
-        ownership <- .recovery_validation_ownership(
-          names(SummarizedExperiment::colData(tse)),
-          record$owned_columns,
-          selected_id
-        )
-        summary$sample_scope <- sample_scope$state
-        summary$feature_scope <- feature_scope$state
-        summary$dependencies <- dependencies$state
-        summary$validation_complete <- summary$validation_complete && dependencies$complete
-        if (length(ownership)) {
-          summary$structural_valid <- FALSE
-        }
-        local_findings <- c(
-          local_findings, sample_scope$findings, feature_scope$findings,
-          dependencies$findings, ownership
-        )
-      }
-    }
+  annotation <- if (container_valid) SummarizedExperiment::colData(tse) else NULL
+  current <- list(
+    container_valid = container_valid,
+    samples = samples,
+    features = features,
+    annotation = annotation
+  )
 
-    if (!container_valid || !samples$valid || !features$valid) {
-      summary$structural_valid <- FALSE
-      summary$validation_complete <- FALSE
-    }
-    local_findings <- lapply(local_findings, function(finding) {
+  summaries <- vector("list", length(selected))
+  for (index in seq_along(selected)) {
+    selected_id <- selected[[index]]
+    result <- .recovery_validate_analysis(selected_id, analyses, current)
+    summaries[[index]] <- result$summary
+    local_findings <- lapply(result$findings, function(finding) {
       finding$analysis_id <- selected_id
       finding
     })
-    summaries[[length(summaries) + 1L]] <- summary
     findings <- c(findings, local_findings)
   }
 

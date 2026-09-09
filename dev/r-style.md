@@ -95,6 +95,24 @@ these are additional local guidance, not historical permalink evidence.
 The following are deliberate project choices. They must not be presented as
 proof of historical author preferences.
 
+- The maintainer explicitly reinforced shallow control flow on 2026-09-09.
+  Aim for at most two nested control-flow blocks in ordinary code. At a third
+  level, reconsider the responsibilities and use a guard, `next`, or a cohesive
+  helper where that makes the flow clearer. Explain any necessary deeper case
+  during review; this is a design expectation, not an arbitrary CI threshold.
+- Keep independent checks in consecutive blocks. A helper should own a clear
+  result or responsibility; moving an unchanged nested block into a helper
+  does not resolve its complexity. Avoid helpers for trivial expressions,
+  callback frameworks, or compressed boolean expressions used only to hide
+  branching. The public function should expose the main stages of its work.
+- Before an early return, account for shared diagnostics and finalization.
+  A diagnostic function must retain known global failures and all independent
+  findings that remain checkable. Check raw types once and reuse normalized
+  values and common accessors throughout the relevant operation.
+- Independent review must inspect the final control flow as well as behavior.
+  Treat unnecessary deep nesting, repeated interpretation of inputs and
+  functions mixing unrelated responsibilities as actionable review findings,
+  even when the tests, coverage and CI are satisfactory.
 - Keep the accepted TSE interface and public accessors. Do not copy `dar`'s
   recipe classes, workflow dispatch, direct S4 slot access, or slot writes.
   Preserve unrelated content and historical scope as the RFC requires.
