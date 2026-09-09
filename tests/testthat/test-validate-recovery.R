@@ -376,6 +376,15 @@ test_that("registration provenance requires a real UTC date and time", {
 
   expect_validation_state(report)
   expect_identical(nrow(report$diagnostics), 0L)
+
+  record$provenance$registered_at <- I("2026-09-09T12:00:00Z")
+  S4Vectors::metadata(tse)$recoverome$analyses$antibiotic <- record
+  before <- serialize(tse, NULL)
+
+  expect_silent(as_is_report <- validate_recovery(tse))
+
+  expect_identical(as_is_report, report)
+  expect_identical(serialize(tse, NULL), before)
 })
 
 test_that("unreadable namespaces produce global findings without guessed analyses", {

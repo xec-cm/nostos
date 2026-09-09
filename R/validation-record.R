@@ -263,7 +263,7 @@
     provenance_valid <- grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", stamp)
     if (provenance_valid) {
       timestamp_format <- "%Y-%m-%dT%H:%M:%SZ"
-      parsed <- as.POSIXct(stamp, format = timestamp_format, tz = "UTC")
+      parsed <- strptime(stamp, format = timestamp_format, tz = "UTC")
       provenance_valid <- !is.na(parsed) &&
         format(parsed, format = timestamp_format, tz = "UTC") == stamp
     }
