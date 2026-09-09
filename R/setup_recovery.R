@@ -59,79 +59,122 @@
 #' enroll new samples or recompute the analysis from a subset. Stored snapshots
 #' are not intended for manual editing.
 #'
+#' @section Errors:
+#' Checks performed by recoverome signal errors with [rlang::abort()]. They
+#' inherit from `recoverome_error` and one of `recoverome_error_input` (invalid
+#' inputs), `recoverome_error_namespace` (malformed or unsupported metadata), or
+#' `recoverome_error_collision` (an occupied analysis name or column prefix).
+#' Conditions identify the public call, carry a backtrace, and include `component`
+#' and `ids` fields. `ids` contains affected IDs or row positions as character
+#' values when available, otherwise `character()`. Row-check messages display up
+#' to ten IDs; the condition retains the full vector. Handle conditions by class
+#' and fields rather than parsing their prose. Errors raised by R or dependencies
+#' retain their own classes.
+#'
 #' @return A TSE of the input class, with one named registration added to its
 #'   metadata. Assays, trees, links, row/column identities, and `colData()` are
 #'   unchanged. The original input object is not modified.
 #' @importClassesFrom TreeSummarizedExperiment TreeSummarizedExperiment
 #' @export
 #' @examples
+#' data("recovery_examples", package = "recoverome")
+#' example_data <- recovery_examples$single_episode
+#'
 #' tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
-#'   assays = list(counts = matrix(
-#'     c(4L, 6L, 7L, 3L, 5L, 5L), nrow = 2,
-#'     dimnames = list(c("f1", "f2"), c("s1", "s2", "s3"))
-#'   )),
-#'   colData = S4Vectors::DataFrame(
-#'     subject_id = rep("p1", 3), episode_id = rep("e1", 3),
-#'     time = c(-7, 0, 7)
-#'   )
+#'   assays = list(counts = example_data$counts),
+#'   colData = S4Vectors::DataFrame(example_data$col_data)
 #' )
-#' episodes <- data.frame(
-#'   episode_id = "e1", subject_id = "p1",
-#'   origin_event_id = "ab1", origin_boundary = "start"
-#' )
-#' events <- data.frame(
-#'   event_id = "ab1", episode_id = "e1", start_time = 0, end_time = 4
-#' )
+#'
 #' registered <- setup_recovery(
-#'   tse, "antibiotic", episodes, events,
-#'   time_unit = "days", time_origin = "days since antibiotic start within subject"
+#'   tse,
+#'   analysis_id = "antibiotic",
+#'   episodes = example_data$episodes,
+#'   events = example_data$events,
+#'   time_col = example_data$time_col,
+#'   time_unit = example_data$time_unit,
+#'   time_origin = example_data$time_origin
 #' )
+#'
 #' record <- S4Vectors::metadata(registered)$recoverome$analyses$antibiotic
 #' record$registration$samples
 #' record$scope
-setup_recovery <- function(tse, analysis_id, episodes, events,
-                           subject_col = "subject_id", episode_col = "episode_id",
-                           time_col = "time", time_unit, time_origin) {
-  .recovery_check_container(tse)
-  .recovery_check_string(analysis_id, "analysis_id")
+setup_recovery <- function(tse,
+                           analysis_id,
+                           episodes,
+                           events,
+                           subject_col = "subject_id",
+                           episode_col = "episode_id",
+                           time_col = "time",
+                           time_unit,
+                           time_origin) {
+  error_call <- rlang::current_env()
+
+  .recovery_check_container(tse, call = error_call)
+  .recovery_check_string(analysis_id, "analysis_id", call = error_call)
   if (!grepl("^[a-z][a-z0-9]*$", analysis_id)) {
-    stop("analysis_id must match ^[a-z][a-z0-9]*$.", call. = FALSE)
+    .recovery_abort(
+      "`analysis_id` must match ^[a-z][a-z0-9]*$.",
+      component = "analysis_id",
+      call = error_call
+    )
   }
+
   columns <- list(subject = subject_col, episode = episode_col, time = time_col)
   for (name in names(columns)) {
-    .recovery_check_string(columns[[name]], paste0(name, "_col"))
+    .recovery_check_string(columns[[name]], paste0(name, "_col"), call = error_call)
   }
   columns <- vapply(columns, unname, character(1))
   if (anyDuplicated(columns)) {
-    stop("subject_col, episode_col and time_col must be distinct.", call. = FALSE)
+    .recovery_abort(
+      "`subject_col`, `episode_col` and `time_col` must be distinct.",
+      component = "source_columns",
+      call = error_call
+    )
   }
-  .recovery_check_string(time_unit, "time_unit")
+
+  .recovery_check_string(time_unit, "time_unit", call = error_call)
   if (!time_unit %in% c("seconds", "minutes", "hours", "days")) {
-    stop("time_unit must be seconds, minutes, hours or days.", call. = FALSE)
+    .recovery_abort(
+      "`time_unit` must be seconds, minutes, hours or days.",
+      component = "time_unit",
+      call = error_call
+    )
   }
-  .recovery_check_string(time_origin, "time_origin")
+  .recovery_check_string(time_origin, "time_origin", call = error_call)
 
   annotation <- SummarizedExperiment::colData(tse)
   root <- S4Vectors::metadata(tse)
-  namespace <- .recovery_namespace(root, analysis_id, names(annotation))
-  samples <- .recovery_sample_inputs(annotation, columns, colnames(tse))
+  namespace <- .recovery_namespace(root, analysis_id, names(annotation), call = error_call)
+  samples <- .recovery_sample_inputs(annotation, columns, colnames(tse), call = error_call)
   episodes <- .recovery_input_table(
-    episodes, "episodes",
-    c("episode_id", "subject_id", "origin_event_id", "origin_boundary")
+    episodes,
+    "episodes",
+    id_columns = c("episode_id", "subject_id", "origin_event_id", "origin_boundary"),
+    call = error_call
   )
   events <- .recovery_input_table(
-    events, "events", c("event_id", "episode_id"), c("start_time", "end_time")
+    events,
+    "events",
+    id_columns = c("event_id", "episode_id"),
+    time_columns = c("start_time", "end_time"),
+    call = error_call
   )
-  .recovery_check_relations(samples, episodes, events)
+  .recovery_check_relations(samples, episodes, events, call = error_call)
 
   namespace$analyses[[analysis_id]] <- list(
     schema_version = 1L,
     registration = list(
-      source_columns = columns, time_unit = time_unit, time_origin = time_origin,
+      source_columns = columns,
+      time_unit = time_unit,
+      time_origin = time_origin,
       samples = samples
     ),
-    episodes = episodes, events = events,
-    scope = list(sample_ids = colnames(tse), feature_ids = rownames(tse)),
+    episodes = episodes,
+    events = events,
+    scope = list(
+      sample_ids = colnames(tse),
+      feature_ids = rownames(tse)
+    ),
     owned_columns = character(),
     provenance = list(
       package_version = as.character(utils::packageVersion("recoverome")),
@@ -140,5 +183,6 @@ setup_recovery <- function(tse, analysis_id, episodes, events,
   )
   root[["recoverome"]] <- namespace
   S4Vectors::metadata(tse) <- root
+
   tse
 }

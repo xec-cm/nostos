@@ -88,28 +88,39 @@ Standard TSE subsetting retains this historical registration. It does not
 enroll new samples or recompute the analysis from a subset. Stored snapshots
 are not intended for manual editing.
 }
+\section{Errors}{
+
+Checks performed by recoverome signal errors with \code{\link[rlang:abort]{rlang::abort()}}. They
+inherit from \code{recoverome_error} and one of \code{recoverome_error_input} (invalid
+inputs), \code{recoverome_error_namespace} (malformed or unsupported metadata), or
+\code{recoverome_error_collision} (an occupied analysis name or column prefix).
+Conditions identify the public call, carry a backtrace, and include \code{component}
+and \code{ids} fields. \code{ids} contains affected IDs or row positions as character
+values when available, otherwise \code{character()}. Row-check messages display up
+to ten IDs; the condition retains the full vector. Handle conditions by class
+and fields rather than parsing their prose. Errors raised by R or dependencies
+retain their own classes.
+}
+
 \examples{
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$single_episode
+
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
-  assays = list(counts = matrix(
-    c(4L, 6L, 7L, 3L, 5L, 5L), nrow = 2,
-    dimnames = list(c("f1", "f2"), c("s1", "s2", "s3"))
-  )),
-  colData = S4Vectors::DataFrame(
-    subject_id = rep("p1", 3), episode_id = rep("e1", 3),
-    time = c(-7, 0, 7)
-  )
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
 )
-episodes <- data.frame(
-  episode_id = "e1", subject_id = "p1",
-  origin_event_id = "ab1", origin_boundary = "start"
-)
-events <- data.frame(
-  event_id = "ab1", episode_id = "e1", start_time = 0, end_time = 4
-)
+
 registered <- setup_recovery(
-  tse, "antibiotic", episodes, events,
-  time_unit = "days", time_origin = "days since antibiotic start within subject"
+  tse,
+  analysis_id = "antibiotic",
+  episodes = example_data$episodes,
+  events = example_data$events,
+  time_col = example_data$time_col,
+  time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
 )
+
 record <- S4Vectors::metadata(registered)$recoverome$analyses$antibiotic
 record$registration$samples
 record$scope

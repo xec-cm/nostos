@@ -21,6 +21,7 @@ Depends:
     R (>= 4.6.0)
 Imports:
     methods,
+    rlang (>= 1.0.0),
     S4Vectors,
     SummarizedExperiment,
     TreeSummarizedExperiment,

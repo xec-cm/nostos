@@ -70,6 +70,17 @@ intermediate milestones. A future Bioconductor preparation phase targets
 
 ## R implementation
 
+- Read and follow [the R style guide](dev/r-style.md) before editing R code.
+  It records the maintainer's style from historical dar code and distinguishes
+  it from deliberate recoverome improvements. Use snake_case, two-space indents,
+  one argument per line for long signatures/calls, and visibly separated stages.
+  Keep helpers purposeful and dependencies explicit; do not imitate historical
+  slot access, implicit coercion or error-handling problems.
+- Use the small `.recovery_abort()` helper for recoverome input checks. Preserve
+  the public call through nested helpers and attach useful condition fields.
+  Use `rlang::warn()` / `rlang::inform()` only when behavior warrants a warning
+  or message; successful registration should remain quiet. These conventions
+  do not change which inputs are valid or the historical-scope contract.
 - Use `Rscript --vanilla` for reproducible command-line execution.
 - Use public accessors for TSE, SummarizedExperiment, and S4Vectors objects.
   Do not read or write S4 slots directly.
@@ -90,6 +101,10 @@ intermediate milestones. A future Bioconductor preparation phase targets
   use available functions and make no unsupported analytical claims.
 - Use meaningful tests for implemented behavior and failure modes. Do not add
   tests that merely encode placeholder outputs.
+- Reuse the bundled synthetic `recovery_examples` for tests and runnable examples.
+  Edit `data-raw/recovery_examples.R` and regenerate the data file when changing
+  a shared case. Keep expected test values independently stated; deriving them
+  from the function under test or its stored result cannot verify correctness.
 - For numerical code, include small deterministic R examples with independently
   checkable expected values and justified tolerances. Use coverage to find
   untested behavior, without an arbitrary percentage target.

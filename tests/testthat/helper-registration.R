@@ -1,15 +1,17 @@
+load_recovery_examples <- function() {
+  data_env <- new.env(parent = emptyenv())
+  utils::data("recovery_examples", package = "recoverome", envir = data_env)
+
+  data_env$recovery_examples
+}
+
 registration_fixture <- function(trees = FALSE) {
-  feature_ids <- c("f1", "f2")
-  sample_ids <- paste0("s", seq_len(6L))
-  counts <- matrix(seq_len(12L), nrow = 2L,
-                   dimnames = list(feature_ids, sample_ids))
-  annotations <- S4Vectors::DataFrame(
-    subject_id = c(rep("p1", 5L), NA_character_),
-    episode_id = c(rep("e1", 3L), rep("e2", 2L), NA_character_),
-    time = c(3, 10, 17, 34, 43, NA_real_),
-    batch = factor(c("a", "b", "a", "b", "a", "b")),
-    row.names = sample_ids
-  )
+  example <- load_recovery_examples()$repeated_episodes
+  counts <- example$counts
+  feature_ids <- rownames(counts)
+  sample_ids <- colnames(counts)
+  annotations <- S4Vectors::DataFrame(example$col_data)
+
   tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
     assays = list(counts = counts, another = counts / 2),
     colData = annotations,
@@ -29,29 +31,31 @@ registration_fixture <- function(trees = FALSE) {
     TreeSummarizedExperiment::rowTree(tse) <- star_tree(feature_ids)
     TreeSummarizedExperiment::colTree(tse) <- star_tree(sample_ids)
   }
+
   list(
     tse = tse,
-    episodes = data.frame(
-      episode_id = c("e1", "e2"), subject_id = c("p1", "p1"),
-      origin_event_id = c("ab1", "ab2"), origin_boundary = c("start", "end"),
-      note = c("first exposure", "second exposure")
-    ),
-    events = data.frame(
-      event_id = c("ab1", "ab2"), episode_id = c("e1", "e2"),
-      start_time = c(10, 40), end_time = c(14, 42),
-      treatment = factor(c("antibiotic-a", "antibiotic-b"))
-    )
+    episodes = example$episodes,
+    events = example$events,
+    time_col = example$time_col,
+    time_unit = example$time_unit,
+    time_origin = example$time_origin
   )
 }
 
 register_fixture <- function(fixture, ...) {
   args <- list(
-    tse = fixture$tse, analysis_id = "antibiotic",
-    episodes = fixture$episodes, events = fixture$events,
-    time_unit = "days", time_origin = "days since enrolment within participant"
+    tse = fixture$tse,
+    analysis_id = "antibiotic",
+    episodes = fixture$episodes,
+    events = fixture$events,
+    time_col = fixture$time_col,
+    time_unit = fixture$time_unit,
+    time_origin = fixture$time_origin
   )
+
   overrides <- list(...)
   args[names(overrides)] <- overrides
+
   do.call(recoverome::setup_recovery, args)
 }
 

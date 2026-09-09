@@ -27,26 +27,18 @@ defined by events. Sample measurements and sample metadata remain in a
 This deliberately small example has two features and three samples from one
 subject. The time coordinate is days since enrolment, with an illustrative
 exposure beginning on day 10. It demonstrates structure only; it cannot establish
-sustained recovery or calibrate a statistical method.
+sustained recovery or calibrate a statistical method. `recovery_examples`
+contains this case and a second case with repeated episodes. Both are fully
+synthetic; the package stores ordinary matrices and tables and constructs a
+TSE when needed.
 
 ```{r input-tse}
-counts <- matrix(
-  c(80L, 20L, 75L, 25L, 40L, 60L),
-  nrow = 2L,
-  dimnames = list(c("feature_a", "feature_b"), c("s1", "s2", "s3"))
-)
-
-sample_data <- S4Vectors::DataFrame(
-  subject_id = rep("participant_1", 3L),
-  episode_id = rep("episode_1", 3L),
-  day = c(3, 10, 17),
-  phase = c("before", "during", "after"),
-  row.names = colnames(counts)
-)
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$single_episode
 
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
-  assays = list(counts = counts),
-  colData = sample_data
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
 )
 
 methods::validObject(tse)
@@ -70,18 +62,9 @@ schemas and time rules are defined in the accepted
 [RFC 001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md).
 
 ```{r registration-inputs}
-episodes <- data.frame(
-  episode_id = "episode_1",
-  subject_id = "participant_1",
-  origin_event_id = "exposure_1",
-  origin_boundary = "start"
-)
-events <- data.frame(
-  event_id = "exposure_1",
-  episode_id = "episode_1",
-  start_time = 10,
-  end_time = 14
-)
+episodes <- example_data$episodes
+events <- example_data$events
+
 episodes
 events
 ```
@@ -105,9 +88,9 @@ tse <- recoverome::setup_recovery(
   analysis_id = "antibiotic",
   episodes = episodes,
   events = events,
-  time_col = "day",
-  time_unit = "days",
-  time_origin = "days since enrolment within each participant"
+  time_col = example_data$time_col,
+  time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
 )
 
 registration <- S4Vectors::metadata(tse)$recoverome$analyses$antibiotic
@@ -156,6 +139,37 @@ filtering does not make it a new registration of the subset.
 The planned `validate_recovery()` will distinguish reduced scope from changes
 to consumed sample metadata. It is not available in this version. Registration
 alone makes no claim about the suitability of assay values for a later method.
+
+## Repeated episodes and an excluded sample
+
+The second case contains six samples and two episodes for the same subject.
+Episode `e1` uses an event's start as its origin; `e2` uses its event's end.
+The final sample has `NA` episode membership, so registration excludes it while
+retaining it in the container and original scope.
+
+```{r repeated-episodes}
+repeated <- recovery_examples$repeated_episodes
+repeated_tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = repeated$counts),
+  colData = S4Vectors::DataFrame(repeated$col_data)
+)
+repeated_tse <- recoverome::setup_recovery(
+  repeated_tse,
+  analysis_id = "repeated",
+  episodes = repeated$episodes,
+  events = repeated$events,
+  time_col = repeated$time_col,
+  time_unit = repeated$time_unit,
+  time_origin = repeated$time_origin
+)
+repeated_history <- S4Vectors::metadata(repeated_tse)$recoverome$analyses$repeated
+repeated_history$registration$samples
+repeated_history$scope$sample_ids
+```
+
+There are five registered rows and six original sample IDs. The corresponding
+relative times are `-7`, `0`, `7`, `-8`, and `1` days. These arithmetic examples
+illustrate explicit origins and membership, without defining recovery.
 
 ## Planned analytical stages
 

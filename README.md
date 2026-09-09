@@ -60,34 +60,18 @@ remotes::install_github("xec-cm/recoverome", ref = "devel")
 it with a registration in its metadata. It preserves assays and sample
 annotations. Here, three samples belong to one episode, whose origin is
 the start of an exposure interval. All times are numeric days since
-enrolment.
+enrolment. The package includes two small synthetic cases:
+`single_episode` and `repeated_episodes`. The latter adds a second
+episode and an explicitly excluded sample. Their matrices and tables are
+shared by the executable examples and tests.
 
 ``` r
-counts <- matrix(
-  c(80L, 20L, 75L, 25L, 40L, 60L),
-  nrow = 2L,
-  dimnames = list(c("feature_a", "feature_b"), c("s1", "s2", "s3"))
-)
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$single_episode
+
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
-  assays = list(counts = counts),
-  colData = S4Vectors::DataFrame(
-    subject_id = rep("participant_1", 3L),
-    episode_id = rep("episode_1", 3L),
-    day = c(3, 10, 17),
-    row.names = colnames(counts)
-  )
-)
-episodes <- data.frame(
-  episode_id = "episode_1",
-  subject_id = "participant_1",
-  origin_event_id = "exposure_1",
-  origin_boundary = "start"
-)
-events <- data.frame(
-  event_id = "exposure_1",
-  episode_id = "episode_1",
-  start_time = 10,
-  end_time = 14
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
 )
 ```
 
@@ -100,11 +84,11 @@ reference samples or calculate recovery.
 tse <- recoverome::setup_recovery(
   tse,
   analysis_id = "antibiotic",
-  episodes = episodes,
-  events = events,
-  time_col = "day",
-  time_unit = "days",
-  time_origin = "days since enrolment within each participant"
+  episodes = example_data$episodes,
+  events = example_data$events,
+  time_col = example_data$time_col,
+  time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
 )
 registration <- S4Vectors::metadata(tse)$recoverome$analyses$antibiotic
 registration$registration$samples
