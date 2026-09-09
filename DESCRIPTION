@@ -13,8 +13,9 @@ Description: Registers named longitudinal microbiome recovery analyses in
     scope and provenance while preserving the container. Diagnoses registration
     consistency, metadata changes, and historical scope without modifying data.
     Attaches explicit personal reference profiles from selected baseline samples,
-    recording their support and input provenance. Deviation measurement and
-    recovery classification remain planned.
+    recording their support and input provenance. Computes sample deviations
+    from fixed personal references while preserving historical results.
+    Recovery classification remains planned.
 License: MIT + file LICENSE
 URL: https://github.com/xec-cm/recoverome,
     https://xec-cm.github.io/recoverome/

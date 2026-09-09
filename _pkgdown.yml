@@ -13,6 +13,9 @@ reference:
   - title: Attach a personal reference
     contents:
       - add_reference
+  - title: Calculate sample deviations
+    contents:
+      - add_deviation
   - title: Validate a registration
     contents:
       - validate_recovery

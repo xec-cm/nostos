@@ -111,3 +111,29 @@
     )
   ))
 }
+
+.recovery_hash_result <- function(sample_id, deviation, status) {
+  .recovery_fingerprint(list(
+    sample_id = as.vector(sample_id),
+    deviation = as.double(deviation),
+    status = as.vector(status)
+  ))
+}
+
+.recovery_valid_sha256 <- function(value) {
+  is.character(value) && is.null(dim(value)) && !anyNA(value) &&
+    all(grepl("^[0-9a-f]{64}$", value))
+}
+
+.recovery_hash_compatible <- function() {
+  value <- list(
+    sample_id = enc2utf8("s\u00e9"),
+    feature_ids = c("f1", "f2", "f3"),
+    values = c(0, 0.25, 0.75),
+    missing = NA_real_,
+    n = 3L
+  )
+  expected <- "0ebcc76956478405e0d59c09fd5ac022c6f231bd1677471c913c63132d574406"
+
+  identical(.recovery_fingerprint(value), expected)
+}

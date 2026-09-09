@@ -61,8 +61,8 @@
 #' measured compositions and do not estimate a latent healthy state. This function
 #' does not compute deviations, recovery outcomes, intervals, or thresholds.
 #' [validate_recovery()] currently checks registration only and reports analytical
-#' stages as incompletely checked; reference dependency validation is not yet
-#' implemented.
+#' stages as incompletely checked; analytical dependency diagnostics in
+#' `validate_recovery()` are not yet implemented.
 #'
 #' @section Errors:
 #' A repeated call is an error, including an identical selection. Use a new named

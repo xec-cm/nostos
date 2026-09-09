@@ -11,13 +11,15 @@ validating explicit sample membership, episodes, events, and numeric time.
 \code{\link[=validate_recovery]{validate_recovery()}} diagnoses registered structure, consumed metadata, and
 historical scope without modifying the object. \code{\link[=add_reference]{add_reference()}} attaches
 explicit personal baseline profiles with support and input provenance.
-Deviation measurement, recovery classification, extraction, and plotting
-remain planned; the validator still checks registration only.
+\code{\link[=add_deviation]{add_deviation()}} records sample deviations against those fixed profiles.
+Recovery classification, extraction, and plotting remain planned; the
+validator still checks registration only.
 }
 \details{
 The intended workflow enriches a TreeSummarizedExperiment with sample-level
 annotations and named analysis records. See the introductory vignette for
-a runnable registration example and the project website for development status.
+runnable registration, reference and deviation examples, and the project
+website for development status.
 }
 \seealso{
 Useful links:

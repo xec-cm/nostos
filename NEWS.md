@@ -1,5 +1,13 @@
 # recoverome (development version)
 
+- Add `add_deviation()` to calculate Bray--Curtis dissimilarities against fixed
+  personal references, with explicit computed, missing-baseline and excluded
+  sample statuses. Store results by sample identity in owned `colData()` columns.
+- Check required reference dependencies before new deviation calculations and
+  record realized scope and source/result fingerprints. Later filtering preserves
+  historical results; analytical diagnostics in `validate_recovery()` follow
+  separately in issue #12.
+
 - Add `add_reference()` for explicit personal baseline selection, equal-sample
   mean composition profiles, descriptive support and baseline diameter.
 - Record realized baseline identities, selected assay/features and canonical

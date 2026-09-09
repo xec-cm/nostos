@@ -21,8 +21,9 @@ register a named analysis with explicit episodes, events, and sample
 membership. `validate_recovery()` diagnoses the registered structure,
 changes to consumed metadata, and the relationship between current and
 original scope. `add_reference()` attaches a personal reference from
-explicitly selected baseline samples. Deviation, recovery outcomes,
-plotting, and extraction remain planned.
+explicitly selected baseline samples. `add_deviation()` measures sample
+dissimilarity from those fixed profiles. Recovery outcomes, plotting,
+and extraction remain planned.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
 [architecture
@@ -133,7 +134,7 @@ metadata or broken records.
 See the [introductory
 vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
 for the stored records and filtering example in more detail. This small
-dataset illustrates registration only; it does not establish recovery.
+dataset illustrates the data contracts; it does not establish recovery.
 
 ## Attach a personal reference
 
@@ -181,13 +182,48 @@ validation; adding the reference does not claim that its analytical
 dependencies have been checked by that separate diagnostic function.
 Stage-aware validation is planned in \#12.
 
+## Calculate sample deviations
+
+`add_deviation()` uses the assay and feature set recorded by
+`add_reference()`. It checks that the selected baselines and their
+inputs are still available and unchanged, then compares each included
+sample composition with its fixed episode profile using Bray–Curtis
+dissimilarity.
+
+``` r
+analysed <- recoverome::add_deviation(referenced, analysis_id = "antibiotic")
+SummarizedExperiment::colData(analysed)[, c(
+  "rec_antibiotic_deviation", "rec_antibiotic_deviation_status"
+), drop = FALSE]
+#> DataFrame with 3 rows and 2 columns
+#>    rec_antibiotic_deviation rec_antibiotic_deviation_status
+#>                   <numeric>                     <character>
+#> s1                     0.00                        computed
+#> s2                     0.05                        computed
+#> s3                     0.40                        computed
+```
+
+The deviations are `0`, `0.05`, and `0.4` for `s1`, `s2`, and `s3`. The
+baseline sample has zero self-deviation; this is descriptive similarity
+over the selected features, not a recovery decision. Included samples
+without a baseline receive `NA` and `missing_baseline`; excluded samples
+receive `NA` and `excluded`. Neither case is assigned a fabricated
+distance.
+
+Calculate before removing baseline inputs. Once deviations exist,
+filtering keeps the retained sample values and the original analysis
+history. Reordering matches identities; it never refits the reference.
+Repeated additions error, including identical calls. Use a new analysis
+name for a different definition. The separate `validate_recovery()`
+report remains registration-only until \#12.
+
 ## Available and planned workflow
 
 | Function | Status | Responsibility |
 |:---|:---|:---|
 | `setup_recovery()` | Available | Register a named analysis, episodes, and events. |
 | `add_reference()` | Available | Attach personal reference profiles, support and input provenance. |
-| `add_deviation()` | Planned | Attach deviations from the registered reference. |
+| `add_deviation()` | Available | Attach sample deviations and provenance from the fixed reference. |
 | `add_recovery()` | Planned | Attach outcomes under an explicit recovery rule. |
 | `recovery_results()` | Planned | Extract results at the requested analysis level. |
 | `plot_recovery()` | Planned | Display observations and the recovery definition. |
@@ -207,10 +243,9 @@ separate design and validation.
 
 ## Development and contributions
 
-The next steps are deviation calculation, analytical dependency
-validation and observed recovery outcomes under the accepted contracts.
-No benchmark performance or statistical guarantees are claimed for this
-version.
+The next steps are analytical dependency validation and observed
+recovery outcomes under the accepted contracts. No benchmark performance
+or statistical guarantees are claimed for this version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and
 contribution guidelines. Please use the [issue
