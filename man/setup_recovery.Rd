@@ -90,7 +90,7 @@ are not intended for manual editing.
 }
 \section{Errors}{
 
-Checks performed by recoverome signal errors with \code{\link[rlang:abort]{rlang::abort()}}. They
+Checks performed by recoverome signal errors with \code{\link[cli:cli_abort]{cli::cli_abort()}}. They
 inherit from \code{recoverome_error} and one of \code{recoverome_error_input} (invalid
 inputs), \code{recoverome_error_namespace} (malformed or unsupported metadata), or
 \code{recoverome_error_collision} (an occupied analysis name or column prefix).

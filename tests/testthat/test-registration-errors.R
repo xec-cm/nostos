@@ -103,10 +103,39 @@ test_that("invalid table-field types retain their component in the message", {
   expect_identical(conditionCall(condition)[[1]], quote(setup_recovery))
 })
 
-test_that("row diagnostics retain every affected ID while limiting the displayed list", {
+test_that("cli messages interpolate values from the calling helper", {
+  abort_from_helper <- function() {
+    component <- "sample metadata"
+    expected <- "one finite time per included sample"
+    .recovery_abort(
+      c(
+        "Invalid {.field {component}}.",
+        "i" = "Expected {expected}."
+      ),
+      component = component,
+      ids = "s1"
+    )
+  }
+
+  condition <- tryCatch(abort_from_helper(), recoverome_error = identity)
+
+  expect_s3_class(condition, "recoverome_error_input")
+  expect_match(conditionMessage(condition), "sample metadata", fixed = TRUE)
+  expect_match(
+    conditionMessage(condition),
+    "Expected one finite time per included sample.",
+    fixed = TRUE
+  )
+  expect_identical(condition$component, "sample metadata")
+  expect_identical(condition$ids, "s1")
+  expect_identical(conditionCall(condition)[[1]], quote(abort_from_helper))
+})
+
+test_that("row diagnostics preserve literal IDs and limit only the displayed list", {
   fixture <- registration_fixture()
   fixture$tse <- fixture$tse[, rep(c(1L, 4L), length.out = 15L)]
   sample_ids <- sprintf("sample-%02d", seq_len(15L))
+  sample_ids[1:2] <- c("sample-{1 + 1}", "sample-{unbound_name_in_identifier}")
   colnames(fixture$tse) <- sample_ids
   cd <- SummarizedExperiment::colData(fixture$tse)
   cd$time <- rep(Inf, 15L)

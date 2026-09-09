@@ -1,8 +1,8 @@
-.recovery_check_string <- function(value, label, call = rlang::caller_env()) {
+.recovery_check_string <- function(value, label, call = parent.frame()) {
   if (!is.character(value) || !is.null(dim(value)) || length(value) != 1L ||
         is.na(value) || !nzchar(trimws(value, whitespace = "[\\h\\v]"))) {
     .recovery_abort(
-      paste0("`", label, "` must be one non-empty character string."),
+      "{.field {label}} must be one non-empty character string.",
       component = label,
       call = call
     )
@@ -13,30 +13,39 @@
                                label,
                                message,
                                ids = seq_along(bad),
-                               call = rlang::caller_env()) {
+                               call = parent.frame()) {
   if (!any(bad)) {
     return(invisible(NULL))
   }
 
   affected_ids <- as.character(ids[bad])
   displayed_ids <- utils::head(affected_ids, 10L)
-  details <- paste0("IDs/rows: ", paste(displayed_ids, collapse = ", "), ".")
+  details <- c(
+    "{.field {label}} {message}.",
+    i = "IDs/rows: {paste(displayed_ids, collapse = ', ')}."
+  )
   if (length(affected_ids) > length(displayed_ids)) {
-    details <- paste0(details, " And ", length(affected_ids) - length(displayed_ids), " more.")
+    details <- c(details, i = "And {length(affected_ids) - length(displayed_ids)} more.")
   }
 
   .recovery_abort(
-    c(paste0("`", label, "` ", message, "."), i = details),
+    details,
     component = label,
     ids = affected_ids,
     call = call
   )
 }
 
-.recovery_id_vector <- function(value, label, call = rlang::caller_env()) {
+.recovery_ids <- function(value,
+                          label,
+                          unique = FALSE,
+                          allow_na = FALSE,
+                          ids = seq_along(value),
+                          rows = NULL,
+                          call = parent.frame()) {
   if (!(is.character(value) || is.factor(value)) || !is.null(dim(value))) {
     .recovery_abort(
-      paste0("`", label, "` must be a character or factor vector of IDs."),
+      "{.field {label}} must be a character or factor vector of IDs.",
       component = label,
       call = call
     )
@@ -46,16 +55,10 @@
     value <- as.character(value)
   }
 
-  value
-}
-
-.recovery_ids <- function(value,
-                          label,
-                          unique = FALSE,
-                          allow_na = FALSE,
-                          ids = seq_along(value),
-                          call = rlang::caller_env()) {
-  value <- .recovery_id_vector(value, label, call = call)
+  if (!is.null(rows)) {
+    ids <- ids[rows]
+    value <- value[rows]
+  }
   missing <- is.na(value)
   trimmed <- trimws(value, whitespace = "[\\h\\v]")
   bad <- (!allow_na & missing) | (!missing & (!nzchar(value) | trimmed != value))
@@ -76,41 +79,45 @@
 
 .recovery_numeric <- function(value,
                               label,
-                              finite = TRUE,
                               ids = seq_along(value),
-                              call = rlang::caller_env()) {
+                              rows = NULL,
+                              call = parent.frame()) {
   if (!typeof(value) %in% c("integer", "double") || is.object(value) ||
         !is.null(dim(value))) {
     .recovery_abort(
-      paste0("`", label, "` must be a plain integer or double time vector."),
+      "{.field {label}} must be a plain integer or double time vector.",
       component = label,
       call = call
     )
   }
 
-  if (finite) {
-    .recovery_bad_rows(!is.finite(value), label, "must be finite", ids, call = call)
+  if (!is.null(rows)) {
+    ids <- ids[rows]
+    value <- value[rows]
   }
+  value <- as.double(value)
+  .recovery_bad_rows(!is.finite(value), label, "must be finite", ids, call = call)
 
-  as.double(value)
+  value
 }
 
-.recovery_check_container <- function(tse, call = rlang::caller_env()) {
+.recovery_check_container <- function(tse, call = parent.frame()) {
   if (!methods::is(tse, "TreeSummarizedExperiment")) {
-    .recovery_abort("`tse` must be a TreeSummarizedExperiment.", component = "tse", call = call)
+    .recovery_abort("{.arg tse} must be a {.cls TreeSummarizedExperiment}.",
+                    component = "tse", call = call)
   }
 
   validity <- methods::validObject(tse, test = TRUE)
   if (!identical(validity, TRUE)) {
     .recovery_abort(
-      c("`tse` fails formal S4 validity.", x = paste(validity, collapse = "; ")),
+      c("{.arg tse} fails formal S4 validity.", x = "{paste(validity, collapse = '; ')}"),
       component = "tse",
       call = call
     )
   }
   if (!nrow(tse) || !ncol(tse)) {
     .recovery_abort(
-      "`tse` must contain at least one feature and one sample.",
+      "{.arg tse} must contain at least one feature and one sample.",
       component = "tse",
       call = call
     )
@@ -137,7 +144,7 @@
 .recovery_namespace <- function(root,
                                 analysis_id,
                                 column_names,
-                                call = rlang::caller_env()) {
+                                call = parent.frame()) {
   present <- which(names(root) == "recoverome")
   if (length(present) > 1L) {
     .recovery_abort(
@@ -184,7 +191,7 @@
   if (analysis_id %in% names(analyses)) {
     .recovery_abort(
       c(
-        paste0("Analysis `", analysis_id, "` already exists."),
+        "Analysis {.val {analysis_id}} already exists.",
         i = "Register a new analysis name."
       ),
       class = "recoverome_error_collision",
@@ -199,8 +206,8 @@
   if (length(collisions)) {
     .recovery_abort(
       c(
-        paste0("Reserved colData prefix `", prefix, "` is already used."),
-        i = paste0("Columns: ", paste(collisions, collapse = ", "), ".")
+        "Reserved colData prefix {.val {prefix}} is already used.",
+        i = "Columns: {.field {collisions}}."
       ),
       class = "recoverome_error_collision",
       component = "colData",
@@ -215,11 +222,11 @@
 .recovery_sample_inputs <- function(annotation,
                                     columns,
                                     sample_ids,
-                                    call = rlang::caller_env()) {
+                                    call = parent.frame()) {
   for (column in columns) {
     if (sum(names(annotation) == column, na.rm = TRUE) != 1L) {
       .recovery_abort(
-        paste0("Selected colData column `", column, "` must occur exactly once."),
+        "Selected colData column {.field {column}} must occur exactly once.",
         component = "colData",
         ids = column,
         call = call
@@ -243,21 +250,21 @@
     )
   }
 
-  # Enforce source types even when excluded cells are not consumed.
-  subject <- .recovery_id_vector(annotation[[columns[["subject"]]]], "colData subject", call = call)
+  # Check column types before selecting the cells consumed by this analysis.
   subject <- .recovery_ids(
-    subject[included],
+    annotation[[columns[["subject"]]]],
     "colData subject",
-    ids = sample_ids[included],
+    ids = sample_ids,
+    rows = included,
     call = call
   )
   time <- .recovery_numeric(
     annotation[[columns[["time"]]]],
     "colData time",
-    finite = FALSE,
+    ids = sample_ids,
+    rows = included,
     call = call
   )
-  time <- .recovery_numeric(time[included], "colData time", ids = sample_ids[included], call = call)
 
   S4Vectors::DataFrame(
     sample_id = sample_ids[included],
@@ -272,10 +279,10 @@
                                   label,
                                   id_columns,
                                   time_columns = character(),
-                                  call = rlang::caller_env()) {
+                                  call = parent.frame()) {
   if (!(is.data.frame(value) || methods::is(value, "DataFrame"))) {
     .recovery_abort(
-      paste0("`", label, "` must be a data.frame or S4Vectors::DataFrame."),
+      "{.arg {label}} must be a {.cls data.frame} or {.cls S4Vectors::DataFrame}.",
       component = label,
       call = call
     )
@@ -285,7 +292,7 @@
   if (is.null(column_names) || anyNA(column_names) || any(!nzchar(column_names)) ||
         anyDuplicated(column_names)) {
     .recovery_abort(
-      paste0("`", label, "` must have unique, non-empty column names."),
+      "{.arg {label}} must have unique, non-empty column names.",
       component = label,
       call = call
     )
@@ -294,7 +301,7 @@
   absent <- setdiff(required, column_names)
   if (length(absent)) {
     .recovery_abort(
-      c(paste0("`", label, "` is missing required columns."), i = paste(absent, collapse = ", ")),
+      c("{.arg {label}} is missing required columns.", i = "{.field {absent}}"),
       component = label,
       ids = absent,
       call = call
@@ -314,9 +321,21 @@
   value
 }
 
-.recovery_check_relations <- function(samples, episodes, events, call = rlang::caller_env()) {
-  .recovery_ids(episodes$episode_id, "episodes$episode_id", unique = TRUE, call = call)
-  .recovery_ids(events$event_id, "events$event_id", unique = TRUE, call = call)
+.recovery_check_relations <- function(samples, episodes, events, call = parent.frame()) {
+  .recovery_bad_rows(
+    duplicated(episodes$episode_id),
+    "episodes$episode_id",
+    "must contain unique IDs",
+    ids = episodes$episode_id,
+    call = call
+  )
+  .recovery_bad_rows(
+    duplicated(events$event_id),
+    "events$event_id",
+    "must contain unique IDs",
+    ids = events$event_id,
+    call = call
+  )
 
   .recovery_bad_rows(
     !episodes$origin_boundary %in% c("start", "end"),

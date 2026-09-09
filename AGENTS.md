@@ -76,11 +76,16 @@ intermediate milestones. A future Bioconductor preparation phase targets
   one argument per line for long signatures/calls, and visibly separated stages.
   Keep helpers purposeful and dependencies explicit; do not imitate historical
   slot access, implicit coercion or error-handling problems.
-- Use the small `.recovery_abort()` helper for recoverome input checks. Preserve
-  the public call through nested helpers and attach useful condition fields.
-  Use `rlang::warn()` / `rlang::inform()` only when behavior warrants a warning
-  or message; successful registration should remain quiet. These conventions
-  do not change which inputs are valid or the historical-scope contract.
+- Use `cli::cli_abort()` through `.recovery_abort()` for recoverome errors.
+  Write glue-style templates with semantic markup and interpolate values;
+  do not assemble templates from user data. Keep the interpolation environment
+  local to the failing check and preserve the public call through helpers.
+  Use `cli::cli_warn()` / `cli::cli_inform()` only when behavior warrants a
+  warning or message; successful registration should remain quiet.
+- Validate raw inputs once at the public boundary. Internal helpers should
+  trust already normalized types and check only their own relationships.
+  Delegate container structure to TSE/S4 validity; retain recoverome-specific
+  identity, membership, time and namespace checks that TSE cannot guarantee.
 - Use `Rscript --vanilla` for reproducible command-line execution.
 - Use public accessors for TSE, SummarizedExperiment, and S4Vectors objects.
   Do not read or write S4 slots directly.

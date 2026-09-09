@@ -20,8 +20,8 @@ BugReports: https://github.com/xec-cm/recoverome/issues
 Depends:
     R (>= 4.6.0)
 Imports:
+    cli (>= 3.2.0),
     methods,
-    rlang (>= 1.0.0),
     S4Vectors,
     SummarizedExperiment,
     TreeSummarizedExperiment,

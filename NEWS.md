@@ -4,8 +4,9 @@
   membership, episode and event tables, and declared numeric time coordinates.
 - Store normalized registration tables, original sample and feature scope,
   and provenance in TSE metadata while preserving existing container content.
-- Signal recoverome input, namespace and collision errors with `rlang::abort()`,
-  typed conditions, public-call context and structured affected identifiers.
+- Signal recoverome input, namespace and collision errors with `cli::cli_abort()`,
+  interpolated messages, typed conditions, public-call context and structured
+  affected identifiers.
 - Bundle two small synthetic `recovery_examples` datasets with reproducible
   source generation, shared by registration tests, function help and vignettes.
 - Add executable registration and historical-scope examples to the README

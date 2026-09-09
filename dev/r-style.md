@@ -84,9 +84,9 @@ these are additional local guidance, not historical permalink evidence.
 - Mark internal helpers as internal where documentation is useful. Avoid
   duplicating a public contract across many helpers or documenting obvious
   assignments in prose.
-- Use `rlang::abort()` for errors. This is directly supported by the
-  maintainer-authored history, including messages with a main problem and
-  named bullets containing details or a concrete remedy.
+- Historical code uses `rlang::abort()`, with a main problem and named bullets
+  containing details or a concrete remedy. Recoverome now uses `cli` at the
+  maintainer's explicit request; see the adaptations below.
 - State which argument or component failed, what was expected, and useful
   offending identifiers. Keep informational messages distinct from errors.
 
@@ -101,9 +101,19 @@ proof of historical author preferences.
 - Prefer native `|>` for a new pipeline that needs no special pipe behavior.
   Do not add `magrittr`, `dplyr`, or another runtime dependency just to imitate
   old formatting. Base R is appropriate when it expresses the operation well.
-- Use the small internal `.recovery_abort()` helper for package errors. Its
-  purpose is consistent conditions and call attribution, not a general error
-  framework. Keep error wording close to the failing check.
+- Use `cli::cli_abort()` through the small `.recovery_abort()` helper for
+  package errors, as requested by the maintainer on 2026-09-09. This explicit
+  preference takes precedence over the historical `rlang` examples. Use
+  `cli::cli_warn()` or `cli::cli_inform()` only for meaningful warnings or
+  messages. Keep error wording close to the failing check.
+- Write templates such as `"{.arg {label}} must be a numeric vector."` instead
+  of assembling messages with `paste0()`. Use semantic markup for arguments,
+  fields and values, and named bullets for details. Interpolate user values
+  into a fixed template so braces inside an ID remain literal data.
+- Pass `.envir` from the failing helper for local glue expressions; pass the
+  public call separately for attribution. These environments have different
+  purposes. Base `parent.frame()` and `environment()` suffice here; no direct
+  `rlang` or `glue` dependency is needed for these calls.
 - Package errors inherit from `recoverome_error`, with input, namespace, or
   collision subclasses as appropriate. Capture the public call and forward
   it explicitly through validation helpers so the error identifies the
@@ -118,6 +128,11 @@ proof of historical author preferences.
 - Check scalar type, length, missingness, and allowed values before using
   them in control flow. Use `&&` and `||` for scalar guards. Avoid ambiguous
   names that can resolve to either a data column or a function parameter.
+- Check input types and normalize them once. Helpers receiving normalized
+  tables should trust those types and only check the relationships they own.
+  Use the container's own validity checks for structural invariants; keep
+  identity, membership and temporal rules specific to recoverome explicit.
+  Do not repeat equivalent checks merely to make every helper defensive.
 - Do not construct executable text with `parse()`/`eval()` or use `<<-` to
   update a caller's object. Do not silently change global options, install
   packages, or leave a changed parallel plan behind.

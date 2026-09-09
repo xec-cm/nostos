@@ -60,7 +60,7 @@
 #' are not intended for manual editing.
 #'
 #' @section Errors:
-#' Checks performed by recoverome signal errors with [rlang::abort()]. They
+#' Checks performed by recoverome signal errors with [cli::cli_abort()]. They
 #' inherit from `recoverome_error` and one of `recoverome_error_input` (invalid
 #' inputs), `recoverome_error_namespace` (malformed or unsupported metadata), or
 #' `recoverome_error_collision` (an occupied analysis name or column prefix).
@@ -107,13 +107,13 @@ setup_recovery <- function(tse,
                            time_col = "time",
                            time_unit,
                            time_origin) {
-  error_call <- rlang::current_env()
+  error_call <- environment()
 
   .recovery_check_container(tse, call = error_call)
   .recovery_check_string(analysis_id, "analysis_id", call = error_call)
   if (!grepl("^[a-z][a-z0-9]*$", analysis_id)) {
     .recovery_abort(
-      "`analysis_id` must match ^[a-z][a-z0-9]*$.",
+      "{.arg analysis_id} must match ^[a-z][a-z0-9]*$.",
       component = "analysis_id",
       call = error_call
     )
@@ -126,7 +126,7 @@ setup_recovery <- function(tse,
   columns <- vapply(columns, unname, character(1))
   if (anyDuplicated(columns)) {
     .recovery_abort(
-      "`subject_col`, `episode_col` and `time_col` must be distinct.",
+      "{.arg subject_col}, {.arg episode_col} and {.arg time_col} must be distinct.",
       component = "source_columns",
       call = error_call
     )
@@ -135,7 +135,7 @@ setup_recovery <- function(tse,
   .recovery_check_string(time_unit, "time_unit", call = error_call)
   if (!time_unit %in% c("seconds", "minutes", "hours", "days")) {
     .recovery_abort(
-      "`time_unit` must be seconds, minutes, hours or days.",
+      "{.arg time_unit} must be seconds, minutes, hours or days.",
       component = "time_unit",
       call = error_call
     )
