@@ -1,4 +1,7 @@
-.recovery_reference_context <- function(tse, analysis_id, call) {
+.recovery_reference_context <- function(tse,
+                                        analysis_id,
+                                        call,
+                                        allow_reference = FALSE) {
   if (!methods::is(tse, "TreeSummarizedExperiment")) {
     .recovery_abort(
       "{.arg tse} must be a {.cls TreeSummarizedExperiment}.",
@@ -36,7 +39,12 @@
     )
   }
   record <- namespace$analyses[[analysis_id]]
-  occupied <- intersect(c("reference", "deviation", "recovery"), names(record))
+  blocked_stages <- if (allow_reference) {
+    c("deviation", "recovery")
+  } else {
+    c("reference", "deviation", "recovery")
+  }
+  occupied <- intersect(blocked_stages, names(record))
   if (length(occupied)) {
     .recovery_abort(
       c(
@@ -56,7 +64,27 @@
     features = .recovery_validation_axis(rownames(tse), nrow(tse), "feature"),
     annotation = SummarizedExperiment::colData(tse)
   )
-  checked <- .recovery_validate_analysis(analysis_id, namespace$analyses, current)
+  registration_analyses <- namespace$analyses
+  if (allow_reference && is.list(record) && !is.object(record) &&
+        !anyDuplicated(names(record))) {
+    # Check the parent separately, leaving malformed records intact for diagnosis.
+    reference_row <- match("reference", names(record), nomatch = 0L)
+    registration_analyses[[analysis_id]] <- record[seq_along(record) != reference_row]
+  }
+  if (allow_reference) {
+    columns <- paste0("rec_", analysis_id, c("_deviation", "_deviation_status"))
+    occupied_columns <- intersect(columns, names(current$annotation))
+    if (length(occupied_columns)) {
+      .recovery_abort(
+        "Deviation output columns already exist: {.val {occupied_columns}}.",
+        class = "recoverome_error_collision",
+        component = "colData",
+        ids = occupied_columns,
+        call = call
+      )
+    }
+  }
+  checked <- .recovery_validate_analysis(analysis_id, registration_analyses, current)
   summary <- checked$summary
   usable <- isTRUE(summary$structural_valid) && summary$validation_complete &&
     summary$dependencies != "changed" &&
@@ -82,7 +110,13 @@
     )
   }
 
-  list(root = root, record = record, samples = current$samples$ids, features = current$features$ids)
+  list(
+    root = root,
+    record = record,
+    samples = current$samples$ids,
+    features = current$features$ids,
+    annotation = current$annotation
+  )
 }
 
 .recovery_reference_ids <- function(value, label, call) {
@@ -147,6 +181,17 @@
 
 .recovery_reference_assay <- function(tse, assay, selection, context, call) {
   .recovery_check_string(assay, "assay", call = call)
+  .recovery_assay_block(
+    tse,
+    assay,
+    selection$feature_ids,
+    selection$samples$sample_id,
+    context,
+    call
+  )
+}
+
+.recovery_assay_block <- function(tse, assay, feature_ids, sample_ids, context, call) {
   count <- sum(SummarizedExperiment::assayNames(tse) == assay, na.rm = TRUE)
   if (count != 1L) {
     .recovery_abort(
@@ -157,8 +202,6 @@
     )
   }
 
-  sample_ids <- selection$samples$sample_id
-  feature_ids <- selection$feature_ids
   if (!length(sample_ids)) {
     return(matrix(
       numeric(),

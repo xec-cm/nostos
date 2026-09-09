@@ -3,8 +3,9 @@
 Status: the experimental development version implements named analysis
 registration through `setup_recovery()` and registration diagnostics through
 `validate_recovery()`. `add_reference()` attaches explicit personal baseline
-profiles under [RFC 002](rfcs/002-personal-baseline-deviation.md); deviation,
-recovery, extraction and plotting remain planned.
+profiles and `add_deviation()` records sample dissimilarities under
+[RFC 002](rfcs/002-personal-baseline-deviation.md). Recovery, extraction and
+plotting remain planned.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
@@ -24,7 +25,7 @@ The initial public interface is limited to seven functions:
 |:---------|:-------|:---------|
 | `setup_recovery()` | Available | Register a named analysis and its episodes/events. |
 | `add_reference()` | Available | Attach personal reference profiles, support and realized scope. |
-| `add_deviation()` | Planned | Add sample-level deviations from that reference. |
+| `add_deviation()` | Available | Add sample-level deviations from the fixed reference. |
 | `add_recovery()` | Planned | Add outcomes under a recorded recovery rule. |
 | `recovery_results()` | Planned | Extract the requested results with their scope. |
 | `plot_recovery()` | Planned | Display data and analysis annotations. |
@@ -111,7 +112,12 @@ No reference, deviation, or recovery records are preallocated at registration.
 `add_reference()` adds its versioned record explicitly, retaining the definition,
 realized baseline samples, episode support, profile matrix, dependencies and
 provenance specified in RFC 002. It adds no sample result columns. The current
-validator remains registration-only and reports this stage as incompletely checked.
+validator remains registration-only and reports analytical stages as incompletely
+checked. `add_deviation()` checks its own required reference dependencies before
+creating the deviation and status columns. Its versioned metadata stores method,
+column mapping, realized sample scope, source/result fingerprints and provenance.
+The sample columns remain the sole authoritative deviation values; later
+filtering preserves their original metadata scope.
 
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
@@ -177,14 +183,13 @@ distinctions without claiming those methods already exist.
 
 ## Implementation sequence
 
-Registration, its validator and reference attachment are implemented. The next
-steps are:
+Registration, its validator, reference attachment and deviation calculation are
+implemented. The next steps are:
 
-1. Add the accepted deviation method and provenance requirements.
-2. Extend validation to reference and deviation dependencies.
-3. Implement the accepted observation-based recovery rule and its validation.
-4. Add extraction and plotting that respect historical scope.
-5. Design statistical fitting only after these contracts are usable.
+1. Extend validation to reference and deviation dependencies.
+2. Implement the accepted observation-based recovery rule and its validation.
+3. Add extraction and plotting that respect historical scope.
+4. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
 should verify meaningful behavior and contract failures rather than preserve

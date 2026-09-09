@@ -1,8 +1,8 @@
 ---
-title: "Register an analysis and preserve its history"
+title: "Personal references, deviations and analysis history"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Register an analysis and preserve its history}
+  %\VignetteIndexEntry{Personal references, deviations and analysis history}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,9 +14,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ## Current status
 
 The experimental development version provides `setup_recovery()`,
-`validate_recovery()` and `add_reference()`. This vignette registers an analysis,
-diagnoses its registration history, and attaches an explicit personal reference.
-Deviation and recovery calculations, extraction, and plotting remain planned.
+`validate_recovery()`, `add_reference()` and `add_deviation()`. This vignette
+registers an analysis, diagnoses its registration history, attaches explicit
+personal references and calculates sample deviations. Recovery classification,
+extraction and plotting remain planned.
 
 ## A small longitudinal input
 
@@ -285,14 +286,99 @@ when building the reference. Subsequent stage-aware dependency validation belong
 to issue #12; a created reference must not be presented as fully validated by
 this registration-only report.
 
+## Calculate deviations from the fixed references
+
+`add_deviation()` uses the reference's recorded assay, features and profiles.
+It checks the reference fingerprint, its registration dependency and selected
+baseline inputs before creating a new result. Removing an unused feature or a
+non-baseline sample is allowed; removing a selected feature or baseline sample
+prevents a new calculation. Scaling baseline counts is also a source change,
+even when the relative composition stays the same. Unrelated annotations and
+assays do not redefine a dependency.
+
+```{r repeated-deviations}
+analysed <- recoverome::add_deviation(referenced, analysis_id = "repeated")
+annotation <- SummarizedExperiment::colData(analysed)
+annotation[, c("rec_repeated_deviation", "rec_repeated_deviation_status"), drop = FALSE]
+
+# Independently stated values from the small input matrices in RFC 002.
+expected <- c(0, 2 / 21, 4 / 33, 0, 2 / 285, NA_real_)
+stopifnot(isTRUE(all.equal(annotation$rec_repeated_deviation, expected, tolerance = 1e-12)))
+```
+
+Both baselines have zero self-deviation here. Other included samples use their
+own episode's profile, with no borrowing across episodes. Bray--Curtis lies in
+[0, 1] for these compositions: zero means the selected proportions agree. It
+is not a recovery threshold, health score or measure of absolute microbial load.
+A one-feature reference gives constant compositions and zero deviations.
+
+Only selected-feature values from retained included samples with a reference
+are consumed. Invalid measurements in excluded samples or missing-baseline
+episodes are not inspected or certified. Consumed data must remain finite,
+non-negative and have a positive finite selected-feature total. Sparse and
+delayed assays use the selected block; conversion can materialize that block.
+
+The two result columns are authoritative. Metadata stores the method, their
+exact name mapping, the current sample IDs as realized scope, the reference
+fingerprint, per-computed-sample source hashes and per-sample output hashes.
+These hashes document dependencies; they cannot reconstruct a removed value.
+
+```{r deviation-provenance}
+deviation <- S4Vectors::metadata(analysed)$recoverome$analyses$repeated$deviation
+deviation$method
+deviation$columns
+deviation$sample_ids
+```
+
+An episode without a selected reference receives an explicit missing state:
+
+```{r missing-baseline-deviation}
+partial_reference <- recoverome::add_reference(
+  repeated_tse,
+  analysis_id = "repeated",
+  reference = "s1",
+  assay = "counts"
+)
+partial_analysis <- recoverome::add_deviation(partial_reference, analysis_id = "repeated")
+SummarizedExperiment::colData(partial_analysis)[, c(
+  "rec_repeated_deviation", "rec_repeated_deviation_status"
+), drop = FALSE]
+```
+
+Here `s4` and `s5` are `missing_baseline`, and `s6` remains `excluded`. All three
+have `NA` deviations with different reasons; invalid consumed measurements
+would instead stop the call without modifying the input.
+
+### Keep results historical after filtering
+
+```{r deviation-history}
+retained <- analysed[, c("s5", "s2"), drop = FALSE]
+SummarizedExperiment::colData(retained)[, c(
+  "rec_repeated_deviation", "rec_repeated_deviation_status"
+), drop = FALSE]
+retained_deviation <- S4Vectors::metadata(retained)$recoverome$analyses$repeated$deviation
+identical(retained_deviation, deviation)
+```
+
+The retained values remain `2/285` and `2/21` in the new sample order; the
+metadata still records all six IDs from the original calculation. Neither
+filtering nor reordering recomputes the reference or the deviations. Calling
+`add_deviation()` again errors, even with the same inputs. A changed definition
+requires a new named analysis and explicit calculation of its stages.
+
+`add_deviation()` checks its own dependencies when it calculates. The separate
+`validate_recovery()` function still reports analytical stages as unsupported
+and incompletely checked until issue #12; it does not yet diagnose later edits
+to saved deviations or baseline assay values. Keep that distinction when
+interpreting its report on an analysed or filtered TSE.
+
 ## Planned analytical stages
 
 A recovery rule will define an acceptable deviation and observational requirements.
-The following is **non-executable proposed API**; these four functions are not
+The following is **non-executable proposed API**; these three functions are not
 implemented. Their accepted design contracts remain distinct from available code.
 
 ```{r planned-workflow, eval=FALSE}
-analysed <- add_deviation(referenced, analysis_id = "repeated")
 analysed <- add_recovery(analysed, analysis_id = "repeated", rule = recovery_rule)
 
 recovery_results(analysed, analysis_id = "repeated", level = "episode")
