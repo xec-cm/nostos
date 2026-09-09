@@ -6,7 +6,8 @@ registration through `setup_recovery()` and registration diagnostics through
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
-implemented; further preservation checks follow separately. Later
+implemented; [integration evidence](tse-preservation.md) records the tested
+preservation and historical-scope behavior. Later
 analytical stages need their own accepted RFCs.
 
 ## Purpose and scope
@@ -173,13 +174,12 @@ distinctions without claiming those methods already exist.
 
 Registration and its validator are implemented. The next steps are:
 
-1. Extend integration checks for TSE preservation and historical scope.
-2. Implement reference attachment under a separately accepted contract.
-3. Add a documented deviation method and provenance requirements.
-4. Implement a prespecified observation-based recovery rule.
-5. Add extraction and plotting that respect historical scope.
-6. Extend validation as analytical stages introduce new dependencies.
-7. Design statistical fitting only after these contracts are usable.
+1. Implement reference attachment under a separately accepted contract.
+2. Add a documented deviation method and provenance requirements.
+3. Implement a prespecified observation-based recovery rule.
+4. Add extraction and plotting that respect historical scope.
+5. Extend validation as analytical stages introduce new dependencies.
+6. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
 should verify meaningful behavior and contract failures rather than preserve
