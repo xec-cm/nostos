@@ -25,6 +25,7 @@
     n_registered = vapply(summaries, `[[`, integer(1), "n_registered"),
     n_retained = vapply(summaries, `[[`, integer(1), "n_retained")
   )
+  
   diagnostics <- S4Vectors::DataFrame(
     analysis_id = vapply(findings, `[[`, character(1), "analysis_id"),
     code = vapply(findings, `[[`, character(1), "code"),
@@ -55,18 +56,12 @@
 }
 
 .recovery_valid_text <- function(value) {
-  is.character(value) && is.null(dim(value)) && length(value) == 1L &&
-    !is.na(value) && nzchar(trimws(value, whitespace = "[\\h\\v]"))
+  is.character(value) && is.null(dim(value)) && length(value) == 1L && !is.na(value) && nzchar(trimws(value, whitespace = "[\\h\\v]"))
 }
 
 .recovery_valid_ids <- function(value, unique = FALSE) {
-  if (!is.character(value) || !is.null(dim(value)) || anyNA(value)) {
-    return(FALSE)
-  }
-
-  all(nzchar(value)) &&
-    all(trimws(value, whitespace = "[\\h\\v]") == value) &&
-    (!unique || !anyDuplicated(value))
+  if (!is.character(value) || !is.null(dim(value)) || anyNA(value)) { return(FALSE)}
+  all(nzchar(value)) && all(trimws(value, whitespace = "[\\h\\v]") == value) && (!unique || !anyDuplicated(value))
 }
 
 .recovery_validation_namespace <- function(root) {
@@ -94,6 +89,7 @@
     )
     return(list(analyses = NULL, findings = findings, readable = FALSE))
   }
+
   if (!identical(namespace$schema_version, 1L)) {
     findings <- .recovery_finding(
       "SCHEMA_UNSUPPORTED",
@@ -110,8 +106,7 @@
       "recoverome$analyses",
       "Analyses must be a named list."
     )
-  } else if (!.recovery_named_list(analyses) ||
-               any(!grepl("^[a-z][a-z0-9]*$", names(analyses)))) {
+  } else if (!.recovery_named_list(analyses) || any(!grepl("^[a-z][a-z0-9]*$", names(analyses)))) {
     findings <- .recovery_finding(
       "ANALYSIS_IDS_INVALID",
       "recoverome$analyses",
