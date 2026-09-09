@@ -31,6 +31,7 @@ jobs:
       - name: Check R style
         shell: Rscript --vanilla {0}
         run: |
+          pkgload::load_all(".", quiet = TRUE, export_all = FALSE, helpers = FALSE)
           lints <- c(lintr::lint_package(), lintr::lint_dir("dev"))
           print(lints)
           if (length(lints)) quit(status = 1L)

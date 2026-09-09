@@ -1,9 +1,9 @@
 # Contributing to recoverome
 
-Thank you for contributing. recoverome 0.1.0 is an experimental scaffold;
-recovery analysis functions are not implemented yet. Contributions should
-make a concrete, reviewable improvement and distinguish implemented behavior
-from proposals.
+Thank you for contributing. The experimental development version provides
+`setup_recovery()` for named analysis registration; the remaining six functions
+are planned. Contributions should make a concrete, reviewable improvement
+and distinguish implemented behavior from proposals.
 
 The next target is an experimental **0.2.0 GitHub MVP** covering the seven
 functions in the architecture contract. Bioconductor preparation comes later.

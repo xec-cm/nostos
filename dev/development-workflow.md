@@ -4,8 +4,9 @@ This document defines how recoverome work moves from a proposal to a reviewed
 change. It does not select statistical methods or make unimplemented API
 functions available.
 
-The current package is a 0.1.0 scaffold. The next target is an experimental
-**0.2.0 MVP released on GitHub**. Its planned public API is:
+The development version implements `setup_recovery()` for registration; the
+other six functions remain planned. The next target is an experimental
+**0.2.0 MVP released on GitHub**. Its public API target is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
 Use the [architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)

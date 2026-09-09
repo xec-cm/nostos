@@ -13,6 +13,7 @@
 ^AGENTS\.md$
 ^CODE_OF_CONDUCT\.md$
 ^dev$
+^data-raw$
 ^docs$
 ^_pkgdown\.yml$
 ^codecov\.yml$

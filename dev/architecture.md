@@ -1,38 +1,35 @@
 # Architecture contract
 
-Status: design contract for the experimental recoverome 0.1.0 scaffold.
-No recovery analysis functions are implemented in this version. The decisions
-below guide subsequent implementation; illustrative schemas are not stable
-public interfaces.
+Status: the experimental development version implements named analysis
+registration through `setup_recovery()`. The standalone validator and the
+remaining analytical stages are planned.
 
-[RFC 001](rfcs/001-registration-validation.md) specifies the proposed
-registration and validation contract for issues #6--#8. Its maintainer merge
-accepts that design for implementation. The package remains a scaffold until
-those implementations are delivered; later analytical stages need their own
-accepted RFCs.
+[RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
+validation contract for issues #6--#8. Setup implements its registration
+portion; validation and further preservation checks follow separately. Later
+analytical stages need their own accepted RFCs.
 
 ## Purpose and scope
 
 recoverome is intended to attach explicit recovery analyses to longitudinal
-microbiome data after known perturbations. The first implementation should
-establish data identity, analysis scope, and provenance before analytical
-methods are added.
+microbiome data after known perturbations. Registration establishes data
+identity, analysis scope, and provenance before analytical methods are added.
 
-The initial public interface is limited to seven planned functions:
+The initial public interface is limited to seven functions:
 
-| Function | Contract |
-|:---------|:---------|
-| `setup_recovery()` | Register a named analysis and its episodes/events. |
-| `add_reference()` | Add a reference definition and its realized scope. |
-| `add_deviation()` | Add sample-level deviations from that reference. |
-| `add_recovery()` | Add outcomes under a recorded recovery rule. |
-| `recovery_results()` | Extract the requested results with their scope. |
-| `plot_recovery()` | Display data and analysis annotations. |
-| `validate_recovery()` | Diagnose consistency and scope mismatches. |
+| Function | Status | Contract |
+|:---------|:-------|:---------|
+| `setup_recovery()` | Available | Register a named analysis and its episodes/events. |
+| `add_reference()` | Planned | Add a reference definition and its realized scope. |
+| `add_deviation()` | Planned | Add sample-level deviations from that reference. |
+| `add_recovery()` | Planned | Add outcomes under a recorded recovery rule. |
+| `recovery_results()` | Planned | Extract the requested results with their scope. |
+| `plot_recovery()` | Planned | Display data and analysis annotations. |
+| `validate_recovery()` | Planned | Diagnose consistency and scope mismatches. |
 
 Statistical model fitting is a future layer outside these seven functions.
 Do not introduce exported fitting stubs, unvalidated estimators, synthetic
-benchmark claims, or placeholder result objects into the scaffold.
+benchmark claims, or placeholder result objects into the package.
 
 ## Container and identities
 
@@ -73,35 +70,42 @@ Before documenting a tidy operation as supported, verify that it preserves
 the TSE class, tree links, sample identities, and analysis annotations. Tidy
 filtering and mutation must follow the same historical-scope and invalidation
 contracts as base subsetting and accessor-based edits. No tidy integration is
-implemented or required by this scaffold.
+implemented or required for registration.
 
 ## Storage
 
-The intended metadata namespace is:
+The implemented registration namespace is:
 
 ```text
 metadata(tse)$recoverome
+  schema_version = 1L
   analyses
     <analysis_id>
-      episodes
-      events
-      reference
+      schema_version = 1L
+      registration
+        source_columns
+        time_unit, time_origin
+        samples                   # DataFrame of included sample metadata
+      episodes, events            # normalized DataFrames
+      scope
+        sample_ids, feature_ids   # full original container scope
+      owned_columns = character()
       provenance
-      ... documented analysis records added by implemented functions
+        package_version, registered_at
 ```
 
 Each analysis is named. Episodes and events are explicit records, not values
-reconstructed later from a plot or from sample order. Reference records retain
-both the user's definition and the identities of the eligible data actually
-used. Provenance captures the information needed to interpret or reproduce the
-analysis, including the original sample and feature scope.
+reconstructed later from a plot or from sample order. Registration stores the
+consumed source-column bindings and a normalized snapshot of included sample
+metadata. The full original scope also includes samples explicitly excluded
+from the analysis. Provenance records the package version and UTC registration
+time. The historical snapshot must not be edited as a second current data source.
 
-The diagram above shows intended stages, not preallocated empty records.
-RFC 001 adds schema versions, source-column bindings, a snapshot of included
-sample metadata, the original full container scope, and registration provenance.
 Registration stores no assay values or fingerprints and creates no result
 columns. Each analysis starts with an empty exact-name `owned_columns` manifest;
 later result functions must extend ownership when they add sample columns.
+No reference, deviation, or recovery records are preallocated. Future reference
+records will retain both the user's definition and the eligible data used.
 
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
@@ -121,8 +125,8 @@ analysis metadata must retain the scope of the analysis as originally run.
 Subsetting must not silently rebuild a reference, recalculate deviations,
 reclassify an episode, or refit a model.
 
-The validator must distinguish current object scope from original analysis
-scope. Examples requiring explicit diagnostics include:
+The planned validator must distinguish current object scope from original
+analysis scope. Later analytical stages will need diagnostics for:
 
 - Removal of a sample used to estimate a reference.
 - Removal of a visit used to assess persistence or an episode endpoint.
@@ -139,14 +143,15 @@ Recomputation is explicit. It should use a new named analysis or a documented
 replacement operation that makes invalidation of dependent results visible.
 Dependent records must not survive upstream changes as if still current.
 
-For registration, validation returns a base list containing a versioned
+The planned registration validator will return a base list containing a versioned
 summary and diagnostics as `S4Vectors::DataFrame` objects. Structural validity,
 completion of checks, source-metadata changes and current sample/feature scope
-are separate report fields. Removing samples preserves historical episode
-records; changing a retained sample's source metadata produces a dependency
-finding. The registration validator does not claim to detect changes in assay
-values or validate future analytical stages. Unsupported records are reported
-as incompletely checked. See RFC 001 for exact codes, schemas and examples.
+will be separate report fields. Removing samples preserves historical episode
+records; changing a retained sample's consumed source metadata will produce a
+dependency finding. Registration validation will not detect changes in assay
+values or validate future analytical stages. Unsupported records will be
+reported as incompletely checked. See RFC 001 for exact codes, schemas and
+examples; `validate_recovery()` is not yet available.
 
 ## Analytical boundaries
 
@@ -167,12 +172,14 @@ distinctions without claiming those methods already exist.
 
 ## Implementation sequence
 
-1. Define validated schemas, stable identities, and named-analysis storage.
-2. Implement setup and reference attachment with meaningful validation.
+Registration is implemented. The next steps are:
+
+1. Implement its standalone validator and extend preservation checks.
+2. Implement reference attachment under a separately accepted contract.
 3. Add a documented deviation method and provenance requirements.
 4. Implement a prespecified observation-based recovery rule.
 5. Add extraction and plotting that respect historical scope.
-6. Validate behavior under filtering and upstream changes.
+6. Extend validation as analytical stages introduce new dependencies.
 7. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests

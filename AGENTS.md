@@ -1,7 +1,8 @@
 # Repository instructions
 
-recoverome is an experimental R package. The current version is a scaffold;
-planned analysis functions must not be described as implemented.
+recoverome is an experimental R package. The development version implements
+`setup_recovery()` for named analysis registration. The other six functions
+in the planned API, including `validate_recovery()`, are not implemented yet.
 
 The next release target is the experimental GitHub MVP, version 0.2.0, with
 the seven functions in `dev/architecture.md`. Bioconductor preparation is a
@@ -69,6 +70,22 @@ intermediate milestones. A future Bioconductor preparation phase targets
 
 ## R implementation
 
+- Read and follow [the R style guide](dev/r-style.md) before editing R code.
+  It records the maintainer's style from historical dar code and distinguishes
+  it from deliberate recoverome improvements. Use snake_case, two-space indents,
+  one argument per line for long signatures/calls, and visibly separated stages.
+  Keep helpers purposeful and dependencies explicit; do not imitate historical
+  slot access, implicit coercion or error-handling problems.
+- Use `cli::cli_abort()` through `.recovery_abort()` for recoverome errors.
+  Write glue-style templates with semantic markup and interpolate values;
+  do not assemble templates from user data. Keep the interpolation environment
+  local to the failing check and preserve the public call through helpers.
+  Use `cli::cli_warn()` / `cli::cli_inform()` only when behavior warrants a
+  warning or message; successful registration should remain quiet.
+- Validate raw inputs once at the public boundary. Internal helpers should
+  trust already normalized types and check only their own relationships.
+  Delegate container structure to TSE/S4 validity; retain recoverome-specific
+  identity, membership, time and namespace checks that TSE cannot guarantee.
 - Use `Rscript --vanilla` for reproducible command-line execution.
 - Use public accessors for TSE, SummarizedExperiment, and S4Vectors objects.
   Do not read or write S4 slots directly.
@@ -89,6 +106,10 @@ intermediate milestones. A future Bioconductor preparation phase targets
   use available functions and make no unsupported analytical claims.
 - Use meaningful tests for implemented behavior and failure modes. Do not add
   tests that merely encode placeholder outputs.
+- Reuse the bundled synthetic `recovery_examples` for tests and runnable examples.
+  Edit `data-raw/recovery_examples.R` and regenerate the data file when changing
+  a shared case. Keep expected test values independently stated; deriving them
+  from the function under test or its stored result cannot verify correctness.
 - For numerical code, include small deterministic R examples with independently
   checkable expected values and justified tolerances. Use coverage to find
   untested behavior, without an arbitrary percentage target.

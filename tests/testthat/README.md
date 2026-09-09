@@ -1,9 +1,10 @@
 # Functional tests
 
-Add `test-*.R` files alongside each implemented behavior. This initial package
-does not implement analytical functions, so no synthetic passing tests are
-included. The test runner and coverage workflow report that absence explicitly.
+Registration tests exercise the accepted RFC 001 through `setup_recovery()`.
+The six-sample fixture has two explicit episodes and one excluded sample;
+its expected identities and coordinates come from the RFC's worked example.
+Deterministic trees also exercise preservation of TSE links and annotations.
 
-Future tests should protect sample identity, TSE preservation, result scope,
-candidate versus confirmation dates, and incomplete longitudinal observations.
-Use small deterministic fixtures; do not download cohorts during unit tests.
+Add tests alongside each implemented behavior. Future stages need their own
+accepted examples for recovery outcomes and incomplete observations; registration
+tests make no analytical recovery claims. Do not download cohorts in unit tests.

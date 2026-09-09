@@ -7,6 +7,12 @@ reference:
   - title: Package overview
     contents:
       - recoverome-package
+  - title: Register an analysis
+    contents:
+      - setup_recovery
+  - title: Synthetic example data
+    contents:
+      - recovery_examples
 articles:
   - title: Getting started
     navbar: ~
