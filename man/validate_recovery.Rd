@@ -2,14 +2,15 @@
 % Please edit documentation in R/validate_recovery.R
 \name{validate_recovery}
 \alias{validate_recovery}
-\title{Validate registration structure, dependencies and historical scope}
+\title{Validate stored analyses, dependencies and historical scope}
 \usage{
 validate_recovery(tse, analysis_id = NULL)
 }
 \arguments{
 \item{tse}{A \link[TreeSummarizedExperiment:TreeSummarizedExperiment]{TreeSummarizedExperiment::TreeSummarizedExperiment} containing
-zero or more registrations created with \code{\link[=setup_recovery]{setup_recovery()}}. Subsets with
-no current samples or features are supported for historical validation.}
+zero or more registrations created with \code{\link[=setup_recovery]{setup_recovery()}}, optionally with
+\code{\link[=add_reference]{add_reference()}} and \code{\link[=add_deviation]{add_deviation()}} stages. Subsets with no current
+samples or features are supported for historical validation.}
 
 \item{analysis_id}{\code{NULL} to inspect all named analyses, or one analysis ID
 matching \verb{^[a-z][a-z0-9]*$}. An unknown name produces a report finding.}
@@ -27,8 +28,9 @@ containing complete character vectors of affected identities.}
 }
 }
 \description{
-Diagnose named registrations against the current TreeSummarizedExperiment
-without changing the object, rewriting history, or reading assay values.
+Diagnose named registrations, references and deviations against the current
+TreeSummarizedExperiment without changing the object or recomputing results.
+Registration-only analyses do not read assay values.
 }
 \details{
 Interpret the summary fields together. \code{structural_valid} is \code{FALSE} for a
@@ -55,9 +57,45 @@ unknown counts use \code{NA_integer_}.
 Episode and event references are checked against the historical snapshot.
 Filtering away all observations of an episode does not break that history.
 No record is repaired, sorted, recomputed, or timestamped by validation.
-Registration validation does not inspect assay values or certify analytical
-eligibility, baseline estimates, deviations, or recovery outcomes. Populated
-analytical stages require a later validator and produce \code{STAGE_UNSUPPORTED}.
+Registration-only validation reads no assay values. With analytical stages,
+validation checks supported schema-1 reference/deviation records, canonical
+fingerprint formats, saved parent/self fingerprints, consumed source hashes
+and retained owned output hashes. It does not refit profiles, close samples
+to recompute deviations, or reconstruct missing output values. Unsupported
+recovery stages remain incomplete while earlier independent checks continue.
+
+Only fixed reference features and samples recorded as baseline or computed
+deviation inputs are requested from an assay. Unselected features, excluded
+samples and samples without a profile are not consumed. A numeric invalidity
+or an external read failure in one sample does not hide other checkable source
+hashes or outputs. Base, sparse and delayed matrix-like assays are supported
+through public extraction/coercion; backend I/O is not controlled.
+
+Across stages, a known change takes precedence over unavailable comparisons;
+\code{"not_checked"} takes precedence over \code{"unchanged"}. Unknown/incompatible
+fingerprint formats prevent affected comparisons and never establish a change
+solely from encoding. Removing required baseline inputs, fixed features or
+realized deviation samples leaves their historical records intact and makes
+the affected checks incomplete. Reordering does not change dependencies.
+
+Analytical diagnostics include \code{REFERENCE_RECORD_INVALID} and
+\code{DEVIATION_RECORD_INVALID} for malformed records; \code{FINGERPRINT_CHANGED} for
+inconsistent saved self/parent chains; \code{ANALYTICAL_INPUT_CHANGED} for changed
+sources; and \code{RESULT_INCONSISTENT} for altered, missing, ambiguous or invalid
+owned results. These have error severity. Comparable fingerprint differences
+alone do not make validation incomplete. Missing, ambiguous or invalid assay
+inputs use \code{ASSAY_MISSING}, \code{ASSAY_AMBIGUOUS}, or \code{ASSAY_VALUES_INVALID} and
+establish a change with incomplete comparisons. \code{ASSAY_READ_FAILED} and
+\code{FINGERPRINT_FORMAT_UNSUPPORTED} report unavailable checks without asserting
+an input change. Reference/deviation components and complete affected IDs
+distinguish these findings from the registration diagnostics.
+
+\code{REFERENCE_INPUT_MISSING} and \code{DEVIATION_SAMPLE_MISSING} are historical
+availability findings with info severity. \code{BASELINE_SUPPORT_LIMITED} describes
+missing, single-sample or single-time support; it does not establish structural
+failure or quantify uncertainty. Source changes and saved-result inconsistency
+remain separate findings. The validator supplies no recovery classification,
+scientific adequacy guarantee or repair operation.
 
 Diagnostic codes, column types and enumerated states are stable contracts;
 message wording and diagnostic order are not. Severity describes an individual
@@ -86,5 +124,5 @@ validate_recovery(registered)$summary
 validate_recovery(registered[, c(1, 3)])$diagnostics
 }
 \seealso{
-\code{\link[=setup_recovery]{setup_recovery()}}
+\code{\link[=setup_recovery]{setup_recovery()}}, \code{\link[=add_reference]{add_reference()}}, \code{\link[=add_deviation]{add_deviation()}}
 }

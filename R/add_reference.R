@@ -60,9 +60,9 @@
 #' No reference is borrowed from another episode. Profiles describe the selected
 #' measured compositions and do not estimate a latent healthy state. This function
 #' does not compute deviations, recovery outcomes, intervals, or thresholds.
-#' [validate_recovery()] currently checks registration only and reports analytical
-#' stages as incompletely checked; analytical dependency diagnostics in
-#' `validate_recovery()` are not yet implemented.
+#' [validate_recovery()] checks the stored registration, reference and deviation
+#' stages, including historical input availability and dependency fingerprints.
+#' It never rebuilds a reference from the current subset.
 #'
 #' @section Errors:
 #' A repeated call is an error, including an identical selection. Use a new named

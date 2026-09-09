@@ -55,7 +55,7 @@
   all(table$valid[columns])
 }
 
-.recovery_validation_record <- function(record) {
+.recovery_validation_record <- function(record, analytical = FALSE) {
   result <- list(
     findings = list(),
     structural_valid = FALSE,
@@ -101,7 +101,8 @@
   extra <- setdiff(names(record), c(required, "reference", "deviation", "recovery"))
   stages <- intersect(names(record), c("reference", "deviation", "recovery"))
   populated <- stages[vapply(record[stages], length, integer(1)) > 0L]
-  unsupported <- c(extra, populated)
+  known <- if (analytical) c("reference", "deviation") else character()
+  unsupported <- c(extra, setdiff(populated, known))
   if (length(unsupported)) {
     findings <- c(findings, .recovery_finding(
       "STAGE_UNSUPPORTED",
@@ -114,7 +115,10 @@
   registration <- .recovery_record_registration(record)
   tables <- .recovery_record_tables(record, registration)
   scope <- .recovery_record_scope(record, tables$samples)
-  metadata <- .recovery_record_metadata(record)
+  metadata <- .recovery_record_metadata(
+    record,
+    allow_owned = analytical && "deviation" %in% names(record)
+  )
   findings <- c(
     findings,
     registration$findings,
@@ -139,6 +143,8 @@
     samples = tables$samples,
     source_columns = registration$source_columns,
     scope = scope$value,
-    owned_columns = metadata$owned_columns
+    owned_columns = metadata$owned_columns,
+    hash_ready = registration$complete && !length(registration$findings) &&
+      tables$hash_ready && scope$complete
   )
 }

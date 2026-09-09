@@ -99,6 +99,7 @@
   list(
     findings = c(findings, relations$findings),
     samples = samples,
+    hash_ready = all(samples$valid) && all(episodes$valid) && all(events$valid),
     complete = all(samples$valid) && all(episodes$valid) && all(events$valid) &&
       relations$complete
   )
@@ -151,11 +152,11 @@
   list(findings = findings, value = scope[names(valid)[valid]], complete = all(valid))
 }
 
-.recovery_record_metadata <- function(record) {
+.recovery_record_metadata <- function(record, allow_owned = FALSE) {
   findings <- list()
   owned <- record[["owned_columns"]]
   owned_valid <- .recovery_valid_ids(owned, unique = TRUE)
-  unsupported <- owned_valid && length(owned) > 0L
+  unsupported <- owned_valid && length(owned) > 0L && !allow_owned
   if (unsupported) {
     findings <- .recovery_finding(
       "STAGE_UNSUPPORTED",

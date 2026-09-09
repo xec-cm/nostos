@@ -5,11 +5,10 @@ change. It does not select statistical methods or make unimplemented API
 functions available.
 
 The development version implements `setup_recovery()` for registration and
-`validate_recovery()` for registration diagnostics, and `add_reference()` for
-personal baseline profiles. `add_deviation()` records sample deviations from
-those profiles. The other three functions remain planned; analytical dependency
-validation follows in issue #12. The next target is an experimental
-**0.2.0 MVP released on GitHub**. Its public API target is:
+`validate_recovery()` for registration and analytical dependency diagnostics,
+and `add_reference()` for personal baseline profiles. `add_deviation()` records
+sample deviations from those profiles. The other three functions remain
+planned. The next target is an experimental **0.2.0 MVP released on GitHub**. Its public API target is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
 Use the [architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)

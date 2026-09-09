@@ -5,9 +5,10 @@ recoverome is an experimental R package. The development version implements
 for structural and historical-scope diagnostics. `add_reference()` attaches
 explicit personal baseline profiles with support and provenance, and
 `add_deviation()` records sample-level deviations against those fixed profiles.
-The other three functions in the planned API are not implemented yet. The
-validator still checks registration only; analytical stages remain incompletely
-checked until the dependency-validation work in issue #12.
+The other three functions in the planned API are not implemented yet.
+`validate_recovery()` checks registration, reference and deviation dependencies
+without changing historical results. Recovery records and unknown stage schemas
+remain incompletely checked.
 
 The next release target is the experimental GitHub MVP, version 0.2.0, with
 the seven functions in `dev/architecture.md`. Bioconductor preparation is a

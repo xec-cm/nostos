@@ -1,8 +1,8 @@
 # Architecture contract
 
 Status: the experimental development version implements named analysis
-registration through `setup_recovery()` and registration diagnostics through
-`validate_recovery()`. `add_reference()` attaches explicit personal baseline
+registration through `setup_recovery()` and registration plus analytical
+dependency diagnostics through `validate_recovery()`. `add_reference()` attaches explicit personal baseline
 profiles and `add_deviation()` records sample dissimilarities under
 [RFC 002](rfcs/002-personal-baseline-deviation.md). Recovery, extraction and
 plotting remain planned.
@@ -29,7 +29,7 @@ The initial public interface is limited to seven functions:
 | `add_recovery()` | Planned | Add outcomes under a recorded recovery rule. |
 | `recovery_results()` | Planned | Extract the requested results with their scope. |
 | `plot_recovery()` | Planned | Display data and analysis annotations. |
-| `validate_recovery()` | Available | Diagnose registration consistency and scope mismatches. |
+| `validate_recovery()` | Available | Diagnose registration, reference/deviation dependencies and historical scope. |
 
 Statistical model fitting is a future layer outside these seven functions.
 Do not introduce exported fitting stubs, unvalidated estimators, synthetic
@@ -111,9 +111,9 @@ later result functions must extend ownership when they add sample columns.
 No reference, deviation, or recovery records are preallocated at registration.
 `add_reference()` adds its versioned record explicitly, retaining the definition,
 realized baseline samples, episode support, profile matrix, dependencies and
-provenance specified in RFC 002. It adds no sample result columns. The current
-validator remains registration-only and reports analytical stages as incompletely
-checked. `add_deviation()` checks its own required reference dependencies before
+provenance specified in RFC 002. It adds no sample result columns. The validator
+checks the supported reference and deviation records and their dependencies,
+reporting unavailable historical comparisons separately from detected changes. `add_deviation()` checks its own required reference dependencies before
 creating the deviation and status columns. Its versioned metadata stores method,
 column mapping, realized sample scope, source/result fingerprints and provenance.
 The sample columns remain the sole authoritative deviation values; later
@@ -138,13 +138,11 @@ Subsetting must not silently rebuild a reference, recalculate deviations,
 reclassify an episode, or refit a model.
 
 The validator distinguishes current object scope from original analysis scope.
-Later analytical stages will need diagnostics for:
-
-- Removal of a sample used to estimate a reference.
-- Removal of a visit used to assess persistence or an episode endpoint.
-- Removal or alteration of features used to compute a deviation.
-- Changes to an assay or time metadata on which the analysis depended.
-- Broken sample, subject, event, or episode references.
+It diagnoses removed baseline inputs and computed samples, missing selected
+features, changes to consumed assay values or registration metadata, inconsistent
+parent records and altered authoritative deviations. Broken sample, subject,
+event and episode references retain their registration diagnostics. Recovery
+supporting visits and episode outcomes require the later recovery implementation.
 
 A subset can carry valid historical records without being a fresh analysis of
 that subset. Extraction and plotting must identify this distinction and must
@@ -155,14 +153,17 @@ Recomputation is explicit. It should use a new named analysis or a documented
 replacement operation that makes invalidation of dependent results visible.
 Dependent records must not survive upstream changes as if still current.
 
-The registration validator returns a base list containing a versioned
-summary and diagnostics as `S4Vectors::DataFrame` objects. Structural validity,
+The validator returns a base list containing a versioned summary and diagnostics
+as `S4Vectors::DataFrame` objects. Structural validity,
 completion of checks, source-metadata changes and current sample/feature scope
 are separate report fields. Removing samples preserves historical episode
 records; changing a retained sample's consumed source metadata will produce a
-dependency finding. Registration validation does not detect changes in assay
-values or validate future analytical stages. Unsupported records are reported
-as incompletely checked. See RFC 001 for exact codes, schemas and examples.
+dependency finding. An analysis containing registration only does not require
+assay access. Supported analytical stages add selected-block source and stored
+result comparisons using the RFC 002 fingerprints. Unknown schemas and recovery
+records remain incompletely checked. See RFC 001 for the report schema and
+[analytical validation](analytical-validation.md) for the additional diagnostics
+and detection boundaries.
 
 ## Analytical boundaries
 
@@ -186,10 +187,9 @@ distinctions without claiming those methods already exist.
 Registration, its validator, reference attachment and deviation calculation are
 implemented. The next steps are:
 
-1. Extend validation to reference and deviation dependencies.
-2. Implement the accepted observation-based recovery rule and its validation.
-3. Add extraction and plotting that respect historical scope.
-4. Design statistical fitting only after these contracts are usable.
+1. Implement the accepted observation-based recovery rule and its validation.
+2. Add extraction and plotting that respect historical scope.
+3. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
 should verify meaningful behavior and contract failures rather than preserve

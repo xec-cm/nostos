@@ -1,40 +1,3 @@
-expect_validation_state <- function(report,
-                                    structural_valid = TRUE,
-                                    validation_complete = TRUE,
-                                    dependencies = "unchanged",
-                                    sample_scope = "same",
-                                    feature_scope = "same",
-                                    n_registered = 5L,
-                                    n_retained = 5L) {
-  expected <- list(
-    structural_valid = structural_valid,
-    validation_complete = validation_complete,
-    dependencies = dependencies,
-    sample_scope = sample_scope,
-    feature_scope = feature_scope,
-    n_registered = n_registered,
-    n_retained = n_retained
-  )
-
-  testthat::expect_identical(nrow(report$summary), 1L)
-  for (field in names(expected)) {
-    testthat::expect_identical(report$summary[[field]], expected[[field]], info = field)
-  }
-}
-
-expect_validation_diagnostic <- function(report, code, severity, ids = NULL) {
-  findings <- report$diagnostics[report$diagnostics$code == code, , drop = FALSE]
-  testthat::expect_gt(nrow(findings), 0L)
-  testthat::expect_true(all(findings$severity == severity), info = code)
-
-  if (!is.null(ids)) {
-    affected <- as.character(unlist(as.list(findings$ids), use.names = FALSE))
-    testthat::expect_setequal(affected, ids)
-  }
-
-  invisible(findings)
-}
-
 test_that("registration validation returns versioned, typed tables quietly", {
   tse <- register_fixture(registration_fixture(trees = TRUE))
   before <- serialize(tse, NULL)
@@ -445,7 +408,7 @@ test_that("unknown analysis schemas do not prevent checking independent analyses
 
 test_that("unknown stages are incomplete while independent dependency checks still run", {
   tse <- register_fixture(registration_fixture())
-  S4Vectors::metadata(tse)$recoverome$analyses$antibiotic$reference <- list(method = "future")
+  S4Vectors::metadata(tse)$recoverome$analyses$antibiotic$recovery <- list(method = "future")
   cd <- SummarizedExperiment::colData(tse)
   cd$time[1] <- 4
   SummarizedExperiment::colData(tse) <- cd
@@ -511,7 +474,7 @@ test_that("formal invalidity becomes a report finding rather than an exception",
   expect_validation_diagnostic(report, "OBJECT_S4_INVALID", "error")
 })
 
-test_that("validation needs no assay accessor and never changes the container", {
+test_that("registration validation needs no assay accessor and preserves the container", {
   tse <- register_fixture(registration_fixture(trees = TRUE))
   tse <- tse["f1", c("s1", "s3"), drop = FALSE]
   before <- serialize(tse, NULL)

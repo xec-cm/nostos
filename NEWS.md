@@ -1,5 +1,13 @@
 # recoverome (development version)
 
+- Extend `validate_recovery()` to reference and deviation records, comparing
+  consumed sources, stored parent fingerprints and authoritative sample outputs.
+  Report changed dependencies, unavailable historical inputs and limited baseline
+  support without refitting, repairing or changing the TSE.
+- Preserve registration-only validation and the version-1 report tables. Known
+  reference/deviation stages are now checked; unsupported schemas or fingerprint
+  formats remain incomplete, with independently detectable findings retained.
+
 - Add `add_deviation()` to calculate Bray--Curtis dissimilarities against fixed
   personal references, with explicit computed, missing-baseline and excluded
   sample statuses. Store results by sample identity in owned `colData()` columns.

@@ -25,7 +25,8 @@ that return must persist, and what the sampling schedule can support.
 The experimental development version provides `setup_recovery()` to register
 a named analysis with explicit episodes, events, and sample membership.
 `validate_recovery()` diagnoses the registered structure, changes to consumed
-metadata, and the relationship between current and original scope.
+inputs or stored results, and the relationship between current and original
+scope. It checks the stages that are present without changing the TSE.
 `add_reference()` attaches a personal reference from explicitly selected baseline
 samples. `add_deviation()` measures sample dissimilarity from those fixed
 profiles. Recovery outcomes, plotting, and extraction remain planned.
@@ -148,10 +149,9 @@ variation. A reference is descriptive: it is not a healthy-state estimate or
 an automatic recovery threshold. Selection and input fingerprints are retained
 with the profile; assays and unrelated TSE content remain unchanged.
 
-The current `validate_recovery()` still supports registration only. A reference
-record therefore produces `STAGE_UNSUPPORTED` and incomplete validation; adding
-the reference does not claim that its analytical dependencies have been checked
-by that separate diagnostic function. Stage-aware validation is planned in #12.
+`validate_recovery()` can check this reference against its saved record and
+current baseline inputs. Limited support is reported as information; a single
+baseline is not itself a broken analysis.
 
 ## Calculate sample deviations
 
@@ -177,7 +177,32 @@ Calculate before removing baseline inputs. Once deviations exist, filtering
 keeps the retained sample values and the original analysis history. Reordering
 matches identities; it never refits the reference. Repeated additions error,
 including identical calls. Use a new analysis name for a different definition.
-The separate `validate_recovery()` report remains registration-only until #12.
+
+## Check current dependencies without rewriting history
+
+```{r analytical-validation}
+recoverome::validate_recovery(analysed, analysis_id = "antibiotic")$summary
+
+# A saved deviation keeps its value even when current measurements change.
+changed <- analysed
+SummarizedExperiment::assay(changed, "counts")[, "s3"] <- c(50L, 50L)
+changed_report <- recoverome::validate_recovery(changed, analysis_id = "antibiotic")
+changed_report$summary
+```
+
+The original analysis has unchanged dependencies. In `changed`, the stored
+`s3` deviation is still `0.4`, but the report identifies its modified input.
+The comparison is complete even though a change was found. By contrast,
+removing a required baseline or selected feature leaves its comparison
+unavailable and validation incomplete. A subset retains its historical meaning;
+validation does not silently recalculate it.
+
+Read `structural_valid`, `validation_complete` and `dependencies` together.
+`deviation_status = "computed"` records a past calculation, not present validity.
+See the [vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
+for filtering and output edits, and the
+[diagnostic guide](https://github.com/xec-cm/recoverome/blob/devel/dev/analytical-validation.md)
+for supported codes and detection boundaries.
 
 ## Available and planned workflow
 
@@ -189,7 +214,7 @@ The separate `validate_recovery()` report remains registration-only until #12.
 | `add_recovery()` | Planned | Attach outcomes under an explicit recovery rule. |
 | `recovery_results()` | Planned | Extract results at the requested analysis level. |
 | `plot_recovery()` | Planned | Display observations and the recovery definition. |
-| `validate_recovery()` | Available | Diagnose registration records, metadata changes, and current scope. |
+| `validate_recovery()` | Available | Diagnose registration, reference/deviation dependencies and historical scope. |
 
 Analysis IDs match `^[a-z][a-z0-9]*$`. Registration reserves the corresponding
 `rec_<analysis>_` prefix but creates no sample result columns. A repeated
@@ -204,8 +229,8 @@ design and validation.
 
 ## Development and contributions
 
-The next steps are analytical dependency validation and observed recovery
-outcomes under the accepted contracts. No benchmark performance or statistical
+The next steps are observed recovery outcomes, extraction and plotting under
+the accepted contracts. No benchmark performance or statistical
 guarantees are claimed for this version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and contribution

@@ -8,12 +8,13 @@
 \description{
 This experimental package registers named analyses with \code{\link[=setup_recovery]{setup_recovery()}},
 validating explicit sample membership, episodes, events, and numeric time.
-\code{\link[=validate_recovery]{validate_recovery()}} diagnoses registered structure, consumed metadata, and
-historical scope without modifying the object. \code{\link[=add_reference]{add_reference()}} attaches
+\code{\link[=validate_recovery]{validate_recovery()}} diagnoses registered structure, consumed inputs, stored
+reference/deviation dependencies and historical scope without modifying the
+object. \code{\link[=add_reference]{add_reference()}} attaches
 explicit personal baseline profiles with support and input provenance.
 \code{\link[=add_deviation]{add_deviation()}} records sample deviations against those fixed profiles.
-Recovery classification, extraction, and plotting remain planned; the
-validator still checks registration only.
+Recovery classification, extraction, and plotting remain planned. Validation
+never refits references or recalculates historical results.
 }
 \details{
 The intended workflow enriches a TreeSummarizedExperiment with sample-level
