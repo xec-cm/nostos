@@ -2,7 +2,9 @@
 
 Status: the experimental development version implements named analysis
 registration through `setup_recovery()` and registration diagnostics through
-`validate_recovery()`. The remaining analytical stages are planned.
+`validate_recovery()`. `add_reference()` attaches explicit personal baseline
+profiles under [RFC 002](rfcs/002-personal-baseline-deviation.md); deviation,
+recovery, extraction and plotting remain planned.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
@@ -21,7 +23,7 @@ The initial public interface is limited to seven functions:
 | Function | Status | Contract |
 |:---------|:-------|:---------|
 | `setup_recovery()` | Available | Register a named analysis and its episodes/events. |
-| `add_reference()` | Planned | Add a reference definition and its realized scope. |
+| `add_reference()` | Available | Attach personal reference profiles, support and realized scope. |
 | `add_deviation()` | Planned | Add sample-level deviations from that reference. |
 | `add_recovery()` | Planned | Add outcomes under a recorded recovery rule. |
 | `recovery_results()` | Planned | Extract the requested results with their scope. |
@@ -105,8 +107,11 @@ time. The historical snapshot must not be edited as a second current data source
 Registration stores no assay values or fingerprints and creates no result
 columns. Each analysis starts with an empty exact-name `owned_columns` manifest;
 later result functions must extend ownership when they add sample columns.
-No reference, deviation, or recovery records are preallocated. Future reference
-records will retain both the user's definition and the eligible data used.
+No reference, deviation, or recovery records are preallocated at registration.
+`add_reference()` adds its versioned record explicitly, retaining the definition,
+realized baseline samples, episode support, profile matrix, dependencies and
+provenance specified in RFC 002. It adds no sample result columns. The current
+validator remains registration-only and reports this stage as incompletely checked.
 
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
@@ -172,14 +177,14 @@ distinctions without claiming those methods already exist.
 
 ## Implementation sequence
 
-Registration and its validator are implemented. The next steps are:
+Registration, its validator and reference attachment are implemented. The next
+steps are:
 
-1. Implement reference attachment under a separately accepted contract.
-2. Add a documented deviation method and provenance requirements.
-3. Implement a prespecified observation-based recovery rule.
+1. Add the accepted deviation method and provenance requirements.
+2. Extend validation to reference and deviation dependencies.
+3. Implement the accepted observation-based recovery rule and its validation.
 4. Add extraction and plotting that respect historical scope.
-5. Extend validation as analytical stages introduce new dependencies.
-6. Design statistical fitting only after these contracts are usable.
+5. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
 should verify meaningful behavior and contract failures rather than preserve

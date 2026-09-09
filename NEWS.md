@@ -1,5 +1,12 @@
 # recoverome (development version)
 
+- Add `add_reference()` for explicit personal baseline selection, equal-sample
+  mean composition profiles, descriptive support and baseline diameter.
+- Record realized baseline identities, selected assay/features and canonical
+  input fingerprints while preserving the TSE and other named analyses.
+  References remain historical after filtering; repeated additions do not
+  overwrite earlier results. Reference-stage validation follows separately.
+
 - Add `validate_recovery()` for registration structure, consumed metadata
   dependencies, and historical scope, returning typed diagnostic tables without
   changing the input or inspecting assay values.
@@ -14,8 +21,7 @@
 - Bundle two small synthetic `recovery_examples` datasets with reproducible
   source generation, shared by registration tests, function help and vignettes.
 - Add executable registration and historical-scope examples to the README
-  and introductory vignette. The standalone validator and analytical stages
-  remain planned.
+  and introductory vignette.
 
 # recoverome 0.1.0
 

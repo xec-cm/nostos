@@ -20,7 +20,8 @@ The experimental development version provides `setup_recovery()` to
 register a named analysis with explicit episodes, events, and sample
 membership. `validate_recovery()` diagnoses the registered structure,
 changes to consumed metadata, and the relationship between current and
-original scope. Reference estimation, deviation, recovery outcomes,
+original scope. `add_reference()` attaches a personal reference from
+explicitly selected baseline samples. Deviation, recovery outcomes,
 plotting, and extraction remain planned.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
@@ -134,12 +135,58 @@ vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
 for the stored records and filtering example in more detail. This small
 dataset illustrates registration only; it does not establish recovery.
 
+## Attach a personal reference
+
+Select baseline sample IDs explicitly and name the assay. Each selected
+sample must precede the start of its episode’s origin event, even if the
+episode uses that event’s end as its time origin. The function closes
+each selected sample to proportions over the chosen features, then
+averages samples equally within each episode. It performs no implicit
+filtering, pseudocount addition or preprocessing beyond that declared
+closure.
+
+``` r
+referenced <- recoverome::add_reference(
+  tse,
+  analysis_id = "antibiotic",
+  reference = "s1",
+  assay = "counts",
+  preprocessing = "synthetic counts; no upstream transformations"
+)
+personal <- S4Vectors::metadata(referenced)$recoverome$analyses$antibiotic$reference
+personal$profiles
+#>           episode_1
+#> feature_a       0.8
+#> feature_b       0.2
+personal$episodes
+#> DataFrame with 1 row and 7 columns
+#>    episode_id       support n_samples   n_times first_time last_time
+#>   <character>   <character> <integer> <integer>  <numeric> <numeric>
+#> 1   episode_1 single_sample         1         1          3         3
+#>   baseline_diameter
+#>           <numeric>
+#> 1                NA
+```
+
+Here the reference is `(0.8, 0.2)`, with `single_sample` support and an
+undefined baseline diameter (`NA`), since one observation cannot
+describe temporal variation. A reference is descriptive: it is not a
+healthy-state estimate or an automatic recovery threshold. Selection and
+input fingerprints are retained with the profile; assays and unrelated
+TSE content remain unchanged.
+
+The current `validate_recovery()` still supports registration only. A
+reference record therefore produces `STAGE_UNSUPPORTED` and incomplete
+validation; adding the reference does not claim that its analytical
+dependencies have been checked by that separate diagnostic function.
+Stage-aware validation is planned in \#12.
+
 ## Available and planned workflow
 
 | Function | Status | Responsibility |
 |:---|:---|:---|
 | `setup_recovery()` | Available | Register a named analysis, episodes, and events. |
-| `add_reference()` | Planned | Record the reference definition and eligible samples. |
+| `add_reference()` | Available | Attach personal reference profiles, support and input provenance. |
 | `add_deviation()` | Planned | Attach deviations from the registered reference. |
 | `add_recovery()` | Planned | Attach outcomes under an explicit recovery rule. |
 | `recovery_results()` | Planned | Extract results at the requested analysis level. |
@@ -160,9 +207,10 @@ separate design and validation.
 
 ## Development and contributions
 
-The next steps are further preservation checks and separately designed
-analytical stages. No benchmark performance or statistical guarantees
-are claimed for this version.
+The next steps are deviation calculation, analytical dependency
+validation and observed recovery outcomes under the accepted contracts.
+No benchmark performance or statistical guarantees are claimed for this
+version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and
 contribution guidelines. Please use the [issue
