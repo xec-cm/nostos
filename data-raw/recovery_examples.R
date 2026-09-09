@@ -1,5 +1,5 @@
 # Run from the package root with Rscript --vanilla data-raw/recovery_examples.R.
-# These synthetic values describe registration structure, not recovery outcomes.
+# These synthetic inputs illustrate data contracts and observed trajectories.
 
 single_counts <- matrix(
   c(80L, 20L, 75L, 25L, 40L, 60L),
@@ -66,6 +66,22 @@ recovery_examples <- list(
     time_unit = "days",
     time_origin = "days since enrolment within participant"
   )
+)
+
+# Baseline (1, 0); subsequent Bray--Curtis deviations are 3/4, 1/4,
+# 1/8, 1/8, 1/2 and 1/8. All counts and proportions are exact.
+recovery_examples$observed_recovery <- recovery_examples$single_episode
+recovery_examples$observed_recovery$counts <- matrix(
+  c(8L, 0L, 2L, 6L, 6L, 2L, 7L, 1L, 7L, 1L, 4L, 4L, 7L, 1L),
+  nrow = 2L,
+  dimnames = list(c("feature_a", "feature_b"), c("b1", paste0("s", seq_len(6L))))
+)
+recovery_examples$observed_recovery$col_data <- data.frame(
+  subject_id = rep("participant_1", 7L),
+  episode_id = rep("episode_1", 7L),
+  day = c(8, 10, 12, 14, 16, 18, 20),
+  phase = c("baseline", rep("follow_up", 6L)),
+  row.names = colnames(recovery_examples$observed_recovery$counts)
 )
 
 dir.create("data", showWarnings = FALSE)

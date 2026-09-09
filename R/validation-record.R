@@ -101,13 +101,13 @@
   extra <- setdiff(names(record), c(required, "reference", "deviation", "recovery"))
   stages <- intersect(names(record), c("reference", "deviation", "recovery"))
   populated <- stages[vapply(record[stages], length, integer(1)) > 0L]
-  known <- if (analytical) c("reference", "deviation") else character()
+  known <- if (analytical) c("reference", "deviation", "recovery") else character()
   unsupported <- c(extra, setdiff(populated, known))
   if (length(unsupported)) {
     findings <- c(findings, .recovery_finding(
       "STAGE_UNSUPPORTED",
       "analysis",
-      "The analysis contains fields or stages outside registration-only validation.",
+      "The analysis contains fields or stages outside the supported validation contract.",
       ids = unsupported
     ))
   }
@@ -141,6 +141,8 @@
     complete = complete,
     supported = TRUE,
     samples = tables$samples,
+    episodes = tables$episodes,
+    events = tables$events,
     source_columns = registration$source_columns,
     scope = scope$value,
     owned_columns = metadata$owned_columns,

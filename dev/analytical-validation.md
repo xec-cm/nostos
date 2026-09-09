@@ -1,11 +1,12 @@
-# Reference and deviation validation
+# Analytical validation
 
 `validate_recovery()` extends the version-1 report from
 [RFC 001](rfcs/001-registration-validation.md) with the analytical checks in
-[RFC 002](rfcs/002-personal-baseline-deviation.md). It accepts the same TSE and
+[RFC 002](rfcs/002-personal-baseline-deviation.md) and
+[RFC 003](rfcs/003-observed-recovery.md). It accepts the same TSE and
 analysis selector and returns the same summary and diagnostic DataFrames. It
-never repairs metadata, adds timestamps, recomputes a deviation or refits a
-reference. There is no replacement API; changed definitions require a new
+never repairs metadata, adds timestamps, recomputes a deviation, refits a
+reference or reclassifies an episode. There is no replacement API; changed definitions require a new
 named analysis.
 
 ## Read the three summary fields together
@@ -43,9 +44,9 @@ Message text and row order are not contractual.
 
 | Code | Severity | Meaning |
 |:-----|:---------|:--------|
-| `REFERENCE_RECORD_INVALID`, `DEVIATION_RECORD_INVALID` | error | A known record has malformed fields or inconsistent identities. |
+| `REFERENCE_RECORD_INVALID`, `DEVIATION_RECORD_INVALID`, `RECOVERY_RECORD_INVALID` | error | A known record has malformed fields or inconsistent identities. |
 | `SCHEMA_UNSUPPORTED` | error | A record version is unknown; its inner layout is not interpreted. |
-| `STAGE_UNSUPPORTED` | error | A stage such as recovery, or unknown owned content, is outside the implemented checks. |
+| `STAGE_UNSUPPORTED` | error | A future stage, or unknown owned content, is outside the implemented checks. |
 | `FINGERPRINT_FORMAT_UNSUPPORTED` | error | The format or current encoding compatibility cannot support fingerprint comparisons. This alone is not a detected data change. |
 | `FINGERPRINT_CHANGED` | error | A stored record or its parent fingerprint does not agree. |
 | `ANALYTICAL_INPUT_CHANGED` | error | A consumed current source differs from its recorded dependency. |
@@ -55,6 +56,7 @@ Message text and row order are not contractual.
 | `RESULT_INCONSISTENT` | error | A retained owned output is absent, malformed, or inconsistent with its recorded hash. |
 | `REFERENCE_INPUT_MISSING` | info | Baseline samples or selected features needed for current reference comparison were removed. |
 | `DEVIATION_SAMPLE_MISSING` | info | A sample in the recorded deviation scope is no longer available for comparison. |
+| `RECOVERY_INPUT_MISSING` | info | A recorded recovery input is absent; outcomes retain their historical scope. |
 | `BASELINE_SUPPORT_LIMITED` | info | Missing baseline, one sample or one sampling time limits interpretation; this is not itself a structural error. |
 
 An invalid or unavailable source does not disable unrelated comparisons.
@@ -89,5 +91,6 @@ and hashes. Manual editing of stored analysis records is unsupported.
 
 Limited baseline support is descriptive, not an uncertainty estimate. Validation
 makes no statement about biological recovery, calibration or clinical validity.
-Recovery outcomes and their supporting observations remain later implementation
-work.
+Observed recovery is checked against its recorded rule and evidence structure,
+not against a newly classified trajectory. See the
+[observed recovery guide](observed-recovery.md) for storage and filtering behavior.

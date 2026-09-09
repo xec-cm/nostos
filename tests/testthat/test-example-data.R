@@ -4,7 +4,7 @@ test_that("bundled examples load through data() as ordinary R objects", {
   expect_identical(ls(data_env), "recovery_examples")
 
   examples <- data_env$recovery_examples
-  expect_named(examples, c("single_episode", "repeated_episodes"))
+  expect_named(examples, c("single_episode", "repeated_episodes", "observed_recovery"))
 
   contains_s4 <- function(value) {
     if (isS4(value)) return(TRUE)
@@ -23,19 +23,22 @@ test_that("bundled examples load through data() as ordinary R objects", {
   }
 })
 
-test_that("both examples register with the hand-worked episode-relative coordinates", {
+test_that("bundled examples register with the hand-worked episode-relative coordinates", {
   examples <- load_recovery_examples()
   expected_relative <- list(
     single_episode = c(-7, 0, 7),
-    repeated_episodes = c(-7, 0, 7, -8, 1)
+    repeated_episodes = c(-7, 0, 7, -8, 1),
+    observed_recovery = c(-2, 0, 2, 4, 6, 8, 10)
   )
   expected_samples <- list(
     single_episode = paste0("s", 1:3),
-    repeated_episodes = paste0("s", 1:6)
+    repeated_episodes = paste0("s", 1:6),
+    observed_recovery = c("b1", paste0("s", 1:6))
   )
   expected_included <- list(
     single_episode = paste0("s", 1:3),
-    repeated_episodes = paste0("s", 1:5)
+    repeated_episodes = paste0("s", 1:5),
+    observed_recovery = c("b1", paste0("s", 1:6))
   )
 
   for (name in names(examples)) {

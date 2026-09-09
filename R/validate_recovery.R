@@ -48,11 +48,13 @@
 #' Filtering away all observations of an episode does not break that history.
 #' No record is repaired, sorted, recomputed, or timestamped by validation.
 #' Registration-only validation reads no assay values. With analytical stages,
-#' validation checks supported schema-1 reference/deviation records, canonical
+#' validation checks supported schema-1 reference/deviation/recovery records, canonical
 #' fingerprint formats, saved parent/self fingerprints, consumed source hashes
 #' and retained owned output hashes. It does not refit profiles, close samples
-#' to recompute deviations, or reconstruct missing output values. Unsupported
-#' recovery stages remain incomplete while earlier independent checks continue.
+#' to recompute deviations, reconstruct missing output values, or rerun the
+#' observed recovery rule. Recovery checks include episode/evidence invariants,
+#' the complete parent chain and its own fingerprint. Unsupported stages remain
+#' incomplete while earlier independent checks continue.
 #'
 #' Only fixed reference features and samples recorded as baseline or computed
 #' deviation inputs are requested from an assay. Unselected features, excluded
@@ -65,7 +67,7 @@
 #' `"not_checked"` takes precedence over `"unchanged"`. Unknown/incompatible
 #' fingerprint formats prevent affected comparisons and never establish a change
 #' solely from encoding. Removing required baseline inputs, fixed features or
-#' realized deviation samples leaves their historical records intact and makes
+#' realized deviation/recovery samples leaves historical records intact and makes
 #' the affected checks incomplete. Reordering does not change dependencies.
 #'
 #' Analytical diagnostics include `REFERENCE_RECORD_INVALID` and
@@ -115,7 +117,10 @@
 #' validate_recovery(registered)$summary
 #' validate_recovery(registered[, c(1, 3)])$diagnostics
 validate_recovery <- function(tse, analysis_id = NULL) {
-  error_call <- environment()
+  .recovery_validate_input(tse, analysis_id, environment())
+}
+
+.recovery_validate_input <- function(tse, analysis_id, error_call, allow_all = TRUE) {
   if (!methods::is(tse, "TreeSummarizedExperiment")) {
     .recovery_abort(
       "{.arg tse} must be a {.cls TreeSummarizedExperiment}.",
@@ -123,7 +128,7 @@ validate_recovery <- function(tse, analysis_id = NULL) {
       call = error_call
     )
   }
-  if (!is.null(analysis_id)) {
+  if (!is.null(analysis_id) || !allow_all) {
     .recovery_check_string(analysis_id, "analysis_id", call = error_call)
     if (!grepl("^[a-z][a-z0-9]*$", analysis_id)) {
       .recovery_abort(

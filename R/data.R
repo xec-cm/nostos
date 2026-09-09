@@ -1,10 +1,10 @@
-#' Synthetic inputs for analysis registration
+#' Synthetic inputs for registration and observed recovery
 #'
 #' Small deterministic examples for registering analyses with
 #' [setup_recovery()]. They contain plain matrices, data frames, and character
 #' scalars; no TreeSummarizedExperiment object or analysis is stored.
 #'
-#' @format A named list of two examples:
+#' @format A named list of three examples:
 #' \describe{
 #'   \item{single_episode}{Two features and three samples from one participant,
 #'     with one episode and an exposure interval starting on day 10. The
@@ -13,6 +13,10 @@
 #'     participant `p1` belong to two episodes; sample `s6` is explicitly
 #'     excluded by its missing episode membership. The episodes use the start
 #'     and end of their respective exposure intervals as origins.}
+#'   \item{observed_recovery}{Two features and seven samples, with baseline b1
+#'     at day 8 and follow-up at days 10, 12, 14, 16, 18 and 20. Relative to
+#'     baseline (1, 0), follow-up deviations are 0.75, 0.25, 0.125, 0.125,
+#'     0.5 and 0.125. These illustrate an observed return and later rebound.}
 #' }
 #'
 #' Each example contains these seven components:
@@ -51,7 +55,7 @@
 #'
 #' @source Created for recoverome; no participant or external study data.
 #' @keywords datasets
-#' @seealso [setup_recovery()]
+#' @seealso [setup_recovery()], [add_recovery()]
 #' @examples
 #' data("recovery_examples", package = "recoverome")
 #' names(recovery_examples)

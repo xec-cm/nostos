@@ -1,5 +1,5 @@
 .recovery_analysis_stages <- function(analysis_id, stored, registration, current, result) {
-  present <- intersect(c("reference", "deviation"), names(stored))
+  present <- intersect(c("reference", "deviation", "recovery"), names(stored))
   if (!length(present)) {
     return(result)
   }
@@ -40,6 +40,12 @@
       "deviation", deviation, reference, current, sources
     )
     parts$outputs <- .recovery_check_outputs(deviation, current)
+  }
+
+  if ("recovery" %in% present) {
+    parts$recovery <- .recovery_validate_outcomes(
+      stored$recovery, stored, registration, reference, deviation, current, compatible
+    )
   }
 
   base <- .recovery_check_part()
