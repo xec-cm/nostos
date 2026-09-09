@@ -5,8 +5,9 @@ change. It does not select statistical methods or make unimplemented API
 functions available.
 
 The development version implements `setup_recovery()` for registration and
-`validate_recovery()` for registration diagnostics; the other five functions
-remain planned. The next target is an experimental
+`validate_recovery()` for registration diagnostics, and `add_reference()` for
+personal baseline profiles. The other four functions remain planned; reference
+dependency validation is a later implementation issue. The next target is an experimental
 **0.2.0 MVP released on GitHub**. Its public API target is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
