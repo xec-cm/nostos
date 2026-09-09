@@ -112,7 +112,9 @@ validate_recovery <- function(tse, analysis_id = NULL) {
   }
   namespace <- .recovery_validation_namespace(S4Vectors::metadata(tse))
   findings <- c(findings, namespace$findings)
-  if (!namespace$readable) { return(.recovery_validation_report(findings = findings)) }
+  if (!namespace$readable) {
+    return(.recovery_validation_report(findings = findings))
+  }
 
   analyses <- namespace$analyses
   selected <- if (is.null(analysis_id)) names(analyses) else analysis_id

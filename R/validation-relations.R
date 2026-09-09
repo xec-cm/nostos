@@ -1,5 +1,8 @@
 .recovery_relation_finding <- function(bad, component, message, ids) {
-  if (!any(bad)) { return(list()) }
+  if (!any(bad)) {
+    return(list())
+  }
+
   .recovery_finding(
     "REGISTRATION_RECORD_INVALID",
     component,
@@ -24,7 +27,6 @@
       ids = episodes$ids
     ))
   }
-
   if (.recovery_fields_ready(events, c("start_time", "end_time"))) {
     findings <- c(findings, .recovery_relation_finding(
       event_table$start_time > event_table$end_time,
@@ -34,7 +36,8 @@
     ))
   }
 
-  samples_linked <- .recovery_fields_ready(samples, "episode_id") && .recovery_fields_ready(episodes, "episode_id")
+  samples_linked <- .recovery_fields_ready(samples, "episode_id") &&
+    .recovery_fields_ready(episodes, "episode_id")
   if (samples_linked) {
     sample_episode <- match(sample_table$episode_id, episode_table$episode_id)
     findings <- c(findings, .recovery_relation_finding(
@@ -60,7 +63,6 @@
       ))
     }
   }
-
   if (.recovery_fields_ready(events, "episode_id") &&
         .recovery_fields_ready(episodes, "episode_id")) {
     findings <- c(findings, .recovery_relation_finding(
@@ -71,7 +73,8 @@
     ))
   }
 
-  origins_linked <- .recovery_fields_ready(episodes, "origin_event_id") && .recovery_fields_ready(events, "event_id")
+  origins_linked <- .recovery_fields_ready(episodes, "origin_event_id") &&
+    .recovery_fields_ready(events, "event_id")
   if (origins_linked) {
     origin <- match(episode_table$origin_event_id, event_table$event_id)
     findings <- c(findings, .recovery_relation_finding(

@@ -1,15 +1,22 @@
 .recovery_validation_scope <- function(current, original, axis) {
   findings <- list()
-  if (!current$valid || is.null(original)) { return(list(state = "not_checked", findings = findings)) }
+  if (!current$valid || is.null(original)) {
+    return(list(state = "not_checked", findings = findings))
+  }
 
   removed <- setdiff(original, current$ids)
   added <- setdiff(current$ids, original)
-  state <- if (!length(current$ids)) { "empty"
-  } else if (length(removed) && length(added)) { "mixed"
-  } else if (length(removed)) { "subset"
-  } else if (length(added)) { "expanded"
-  } else { "same" }
-
+  state <- if (!length(current$ids)) {
+    "empty"
+  } else if (length(removed) && length(added)) {
+    "mixed"
+  } else if (length(removed)) {
+    "subset"
+  } else if (length(added)) {
+    "expanded"
+  } else {
+    "same"
+  }
   component <- paste0(axis, "_ids")
   if (length(removed)) {
     findings <- c(findings, .recovery_finding(
@@ -147,9 +154,13 @@
     }
   }
 
-  state <- if (changed) {"changed"
-  } else if (complete && length(included)) { "unchanged"
-  } else { "not_checked"}
+  state <- if (changed) {
+    "changed"
+  } else if (complete && length(included)) {
+    "unchanged"
+  } else {
+    "not_checked"
+  }
 
   list(state = state, complete = complete, findings = findings)
 }
