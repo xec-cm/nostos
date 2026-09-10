@@ -167,5 +167,5 @@ independent comparison uses `vegan`; neither is a runtime dependency of nostos.
 utils::sessionInfo()
 ```
 
-[assessment]: https://github.com/xec-cm/recoverome/tree/devel/dev/qualification
-[contract]: https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/005-sensitivity-diagnostic-plots.md
+[assessment]: https://github.com/xec-cm/nostos/tree/devel/dev/qualification
+[contract]: https://github.com/xec-cm/nostos/blob/devel/dev/rfcs/005-sensitivity-diagnostic-plots.md

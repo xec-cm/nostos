@@ -8,7 +8,7 @@ dissimilarities under [RFC 002](rfcs/002-personal-baseline-deviation.md).
 `add_recovery()` attaches observed episode outcomes under
 [RFC 003](rfcs/003-observed-recovery.md). `recovery_results()` extracts sample and
 episode tables under [RFC 004](rfcs/004-result-extraction-plotting.md);
-see [result extraction](https://xec-cm.github.io/recoverome/articles/history-and-validation.html). `plot_recovery()` displays saved
+see [result extraction](https://xec-cm.github.io/nostos/articles/history-and-validation.html). `plot_recovery()` displays saved
 observations and evidence.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
@@ -145,7 +145,7 @@ The sample columns remain the sole authoritative deviation values; later
 filtering preserves their original metadata scope. `add_recovery()` adds only
 an episode-level `recovery` record, with rule, outcomes, evidence, dependencies
 and provenance. It does not extend `owned_columns` or duplicate deviations.
-See [observed recovery](https://xec-cm.github.io/recoverome/articles/history-and-validation.html) for the implemented storage.
+See [observed recovery](https://xec-cm.github.io/nostos/articles/history-and-validation.html) for the implemented storage.
 
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
@@ -191,7 +191,7 @@ dependency finding. An analysis containing registration only does not require
 assay access. Supported analytical stages add selected-block source and stored
 result comparisons using the RFC 002 fingerprints and RFC 003 recovery records.
 Unknown schemas remain incompletely checked. See RFC 001 for the report schema and
-[analytical validation](https://xec-cm.github.io/recoverome/articles/history-and-validation.html) for the additional diagnostics
+[analytical validation](https://xec-cm.github.io/nostos/articles/history-and-validation.html) for the additional diagnostics
 and detection boundaries.
 
 ## Analytical boundaries

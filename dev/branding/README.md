@@ -47,31 +47,33 @@ They describe the historical `recoverome` implementation. Current runners use
 
 ## Repository and Pages coordination
 
-This PR renames the installed package. The existing repository is still
-`xec-cm/recoverome`, the existing site is
-`https://xec-cm.github.io/recoverome/`, and the Project remains
-`recoverome Development`. README installation, badges, DESCRIPTION URLs and
-`_pkgdown.yml` deliberately point to these actual destinations until the
-maintainer coordinates the remote transition. The issue and PR stay in that
-same repository; do not create a replacement repository or Project.
+The maintainer authorized the coordinated remote and local rename on
+2026-09-10 after merging #54. The existing repository is now
+[`xec-cm/nostos`](https://github.com/xec-cm/nostos), and Pages uses
+`https://xec-cm.github.io/nostos/`. The existing
+[nostos Development Project](https://github.com/users/xec-cm/projects/10)
+keeps its identity, cards and workflow. Issue #55 was added automatically after
+the rename, confirming native auto-add still selects the repository.
 
-For the coordinated remote rename, after the maintainer merges this PR:
+Current installation, badge, source and site links use these destinations.
+The transition PR regenerates package help and README; its maintainer merge
+triggers the normal Pages build and deployment from `devel`. Check the new root,
+articles, reference pages, search and PNG icons after that deployment.
+GitHub repository redirects preserve old repository links; the old Pages path
+must not be assumed to redirect. Use the new site URL in shared links.
 
-1. Rename the existing GitHub repository to `nostos`, preserving its issues,
-   PRs, rules and history. Update local `origin` URLs; do not rename or reset
-   another active checkout automatically.
-2. Update current installation/badge/source links, DESCRIPTION URLs and
-   `_pkgdown.yml` to `xec-cm/nostos` and `https://xec-cm.github.io/nostos/` in
-   the accompanying transition change; regenerate package help and README.
-   Preserve immutable historical references and compatibility identifiers.
-3. Rebuild/redeploy Pages and verify the new root, articles, reference pages,
-   search and PNG icons. Do not assume the former Pages URL redirects with
-   the repository. Retain or publish an explicit old-site redirect if needed.
-4. Update the existing Project's name and repository-specific auto-add filter,
-   plus current developer documentation; keep its project ID and issue cards.
-5. Add `nostos` to the maintainer's Bioconductor Watched Tags, retain the
-   already-confirmed mailing-list subscription and rerun BiocCheck before
-   submission. Account changes remain with the maintainer.
+The local main checkout is `/Users/fcatala/GitHub/nostos`, and linked issue
+checkouts live under `/Users/fcatala/GitHub/nostos-worktrees`. Git worktree
+references and `origin` have been updated without resetting existing branches.
+Compatibility links from the former directory names preserve existing Codex
+sessions. Open the new directory for future sessions; the saved Codex project
+entry needs a maintainer-side adjustment because automated control of Codex's
+own interface is blocked. Temporary checkouts retain their historical paths.
+
+Before submission, the maintainer must add `nostos` to Bioconductor Watched
+Tags and rerun BiocCheck; the previously confirmed mailing-list subscription
+is unaffected. This repository rename does not establish that account check
+or publish a release or submission.
 
 The availability assessment in #53 is dated 2026-09-10. It found no observed
 R-package collision, but does not reserve the name or establish acceptance.

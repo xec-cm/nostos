@@ -31,7 +31,7 @@ Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
 ## Issue and review workflow
 
 - Read `dev/development-workflow.md` before starting issue work.
-- Use the `recoverome Development` project states: `Backlog`, `Ready`,
+- Use the `nostos Development` project states: `Backlog`, `Ready`,
   `In progress`, `Review`, and `Done`. These are project fields, not labels.
 - The project is https://github.com/users/xec-cm/projects/10. Native auto-add
   covers issues only: keep one card per issue and link its PR. Dependabot PRs

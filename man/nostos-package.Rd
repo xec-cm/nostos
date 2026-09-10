@@ -36,9 +36,9 @@ maintainer retains responsibility for the package and its support.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/xec-cm/recoverome}
-  \item \url{https://xec-cm.github.io/recoverome/}
-  \item Report bugs at \url{https://github.com/xec-cm/recoverome/issues}
+  \item \url{https://github.com/xec-cm/nostos}
+  \item \url{https://xec-cm.github.io/nostos/}
+  \item Report bugs at \url{https://github.com/xec-cm/nostos/issues}
 }
 
 }
