@@ -6,7 +6,9 @@ dependency diagnostics through `validate_recovery()`. `add_reference()` attaches
 explicit personal baseline profiles and `add_deviation()` records sample
 dissimilarities under [RFC 002](rfcs/002-personal-baseline-deviation.md).
 `add_recovery()` attaches observed episode outcomes under
-[RFC 003](rfcs/003-observed-recovery.md). Extraction and plotting remain planned.
+[RFC 003](rfcs/003-observed-recovery.md). `recovery_results()` extracts sample and
+episode tables under [RFC 004](rfcs/004-result-extraction-plotting.md);
+see [result extraction](result-extraction.md). Plotting remains planned.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
@@ -28,7 +30,7 @@ The initial public interface is limited to seven functions:
 | `add_reference()` | Available | Attach personal reference profiles, support and realized scope. |
 | `add_deviation()` | Available | Add sample-level deviations from the fixed reference. |
 | `add_recovery()` | Available | Attach observed episode outcomes under a recorded recovery rule. |
-| `recovery_results()` | Planned | Extract the requested results with their scope. |
+| `recovery_results()` | Available | Extract saved tables, availability and historical context. |
 | `plot_recovery()` | Planned | Display data and analysis annotations. |
 | `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
@@ -191,11 +193,11 @@ distinctions without claiming those methods already exist.
 ## Implementation sequence
 
 Registration, validation, reference attachment, deviation calculation and
-observed recovery are implemented. [Integration evidence](recovery-history.md)
+observed recovery and result extraction are implemented. [Integration evidence](recovery-history.md)
 covers incomplete follow-up and historical outcomes after filtering. The next
 steps are:
 
-1. Add extraction and plotting that respect historical scope.
+1. Add plotting that respects historical scope and verify optional tidy operations.
 2. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests

@@ -14,11 +14,12 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ## Current status
 
 The experimental development version provides `setup_recovery()`,
-`validate_recovery()`, `add_reference()`, `add_deviation()` and `add_recovery()`.
+`validate_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`
+and `recovery_results()`.
 This vignette registers an analysis, attaches explicit personal references,
 calculates sample deviations and observed episode outcomes, and checks their
-dependencies while preserving historical records. Extraction and plotting remain
-planned.
+dependencies while preserving historical records. It then extracts ordinary
+result tables with their context. Plotting remains planned.
 
 ## A small longitudinal input
 
@@ -518,17 +519,92 @@ Changing an available parent or output is diagnosed independently. Read the
 [implementation guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md)
 for storage and validation boundaries.
 
-## Planned extraction and plotting
+## Extract ordinary result tables
 
-These two interfaces remain **non-executable proposed API**:
+`recovery_results()` selects one analysis and validates it once, without
+recomputing its saved values. Both levels return an `S4Vectors::DataFrame`
+with atomic identity, availability and validation columns.
+
+```{r episode-results}
+episodes <- recoverome::recovery_results(filtered_recovery, "observed")
+episodes[, c("episode_id", "result_state", "confirmation_time", "dependencies")]
+stopifnot(
+  identical(episodes$confirmation_time, 6),
+  identical(episodes$result_state, "available"),
+  identical(episodes$validation_complete, FALSE)
+)
+```
+
+The authoritative episode outcome remains available even when some supporting
+samples are absent. Its flags describe the selected analysis as a whole.
+At sample level, removed values cannot be reconstructed from fingerprints:
+
+```{r sample-results}
+samples <- recoverome::recovery_results(
+  filtered_recovery, "observed", level = "sample", scope = "historical"
+)
+as.data.frame(samples)[, c("sample_id", "relative_time", "result_state", "deviation")]
+removed <- samples[samples$sample_id == "s3", ]
+stopifnot(
+  identical(removed$relative_time, 4),
+  identical(removed$result_state, "removed"),
+  identical(removed$deviation, NA_real_),
+  identical(removed$deviation_status, NA_character_)
+)
+```
+
+`scope = "current"` is the default and selects retained original sample IDs,
+or episodes with retained included samples. `"historical"` selects all
+original IDs. Both follow registration order. Newly added IDs produce one
+structured warning; they are never enrolled. Excluded samples have no invented
+subject, episode or time. Missing stages use typed NA and `not_computed`;
+a stored `missing_baseline` deviation remains an available result.
+
+Saved coordinates are used even after current source annotations change:
+
+```{r saved-result-coordinates}
+changed_times <- recovered
+SummarizedExperiment::colData(changed_times)$day[5] <- 30
+saved <- recoverome::recovery_results(changed_times, "observed", level = "sample")
+stopifnot(
+  identical(saved$relative_time[saved$sample_id == "s4"], 6),
+  all(saved$dependencies == "changed")
+)
+```
+
+Changed or unavailable current inputs leave readable saved results accessible,
+with their diagnostic severities preserved. Broken identities, inconsistent
+saved outputs or parent records, and required unsupported schemas error.
+The accessor never repairs or refits an analysis.
+
+The full context remains outside the atomic columns:
+
+```{r result-context}
+context <- S4Vectors::metadata(episodes)$recoverome_view
+context$validation$summary
+context$evidence$episode_1$confirmation_run
+stopifnot(identical(context$evidence$episode_1$confirmation_run, c("s2", "s3", "s4")))
+```
+
+The context includes registration/events, original and realized scopes,
+definitions, existing provenance and fingerprints, and full evidence even for
+removed samples. It is an extraction-time snapshot. Filtering or editing the
+returned table does not refresh it. Call the accessor again against the TSE
+for a fresh report. `as.data.frame()` preserves the atomic columns;
+`tibble::as_tibble(as.data.frame(samples))` is an optional downstream conversion
+with no promise to preserve metadata. Optional tidy operations on the TSE
+itself are a separate development issue.
+
+## Planned plotting
+
+This interface remains **non-executable proposed API**:
 
 ```{r planned-workflow, eval=FALSE}
-recovery_results(recovered, analysis_id = "observed", level = "episode")
 plot_recovery(recovered, analysis_id = "observed")
 ```
 
-Extraction and plotting will derive views without silently altering an analysis.
-Statistical fitting is a future layer outside this initial interface.
+Plotting will display saved observations and their evidence under the accepted
+view contract. Statistical fitting is a future layer outside this interface.
 
 ## Interpretation boundaries
 

@@ -3,6 +3,7 @@
 export(add_deviation)
 export(add_recovery)
 export(add_reference)
+export(recovery_results)
 export(setup_recovery)
 export(validate_recovery)
 importClassesFrom(TreeSummarizedExperiment,TreeSummarizedExperiment)

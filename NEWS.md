@@ -1,5 +1,12 @@
 # recoverome (development version)
 
+- Add `recovery_results()` for sample and episode DataFrame views with explicit
+  current or historical scope, saved coordinates and result availability.
+  Retain validation, definitions, provenance and evidence in view metadata.
+  Reuse one validation pass, preserve coherent historical results after source
+  changes, and reject inconsistent saved outputs or parent records.
+  New identities produce one structured warning and are never enrolled.
+
 - Document and verify the distinction between incomplete follow-up, filtered
   historical recovery and a new subset analysis, including independent named
   analyses and missing observation evidence. The observed rule is unchanged.

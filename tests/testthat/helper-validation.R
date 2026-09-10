@@ -50,3 +50,12 @@ validate_preserving_input <- function(tse, analysis_id = NULL) {
 
   report
 }
+
+results_preserving_input <- function(tse, level = "episode", scope = "current",
+                                     analysis_id = "antibiotic") {
+  before <- serialize(tse, NULL)
+  result <- recoverome::recovery_results(tse, analysis_id, level, scope)
+  testthat::expect_identical(serialize(tse, NULL), before)
+
+  result
+}

@@ -8,7 +8,8 @@ The development version implements `setup_recovery()` for registration and
 `validate_recovery()` for registration and analytical dependency diagnostics,
 and `add_reference()` for personal baseline profiles. `add_deviation()` records
 sample deviations from those profiles. `add_recovery()` attaches observed
-episode outcomes. Extraction and plotting remain planned. The next target is an
+episode outcomes. `recovery_results()` extracts tables with historical context;
+plotting remains planned. The next target is an
 experimental **0.2.0 MVP released on GitHub**. Its public API target is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
