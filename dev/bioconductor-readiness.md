@@ -22,8 +22,10 @@ GitClone ran separately against a clean clone of the stated commit, without loca
 build products. The [official configuration](https://bioconductor.org/config.yaml)
 on the assessment date maps R 4.6 to release 3.23 and devel 3.24. The
 [0.99.0 CI matrix](https://github.com/xec-cm/recoverome/actions/runs/34457044281)
-checks release on Linux/macOS/Windows and devel on Linux. PR #40 records its
-completed outcomes and devel report separately; unfinished jobs are not passes.
+passed release on Linux/macOS/Windows and devel on Linux for the package-content
+commit. Its R 4.6.1 / Bioconductor 3.24 devel run reports **0 errors, 0 warnings
+and 5 notes** with BiocCheck 1.49.31; the optional funding-role note is absent in
+that version. The final PR revision must also pass its required checks.
 
 ## Corrections applied
 
@@ -56,7 +58,7 @@ admission. Submit these explanations for reviewer consideration:
 | Optional `fnd` author role | No funding details were provided. Do not fabricate funding attribution; add it if applicable and supplied by the maintainer. |
 | 29 functions over 50 lines | Length alone is not a defect. Long routines include a sequence of plot layers and cohesive evidence/relationship diagnostics. Existing reviews cover control flow and responsibilities; avoid mechanical fragmentation solely to silence this advisory. |
 | 570 lines over 80 characters | The project permits readable lines up to 100 characters, with vertical long calls. Preserve readable expressions and documentation; justify necessary exceptions rather than blanket reformatting the package. |
-| 2,456 indentation lines not multiples of four | Deliberate two-space style agreed with the maintainer and documented in `dev/r-style.md`; retain consistency. |
+| 2,459 indentation lines not multiples of four | Deliberate two-space style agreed with the maintainer and documented in `dev/r-style.md`; retain consistency. |
 | Mailing-list subscription cannot be determined | The automated query requires administrator credentials. Maintainer explicitly confirmed subscription on 2026-09-10; the note is not evidence of non-subscription. |
 | Optional CITATION absent (GitClone) | No package paper/preprint was supplied. Standard package citation uses DESCRIPTION metadata; do not invent a publication. Add a dedicated citation when an appropriate paper exists. |
 
