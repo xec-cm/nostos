@@ -2,7 +2,8 @@
 
 Issue [#17](https://github.com/xec-cm/recoverome/issues/17) implements the
 extraction portion of accepted [RFC 004](rfcs/004-result-extraction-plotting.md).
-Plotting and optional tidy operations on the TSE remain separate issues.
+Plotting remains a separate issue. Optional operations on the TSE are covered
+by the bounded [tidy interoperability assessment](tidy-interoperability.md).
 No estimator, reference or recovery rule changes here.
 
 ## Public operation

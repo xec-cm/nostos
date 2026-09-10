@@ -19,3 +19,8 @@ links the acceptance criteria to these tests and the existing calculation cases.
 
 Add tests alongside each implemented behavior. Registration tests make no
 analytical recovery claims. Do not download cohorts in unit tests.
+
+Optional tidy checks live in `dev/tests/test-tidy.R` and run explicitly through
+`dev/check-tidy.R`, outside the mandatory package suite. See the
+[assessment and limitations](../../dev/tidy-interoperability.md), including the
+separate full core test/package check with adapters unavailable.
