@@ -24,8 +24,11 @@ these limits visible alongside the results.
 ## Install the development version
 
 This is experimental software. The development branch is `devel`,
-requires R \>= 4.6.0, and has no CRAN or Bioconductor release. Version
-`0.2.0` is the next MVP target, not a published release.
+requires R \>= 4.6.0, and has no CRAN or Bioconductor release. This
+checkout prepares the `0.99.0` MVP candidate; publication is a separate
+maintainer decision. See the [release preparation
+record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.99.0.md)
+for candidate validation, limitations and the publication checklist.
 
 ``` r
 install.packages("remotes")
@@ -227,8 +230,9 @@ on TSE. Mutation is limited to ordinary atomic annotations with empty
 those two kinds of annotation information on mutation. The [tidy
 interoperability
 guide](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
-records tested operations, versions and unsupported cases. The vignette
-includes an optional sample-selection recipe.
+records tested operations, versions, unsupported cases and an optional
+sample-selection recipe. The installed vignette runs the core workflow
+without an optional adapter.
 
 ## Reproducibility and further work
 
@@ -244,8 +248,8 @@ utils::sessionInfo()
 All seven functions used above are implemented. Statistical fitting,
 group comparisons and recovery-time uncertainty methods require separate
 design and validation. No benchmark performance or statistical
-guarantees are claimed. Remaining MVP work and later Bioconductor
-preparation are tracked in the [development
+guarantees are claimed. Release and Bioconductor submission preparation
+are tracked in the [development
 project](https://github.com/users/xec-cm/projects/10).
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and

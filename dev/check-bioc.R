@@ -2,18 +2,25 @@ if (!requireNamespace("BiocCheck", quietly = TRUE)) {
   stop("Install the development dependency 'BiocCheck' before running this report.")
 }
 
-archives <- list.files("check", pattern = "\\.tar\\.gz$", full.names = TRUE)
-if (!length(archives)) {
-  stop("No package archive found in check/. Run dev/check-package.R first.")
+description <- read.dcf("DESCRIPTION")
+version <- description[1L, "Version"]
+archive <- file.path("check", paste0(description[1L, "Package"], "_", version, ".tar.gz"))
+if (!file.exists(archive)) {
+  stop("Build the current version with dev/check-package.R before running this report.")
 }
-archive <- archives[which.max(file.info(archives)$mtime)]
+new_package <- grepl("^0[.]99[.]", version)
 report_path <- "bioccheck-report.txt"
 report <- tryCatch(
   {
-    result <- BiocCheck::BiocCheck(archive, `quit-with-status` = FALSE)
+    result <- BiocCheck::BiocCheck(
+      archive,
+      `new-package` = new_package,
+      `quit-with-status` = FALSE
+    )
     counts <- result$getNum(c("error", "warning", "note"))
     c(
       paste("BiocCheck report for", basename(archive)),
+      paste("New-package checks:", new_package),
       sprintf(
         "ERRORS: %d | WARNINGS: %d | NOTES: %d",
         counts[["error"]], counts[["warning"]], counts[["note"]]
@@ -31,4 +38,4 @@ report <- tryCatch(
   }
 )
 writeLines(report, report_path)
-message("BiocCheck is advisory during scaffolding; review bioccheck-report.txt.")
+message("BiocCheck findings require review before submission; see bioccheck-report.txt.")

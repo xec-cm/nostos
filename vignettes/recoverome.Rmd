@@ -1,6 +1,11 @@
 ---
 title: "A complete personal-baseline recovery workflow"
-output: rmarkdown::html_vignette
+author: "Francesc Catala-Moll"
+date: "2026-09-10"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{A complete personal-baseline recovery workflow}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-## What this workflow answers
+## Introduction
 
 Given explicitly selected personal baseline samples and a known perturbation,
 when do the observed compositions return within a declared band, and do later
@@ -24,9 +29,41 @@ are synthetic and the rule is illustrative. Neither the example nor its
 confirmation establishes clinical recovery, baseline stability or continuous
 behavior between visits.
 
+Longitudinal studies show that personal microbiome composition can vary over
+short timescales and change after exposures ([David et al., 2014][david]).
+That motivates explicitly recording the individual's reference, the perturbation
+and the sampling schedule; it does not validate the illustrative threshold used
+here. recoverome provides an auditable descriptive record of those choices and
+of which historical outcomes still have checkable inputs after filtering.
+
+Within Bioconductor, [mia][mia] provides microbiome analysis and data handling
+using SummarizedExperiment-derived containers. [vegan][vegan] provides community
+dissimilarities, including Bray--Curtis. recoverome uses the established TSE
+container and Bray--Curtis definition while adding named personal-reference
+analyses, explicit episode rules, saved observation evidence and historical
+dependency diagnostics. It is not a replacement for general microbiome
+preprocessing, ecological analysis or statistical inference.
+
 The [README](https://xec-cm.github.io/recoverome/) gives a shorter quickstart.
 Here we inspect the input, verify independently stated numerical results, and
 follow the same completed analysis through extraction, plotting and filtering.
+
+## Installation
+
+The package is not yet available from Bioconductor or CRAN. The development
+version can currently be installed from GitHub with R >= 4.6.0:
+
+```{r installation, eval=FALSE}
+install.packages("remotes")
+remotes::install_github("xec-cm/recoverome", ref = "devel")
+```
+
+This installation chunk is deliberately not executed when building the vignette.
+If the package is accepted and made available by Bioconductor, its installation
+instructions will switch to `BiocManager::install("recoverome")`. That command
+is not claimed to work before availability. See the
+[package website](https://xec-cm.github.io/recoverome/) for current distribution
+status. All analytical chunks below execute using declared dependencies.
 
 ## 1. Build the input and register its meaning
 
@@ -144,7 +181,8 @@ as.data.frame(sample_results)[, c(
 
 For unit-sum compositions, Bray--Curtis is half the sum of absolute component
 differences. Relative to `(1, 0)`, composition `(1 - d, d)` therefore has
-dissimilarity `d`. The seven count pairs independently give the values below:
+dissimilarity `d`, using the [Bray--Curtis definition documented by vegan][vegan].
+The seven count pairs independently give the values below:
 
 ```{r verify-deviations}
 expected_deviation <- c(0, 3 / 4, 1 / 4, 1 / 8, 1 / 8, 1 / 2, 1 / 8)
@@ -364,38 +402,17 @@ as coherent results. Validation never repairs records. To ask a different
 analytical question, create a new named analysis and explicitly calculate its
 stages on suitable inputs.
 
-## Optional tidy sample operations
+## Optional tidy interoperability
 
-The core examples above require no tidy adapter. The separate
-[tidy interoperability assessment][tidy] verifies bounded filtering and
-reordering directly on the existing TSE, using `tidySingleCellExperiment` 1.22.0
-and dplyr 1.2.1 with TSE 2.20.0. No conversion to a different container is needed.
-The `.cell` adapter column represents sample IDs, not a biological cell unit.
+The core workflow needs no tidy adapter. Sample filtering and reordering have
+been assessed through tidySingleCellExperiment directly on the existing TSE.
+Mutation support is narrower because the tested adapter loses `colData()`
+metadata and column descriptors. The [external interoperability guide][tidy]
+contains the optional recipe, tested versions and exact limitations. Keeping
+that optional recipe outside the package vignette lets every analytical chunk
+here execute using declared dependencies.
 
-This optional recipe is not executed during the core vignette build because
-those packages are not required dependencies. Its operations are covered by
-the separate assessment; run it only in an environment with that adapter and
-dplyr installed, without simultaneously loading other tidy adapters.
-
-```{r optional-tidy, eval=FALSE}
-stopifnot(requireNamespace("tidySingleCellExperiment", quietly = TRUE))
-selected <- recovered |>
-  dplyr::filter(.cell != "s3") |>
-  dplyr::arrange(dplyr::desc(.cell))
-recoverome::validate_recovery(selected, "observed")$summary
-recoverome::recovery_results(selected, "observed", scope = "historical")
-```
-
-Mutation support is narrower: only ordinary atomic annotations with empty
-`metadata(colData(tse))` and absent `mcols(colData(tse))` descriptors were
-preserved. The tested adapter loses both forms of annotation information on
-mutation, even for an unrelated new column. Use public `colData()` accessors
-when those must survive. Sample identity mutation and row-taxonomy filtering
-are unsupported in this view; other verbs and adapters remain unverified.
-Filtering through a tidy method has the same historical interpretation as base
-subsetting. It does not make the saved analysis current on the subset.
-
-## Further examples, scope and session information
+## Further examples and scope
 
 The bundled `single_episode` and `repeated_episodes` cases cover smaller
 registration examples, multiple episodes for one subject, different event
@@ -406,10 +423,24 @@ borrows across episodes.
 
 Statistical fitting, group comparisons and recovery-time uncertainty methods
 remain future work requiring separate design and validation. The experimental
-GitHub MVP target is `0.2.0`; this vignette does not publish that release or
+GitHub MVP candidate is `0.99.0`; this vignette does not publish that release or
 claim Bioconductor acceptance. Record session versions alongside real analyses,
 including optional adapters if used. Analysis records also retain their
 creation-time package version and provenance.
+
+## References
+
+- David LA et al. (2014). Host lifestyle affects human microbiota on daily
+  timescales. *Genome Biology* 15:R89. [doi:10.1186/gb-2014-15-7-r89][david].
+- mia: [Bioconductor package and documentation][mia],
+  [doi:10.18129/B9.bioc.mia](https://doi.org/10.18129/B9.bioc.mia).
+- vegan: [Dissimilarity indices for community ecologists][vegan], including the
+  quantitative Bray--Curtis formula used here.
+- The four linked recoverome RFCs specify registration, the personal reference,
+  the observed rule, and extraction/plotting. They are software contracts, not
+  claims of external statistical validation.
+
+## Session information
 
 ```{r session-info}
 utils::packageVersion("recoverome")
@@ -424,3 +455,7 @@ utils::sessionInfo()
 [tidy]: https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md
 [reference]: https://github.com/xec-cm/recoverome/blob/devel/dev/examples/002-personal-baseline-deviation.R
 [history]: https://github.com/xec-cm/recoverome/blob/devel/dev/recovery-history.md
+
+[david]: https://pmc.ncbi.nlm.nih.gov/articles/PMC4405912/
+[mia]: https://bioconductor.org/packages/release/bioc/html/mia.html
+[vegan]: https://vegandevs.github.io/vegan/reference/vegdist.html

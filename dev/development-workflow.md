@@ -10,11 +10,13 @@ and `add_reference()` for personal baseline profiles. `add_deviation()` records
 sample deviations from those profiles. `add_recovery()` attaches observed
 episode outcomes. `recovery_results()` extracts tables with historical context;
 `plot_recovery()` displays saved observations and evidence. The next target is an
-experimental **0.2.0 MVP released on GitHub**. Its public API target is:
+experimental **0.99.0 MVP and Bioconductor submission candidate**. Its public API is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
 Use the [architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)
-for their intended responsibilities. Bioconductor preparation is a later phase.
+for their responsibilities. The maintainer authorized direct Bioconductor
+preparation alongside the MVP on 2026-09-10; publication and submission remain
+separate decisions.
 
 ## Tracking work
 
@@ -51,7 +53,7 @@ Milestones group work into these phases:
 | M2 | Reference and deviation infrastructure. |
 | M3 | Observed recovery workflow. |
 | M4 | Experimental GitHub MVP. |
-| M5 | Later Bioconductor preparation. |
+| M5 | Bioconductor submission preparation. |
 
 The published issue backlog is the task inventory. Use its dependencies and
 acceptance criteria rather than creating a second, diverging checklist here.
@@ -207,17 +209,18 @@ outcomes and any unrun checks rather than claiming a blanket pass.
 
 ## Release authority and versions
 
-Completing an intermediate milestone does not trigger a package release. The
-next planned release is the experimental GitHub MVP, version `0.2.0`, after
-the agreed seven-function scope and its acceptance criteria are complete.
-The maintainer explicitly decides when to publish that release and performs
-the release action; agents do not create release tags or publish releases on
-their own.
+Completing an intermediate milestone does not trigger a package release. On
+2026-09-10 the maintainer replaced the unpublished `0.2.0` MVP target with
+`0.99.0` and authorized direct Bioconductor preparation in the shared #21/#22
+PR. This is a specific exception to separate issue branches and to merging
+#21 before beginning #22; other issue readiness rules are unchanged.
 
-Bioconductor preparation is later work under M5. Version `0.99.0` is the future
-submission-preparation target, not the current package version or a claim of
-Bioconductor acceptance. That transition requires a separate maintainer
-decision and the corresponding readiness work.
+The current artifact is an experimental MVP and initial submission candidate.
+See [release preparation](releases/0.99.0.md) for evidence and publication steps,
+and [Bioconductor readiness](bioconductor-readiness.md) for remaining obligations.
+Only the maintainer may create a release tag, publish a GitHub prerelease,
+change external account settings or submit the package. No acceptance is implied
+by the version number or by successful package checks.
 
 ## Workflow approval states
 
