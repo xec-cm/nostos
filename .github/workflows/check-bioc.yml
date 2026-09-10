@@ -74,6 +74,26 @@ jobs:
       - name: Build and check the package, including vignettes
         shell: bash
         run: Rscript --vanilla dev/check-package.R
+      - name: Record checked source identity
+        if: matrix.channel == 'release' && matrix.os == 'ubuntu-latest'
+        env:
+          SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          printf 'source_commit=%s\nchecked_commit=%s\n' \
+            "$SOURCE_COMMIT" "$(git rev-parse HEAD)" > check/candidate.txt
+          sha256sum check/*.tar.gz >> check/candidate.txt
+      - name: Preserve the checked source package
+        if: matrix.channel == 'release' && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: checked-source-package
+          path: |
+            check/*.tar.gz
+            check/candidate.txt
+            check/recoverome.Rcheck/00check.log
+          if-no-files-found: error
+          retention-days: 14
       - name: Report Bioconductor readiness
         if: matrix.channel == 'devel'
         shell: bash

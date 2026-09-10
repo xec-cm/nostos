@@ -24,8 +24,11 @@ these limits visible alongside the results.
 ## Install the development version
 
 This is experimental software. The development branch is `devel`,
-requires R \>= 4.6.0, and has no CRAN or Bioconductor release. Version
-`0.2.0` is the next MVP target, not a published release.
+requires R \>= 4.6.0, and has no CRAN or Bioconductor release. This
+checkout prepares the `0.2.0` MVP candidate; publication is a separate
+maintainer decision. See the [release preparation
+record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.2.0.md)
+for candidate validation, limitations and the publication checklist.
 
 ``` r
 install.packages("remotes")

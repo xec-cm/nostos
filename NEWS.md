@@ -1,79 +1,46 @@
-# recoverome (development version)
+# recoverome 0.2.0
 
-- Provide a continuous, executable README and introductory vignette using the
-  bundled observed-recovery example across all seven functions. Explain and
-  verify numerical outcomes, historical results after filtering, plot evidence
-  and bounded optional tidy operations, with installed-session provenance.
+Experimental GitHub MVP candidate. Publication is a maintainer decision; this
+version heading does not announce a published release or Bioconductor acceptance.
 
-- Add `plot_recovery()` with ordinary customizable ggplot2 layers for retained
-  deviations, original reference support and saved observed recovery evidence.
-  Show declared windows, original observation gaps and follow-up limitations.
-  Preserve historical times and outcomes after filtering; missing evidence
-  produces hollow milestones and dashed supporting spans. Validate once and
-  expose changed sources or incomplete checks. Add the used ggplot2 dependency.
+## Personal-baseline workflow
 
-- Add `recovery_results()` for sample and episode DataFrame views with explicit
-  current or historical scope, saved coordinates and result availability.
-  Retain validation, definitions, provenance and evidence in view metadata.
-  Reuse one validation pass, preserve coherent historical results after source
-  changes, and reject inconsistent saved outputs or parent records.
-  New identities produce one structured warning and are never enrolled.
+- Register independent named analyses with `setup_recovery()`, explicit sample
+  membership, episodes, events and numeric time coordinates in a
+  TreeSummarizedExperiment (TSE).
+- Attach personal references with `add_reference()` from explicitly selected
+  baseline samples. Record equal-sample mean compositions, support, descriptive
+  baseline diameter and input provenance.
+- Calculate Bray--Curtis sample deviations against fixed episode profiles with
+  `add_deviation()`, retaining computed, missing-baseline and excluded statuses.
+- Attach observed episode outcomes with `add_recovery()` under an explicit
+  threshold, persistence, maximum-gap and horizon rule. Preserve first return,
+  confirmation, later rebound, supporting observations and separate coverage.
 
-- Verify optional sample filtering, reordering and bounded annotation mutation
-  through `tidySingleCellExperiment` on the existing TSE. Document preserved
-  history, base-equivalent diagnostics and unsupported annotation-metadata
-  preservation, with reproducible checks and no new package dependency.
+## Results and history
 
-- Document and verify the distinction between incomplete follow-up, filtered
-  historical recovery and a new subset analysis, including independent named
-  analyses and missing observation evidence. The observed rule is unchanged.
+- Diagnose registration, analytical dependencies and historical scope with
+  `validate_recovery()` without modifying or recomputing the analysis.
+- Extract sample or episode DataFrame views with `recovery_results()`, separating
+  result availability from current validation and retaining context in metadata.
+- Display observations and saved evidence with `plot_recovery()`, returning
+  customizable ggplot2 objects. Expose original gaps, incomplete follow-up,
+  changed inputs and missing current evidence after filtering.
+- Preserve TSE content and original scope after filtering or reordering. New
+  definitions require a new analysis name; existing stages are not overwritten.
+- Provide actionable cli messages with typed conditions and affected identities.
 
-- Add `add_recovery()` for the accepted observed-run rule, with explicit threshold,
-  persistence, maximum gap and horizon. Store episode outcomes, visit evidence,
-  separate follow-up coverage and full parent fingerprints without new sample
-  columns or changes to parent data.
-- Extend `validate_recovery()` to recovery records, their parent chain and
-  historical inputs, preserving independent findings without recomputing outcomes.
-  Add the small synthetic `observed_recovery` example and executable documentation.
+## Examples and scope
 
-- Extend `validate_recovery()` to reference and deviation records, comparing
-  consumed sources, stored parent fingerprints and authoritative sample outputs.
-  Report changed dependencies, unavailable historical inputs and limited baseline
-  support without refitting, repairing or changing the TSE.
-- Preserve registration-only validation and the version-1 report tables. Known
-  reference/deviation stages are now checked; unsupported schemas or fingerprint
-  formats remain incomplete, with independently detectable findings retained.
-
-- Add `add_deviation()` to calculate Bray--Curtis dissimilarities against fixed
-  personal references, with explicit computed, missing-baseline and excluded
-  sample statuses. Store results by sample identity in owned `colData()` columns.
-- Check required reference dependencies before new deviation calculations and
-  record realized scope and source/result fingerprints. Later filtering preserves
-  historical results; analytical diagnostics in `validate_recovery()` follow
-  separately in issue #12.
-
-- Add `add_reference()` for explicit personal baseline selection, equal-sample
-  mean composition profiles, descriptive support and baseline diameter.
-- Record realized baseline identities, selected assay/features and canonical
-  input fingerprints while preserving the TSE and other named analyses.
-  References remain historical after filtering; repeated additions do not
-  overwrite earlier results. Reference-stage validation follows separately.
-
-- Add `validate_recovery()` for registration structure, consumed metadata
-  dependencies, and historical scope, returning typed diagnostic tables without
-  changing the input or inspecting assay values.
-
-- Add `setup_recovery()` to register named analyses with explicit sample
-  membership, episode and event tables, and declared numeric time coordinates.
-- Store normalized registration tables, original sample and feature scope,
-  and provenance in TSE metadata while preserving existing container content.
-- Signal recoverome input, namespace and collision errors with `cli::cli_abort()`,
-  interpolated messages, typed conditions, public-call context and structured
-  affected identifiers.
-- Bundle two small synthetic `recovery_examples` datasets with reproducible
-  source generation, shared by registration tests, function help and vignettes.
-- Add executable registration and historical-scope examples to the README
-  and introductory vignette.
+- Bundle three small synthetic `recovery_examples` cases, generated from source
+  and reused in tests, help and the executable end-to-end README and vignette.
+- Verify bounded optional sample filtering, reordering and annotation mutation
+  through tidySingleCellExperiment. Document its annotation-metadata limitations;
+  no tidy adapter is required for the core workflow.
+- This is a descriptive, experimental API. One baseline does not establish
+  stability; observed confirmation does not imply continuous or clinical recovery.
+  Statistical fitting, group comparisons and recovery-time uncertainty methods
+  are outside this release.
 
 # recoverome 0.1.0
 

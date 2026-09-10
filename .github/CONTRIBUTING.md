@@ -1,13 +1,15 @@
 # Contributing to recoverome
 
-Thank you for contributing. The experimental development version provides
-`setup_recovery()` for registration and `validate_recovery()` for registration
-diagnostics; the remaining five functions
-are planned. Contributions should make a concrete, reviewable improvement
-and distinguish implemented behavior from proposals.
+The experimental development version implements the seven-function
+personal-baseline workflow: registration, reference attachment, sample deviation,
+observed recovery, validation, extraction and plotting. Contributions should make
+a concrete, reviewable improvement and distinguish implemented behavior from
+proposals.
 
-The next target is an experimental **0.2.0 GitHub MVP** covering the seven
-functions in the architecture contract. Bioconductor preparation comes later.
+The current release candidate is the experimental **0.2.0 GitHub MVP**.
+See the [release preparation record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.2.0.md)
+for evidence and maintainer publication steps. Bioconductor assessment is separate
+from submission and does not imply repository acceptance.
 Implementation work is tracked in the public
 [recoverome Development project](https://github.com/users/xec-cm/projects/10)
 and the [issue backlog](https://github.com/xec-cm/recoverome/issues).

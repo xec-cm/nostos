@@ -406,7 +406,7 @@ borrows across episodes.
 
 Statistical fitting, group comparisons and recovery-time uncertainty methods
 remain future work requiring separate design and validation. The experimental
-GitHub MVP target is `0.2.0`; this vignette does not publish that release or
+GitHub MVP candidate is `0.2.0`; this vignette does not publish that release or
 claim Bioconductor acceptance. Record session versions alongside real analyses,
 including optional adapters if used. Analysis records also retain their
 creation-time package version and provenance.
