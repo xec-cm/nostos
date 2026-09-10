@@ -1,462 +1,64 @@
 ---
-title: "Personal baselines, observed recovery and analysis history"
+title: "A complete personal-baseline recovery workflow"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Personal baselines, observed recovery and analysis history}
+  %\VignetteIndexEntry{A complete personal-baseline recovery workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE, comment = "#>",
-  fig.alt = "Observed deviations and saved confirmation with incomplete current evidence."
-)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-## Current status
+## What this workflow answers
 
-The experimental development version provides `setup_recovery()`,
-`validate_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
-`recovery_results()` and `plot_recovery()`.
-This vignette registers an analysis, attaches explicit personal references,
-calculates sample deviations and observed episode outcomes, and checks their
-dependencies while preserving historical records. It then extracts ordinary
-result tables with their context and plots observations with saved time evidence.
+Given explicitly selected personal baseline samples and a known perturbation,
+when do the observed compositions return within a declared band, and do later
+visits support confirmation under a declared persistence and gap rule?
 
-## A small longitudinal input
+This vignette uses all seven implemented functions in the experimental version
+of recoverome. Run it with the installed package in a fresh R session; it needs
+no downloaded dataset, source-tree helpers or tidy adapter. The bundled data
+are synthetic and the rule is illustrative. Neither the example nor its
+confirmation establishes clinical recovery, baseline stability or continuous
+behavior between visits.
 
-The registration unit is an episode within a subject, with a perturbation
-defined by events. Sample measurements and sample metadata remain in a
-`TreeSummarizedExperiment` (TSE).
+The [README](https://xec-cm.github.io/recoverome/) gives a shorter quickstart.
+Here we inspect the input, verify independently stated numerical results, and
+follow the same completed analysis through extraction, plotting and filtering.
 
-This deliberately small example has two features and three samples from one
-subject. The time coordinate is days since enrolment, with an illustrative
-exposure beginning on day 10. It demonstrates structure only; it cannot establish
-sustained recovery or calibrate a statistical method. `recovery_examples`
-contains this case, a second case with repeated episodes, and a third case for
-observed recovery. All are synthetic; the package stores ordinary matrices and
-tables and constructs a
-TSE when needed.
+## 1. Build the input and register its meaning
+
+Our example contains two features and seven samples from one participant.
+Samples are TSE columns, features are rows, and both have explicit unique IDs.
+Sample annotations supply subject, episode and numeric time. An **episode**
+identifies the observations associated with one perturbation in one subject;
+an **event** records a dated occurrence or interval. An episode selects the
+start or end of its origin event as relative time zero.
 
 ```{r input-tse}
 data("recovery_examples", package = "recoverome")
-example_data <- recovery_examples$single_episode
+example_data <- recovery_examples$observed_recovery
 
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),
   colData = S4Vectors::DataFrame(example_data$col_data)
 )
-
-methods::validObject(tse)
 SummarizedExperiment::assay(tse, "counts")
 SummarizedExperiment::colData(tse)
+example_data$episodes
+example_data$events
 ```
 
-A phylogenetic tree is not needed to construct this object. Any future method
-that requires a tree will need to declare and validate that requirement.
-
-## Declare episodes and events
-
-An **episode** identifies the observation period relevant to one perturbation
-and one subject. An **event** records a dated occurrence or interval, such as
-the start and end of antibiotic exposure. Repeated perturbations need distinct
-episode identities even when they occur in the same subject.
-
-The episode selects the start or end of one of its events as its origin.
-The tables below declare one episode and an exposure interval. Required
-schemas and time rules are defined in the accepted
-[RFC 001](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md).
-
-```{r registration-inputs}
-episodes <- example_data$episodes
-events <- example_data$events
-
-episodes
-events
-```
-
-Each sample is explicitly assigned to an episode by its `episode_id` column.
-An `NA` episode explicitly excludes that sample from this named analysis;
-each declared episode must still have an included sample. Registration accepts
-finite numeric times with a declared unit and coordinate origin. Calendar
-times need an explicit conversion by the caller before registration.
-
-## Register and inspect the snapshot
-
-`setup_recovery()` checks the identities, episode membership, and event
-references, then returns the TSE with a named registration. Analysis IDs match
-`^[a-z][a-z0-9]*$`. The corresponding `rec_<analysis>_` prefix is reserved for
-future result columns; registration creates none.
+These times are days since enrolment: `8, 10, 12, 14, 16, 18, 20`. The exposure
+starts on day 10 and ends on day 14; this episode chooses its **start** as zero.
+Thus relative sample times are `-2, 0, 2, 4, 6, 8, 10` days. The time coordinate
+description and the episode's chosen event boundary have different roles.
+No phylogenetic tree is required by the implemented compositional method;
+existing trees and their links remain part of an input TSE.
 
 ```{r register-analysis}
-tse <- recoverome::setup_recovery(
-  tse,
-  analysis_id = "antibiotic",
-  episodes = episodes,
-  events = events,
-  time_col = example_data$time_col,
-  time_unit = example_data$time_unit,
-  time_origin = example_data$time_origin
-)
-
-registration <- S4Vectors::metadata(tse)$recoverome$analyses$antibiotic
-registration$registration$samples
-registration$episodes
-registration$events
-registration$scope
-registration$owned_columns
-```
-
-The stored tables are `S4Vectors::DataFrame` objects. The sample snapshot
-contains included samples in their original order; the scope records all
-original sample and feature IDs, including any excluded samples. This is
-historical metadata, and must not be edited as a second current data source.
-Registration also records its source column names, the time declaration, the
-package version, and a UTC registration timestamp.
-
-Here the event origin is day 10, so the implied relative sample times are
-`-7`, `0`, and `7` days. Registration retains the supplied coordinates without
-creating a second time column. It neither selects an assay nor reads or
-fingerprints its values.
-
-Calling setup again with the same analysis ID is an error, even with identical
-inputs. A pre-existing column beginning with `rec_antibiotic_` also blocks this
-registration. Another unused name can register an independent analysis.
-
-## Filtering preserves analysis history
-
-Ordinary TSE subsetting selects features, samples, and their annotations while
-preserving the original registration. This subset contains one feature and
-only the sample collected after the exposure:
-
-```{r subset-tse}
-after_event <- tse["feature_a", "s3", drop = FALSE]
-rownames(after_event)
-colnames(after_event)
-history <- S4Vectors::metadata(after_event)$recoverome$analyses$antibiotic
-history$scope
-identical(history, registration)
-```
-
-The stored scope still identifies both features and all three samples, and the
-entire registration is unchanged. The snapshot describes the original data;
-filtering does not make it a new registration of the subset.
-
-`validate_recovery()` reports these distinctions without modifying the TSE.
-Its return value is a list with `report_schema_version = 1L`, a `summary`
-DataFrame, and a `diagnostics` DataFrame. Diagnostic IDs are a list-column.
-
-```{r validate-history}
-report <- recoverome::validate_recovery(after_event, analysis_id = "antibiotic")
-report$summary
-report$diagnostics
-```
-
-The record remains structurally valid and validation is complete. Both scopes
-are reduced; the included-sample counts are three originally and one retained.
-Dependencies are unchanged because the retained sample still matches the
-recorded metadata. This does not certify the cells of removed samples.
-
-Changing that retained sample's time is a separate finding:
-
-```{r changed-metadata}
-changed <- after_event
-annotation <- SummarizedExperiment::colData(changed)
-annotation[[example_data$time_col]] <- annotation[[example_data$time_col]] + 1
-SummarizedExperiment::colData(changed) <- annotation
-changed_report <- recoverome::validate_recovery(changed, analysis_id = "antibiotic")
-changed_report$summary
-changed_report$diagnostics
-```
-
-The historical snapshot remains structurally valid, while dependencies are
-now changed. The diagnostic identifies `s3`; validation neither repairs the
-metadata nor updates the stored snapshot. Registration validation does not
-read assay values or establish their suitability for a later method.
-
-## Repeated episodes and an excluded sample
-
-The second case contains six samples and two episodes for the same subject.
-Episode `e1` uses an event's start as its origin; `e2` uses its event's end.
-The final sample has `NA` episode membership, so registration excludes it while
-retaining it in the container and original scope.
-
-```{r repeated-episodes}
-repeated <- recovery_examples$repeated_episodes
-repeated_tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
-  assays = list(counts = repeated$counts),
-  colData = S4Vectors::DataFrame(repeated$col_data)
-)
-repeated_tse <- recoverome::setup_recovery(
-  repeated_tse,
-  analysis_id = "repeated",
-  episodes = repeated$episodes,
-  events = repeated$events,
-  time_col = repeated$time_col,
-  time_unit = repeated$time_unit,
-  time_origin = repeated$time_origin
-)
-repeated_history <- S4Vectors::metadata(repeated_tse)$recoverome$analyses$repeated
-repeated_history$registration$samples
-repeated_history$scope$sample_ids
-```
-
-There are five registered rows and six original sample IDs. The corresponding
-relative times are `-7`, `0`, `7`, `-8`, and `1` days. These arithmetic examples
-illustrate explicit origins and membership, without defining recovery.
-
-```{r excluded-only}
-excluded_only <- repeated_tse[, "s6", drop = FALSE]
-recoverome::validate_recovery(excluded_only, analysis_id = "repeated")$summary
-```
-
-Here none of the five registered samples remains, although the TSE still has
-one column. The report keeps the historical episodes, reports zero retained
-registered samples, and leaves dependencies `not_checked`. It does not invent
-broken episodes or enrol the excluded sample.
-
-## Attach an explicit personal baseline
-
-`add_reference()` implements the reference contract in
-[RFC 002](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/002-personal-baseline-deviation.md).
-Give sample IDs rather than an inferred baseline window. Here `s1` belongs to
-`e1` and `s4` to `e2`. Both precede their own origin event's start; `s4` at day 34
-is eligible before start 40, even though `e2` selects end 42 as its origin.
-
-```{r repeated-reference}
-referenced <- recoverome::add_reference(
-  repeated_tse,
-  analysis_id = "repeated",
-  reference = c("s1", "s4"),
-  assay = "counts",
-  preprocessing = "synthetic counts; no upstream transformations"
-)
-reference <- S4Vectors::metadata(referenced)$recoverome$analyses$repeated$reference
-reference$baseline_samples
-reference$profiles
-reference$episodes
-```
-
-The episode profiles are `(1/3, 2/3)` and `(7/15, 8/15)`. Each has one selected
-sample, so support is `single_sample` and its baseline diameter is `NA`. Multiple
-selected samples would first be divided by their own selected-feature total,
-then averaged with equal sample weight. A larger read total gives no extra
-weight. Distinct samples at the same time count separately for this mean;
-aggregate technical replicates explicitly upstream if needed.
-
-Use `features` to declare a non-empty subcomposition, or leave it `NULL` to use
-all currently retained features. Consumed values must be finite, non-negative
-integer/double measurements with a finite positive sample total. Zeros are
-allowed; no pseudocount, implicit feature filtering or missing-value deletion
-is applied. Sparse and delayed matrix inputs are supported through extraction
-of the requested block; its conversion can realize that block in memory.
-The function makes no bound on backend I/O or memory use.
-
-Reference selection never borrows samples from another episode. Passing
-`reference = character()` records `missing_baseline` for every episode, without
-zero-filled profiles. One baseline permits a descriptive reference but estimates
-no variability. With multiple baselines, `baseline_diameter` is the maximum
-pairwise Bray--Curtis dissimilarity of their compositions; it is not a recovery
-cutoff or uncertainty interval. The function creates no deviation columns.
-
-### Preserve the realized reference after filtering
-
-The definition, baseline identities, profiles and input fingerprints remain
-historical when baseline samples are later removed:
-
-```{r reference-history}
-reference_subset <- referenced[, c("s2", "s3", "s5"), drop = FALSE]
-subset_reference <- S4Vectors::metadata(reference_subset)$recoverome$analyses$repeated$reference
-identical(subset_reference, reference)
-```
-
-This retained record describes the original selected baselines. A later new
-calculation that depends on those inputs requires them to remain available;
-subsetting does not silently rebuild a reference. Use a new named analysis and
-explicit selection to define a different reference. Repeating `add_reference()`
-for the same analysis errors, even when the arguments are identical.
-
-Validate the reference and its current baseline dependencies:
-
-```{r reference-validation}
-reference_report <- recoverome::validate_recovery(referenced, analysis_id = "repeated")
-reference_report$summary
-unique(reference_report$diagnostics$code)
-```
-
-The reference is structurally valid, validation is complete and dependencies
-are unchanged. Its two single-sample baselines produce an informational support
-finding, not an estimate of uncertainty. The validator compares the reference
-fingerprint, registration parent and baseline measurements; it never estimates
-the profiles again. Recovery records add their own checks when present;
-unsupported schemas remain incompletely checked.
-
-## Calculate deviations from the fixed references
-
-`add_deviation()` uses the reference's recorded assay, features and profiles.
-It checks the reference fingerprint, its registration dependency and selected
-baseline inputs before creating a new result. Removing an unused feature or a
-non-baseline sample is allowed; removing a selected feature or baseline sample
-prevents a new calculation. Scaling baseline counts is also a source change,
-even when the relative composition stays the same. Unrelated annotations and
-assays do not redefine a dependency.
-
-```{r repeated-deviations}
-analysed <- recoverome::add_deviation(referenced, analysis_id = "repeated")
-annotation <- SummarizedExperiment::colData(analysed)
-annotation[, c("rec_repeated_deviation", "rec_repeated_deviation_status"), drop = FALSE]
-
-# Independently stated values from the small input matrices in RFC 002.
-expected <- c(0, 2 / 21, 4 / 33, 0, 2 / 285, NA_real_)
-stopifnot(isTRUE(all.equal(annotation$rec_repeated_deviation, expected, tolerance = 1e-12)))
-```
-
-Both baselines have zero self-deviation here. Other included samples use their
-own episode's profile, with no borrowing across episodes. Bray--Curtis lies in
-[0, 1] for these compositions: zero means the selected proportions agree. It
-is not a recovery threshold, health score or measure of absolute microbial load.
-A one-feature reference gives constant compositions and zero deviations.
-
-Only selected-feature values from retained included samples with a reference
-are consumed. Invalid measurements in excluded samples or missing-baseline
-episodes are not inspected or certified. Consumed data must remain finite,
-non-negative and have a positive finite selected-feature total. Sparse and
-delayed assays use the selected block; conversion can materialize that block.
-
-The two result columns are authoritative. Metadata stores the method, their
-exact name mapping, the current sample IDs as realized scope, the reference
-fingerprint, per-computed-sample source hashes and per-sample output hashes.
-These hashes document dependencies; they cannot reconstruct a removed value.
-
-```{r deviation-provenance}
-deviation <- S4Vectors::metadata(analysed)$recoverome$analyses$repeated$deviation
-deviation$method
-deviation$columns
-deviation$sample_ids
-```
-
-An episode without a selected reference receives an explicit missing state:
-
-```{r missing-baseline-deviation}
-partial_reference <- recoverome::add_reference(
-  repeated_tse,
-  analysis_id = "repeated",
-  reference = "s1",
-  assay = "counts"
-)
-partial_analysis <- recoverome::add_deviation(partial_reference, analysis_id = "repeated")
-SummarizedExperiment::colData(partial_analysis)[, c(
-  "rec_repeated_deviation", "rec_repeated_deviation_status"
-), drop = FALSE]
-```
-
-Here `s4` and `s5` are `missing_baseline`, and `s6` remains `excluded`. All three
-have `NA` deviations with different reasons; invalid consumed measurements
-would instead stop the call without modifying the input.
-
-### Keep results historical after filtering
-
-```{r deviation-history}
-retained <- analysed[, c("s5", "s2"), drop = FALSE]
-SummarizedExperiment::colData(retained)[, c(
-  "rec_repeated_deviation", "rec_repeated_deviation_status"
-), drop = FALSE]
-retained_deviation <- S4Vectors::metadata(retained)$recoverome$analyses$repeated$deviation
-identical(retained_deviation, deviation)
-```
-
-The retained values remain `2/285` and `2/21` in the new sample order; the
-metadata still records all six IDs from the original calculation. Neither
-filtering nor reordering recomputes the reference or the deviations. Calling
-`add_deviation()` again errors, even with the same inputs. A changed definition
-requires a new named analysis and explicit calculation of its stages.
-
-## Validate sources, outputs and historical scope
-
-`add_deviation()` checks dependencies when it calculates. `validate_recovery()`
-checks the saved reference and deviations later without modifying the TSE.
-The report retains the registration columns and adds analytical diagnostics;
-no additional persistent result store or mutable validation flag is created.
-
-```{r validate-deviations}
-current_report <- recoverome::validate_recovery(analysed, analysis_id = "repeated")
-current_report$summary
-
-historical_report <- recoverome::validate_recovery(retained, analysis_id = "repeated")
-historical_report$summary
-historical_report$diagnostics
-```
-
-The full analysis has unchanged dependencies and complete validation. The
-filtered analysis still has readable historical records, but the removed
-baselines and samples prevent all original source/output comparisons. Its
-validation is incomplete and dependencies are `not_checked`, rather than a
-claim that its reference is unchanged for a new analysis of that subset.
-Retained outputs are still checked where possible.
-
-A current source edit is different from removal:
-
-```{r changed-analytical-source}
-source_changed <- analysed
-SummarizedExperiment::assay(source_changed, "counts")[, "s2"] <- c(4L, 3L)
-source_report <- recoverome::validate_recovery(source_changed, analysis_id = "repeated")
-source_report$summary
-source_report$diagnostics
-```
-
-This is a comparable input change, so dependencies are `changed` while
-validation can remain complete. The stored reference and deviation structure
-are intact. The original `s2` deviation remains `2/21`; the validator does not
-replace it with a fresh calculation. Multiplying baseline counts would also
-be a source change even if their proportions stayed identical.
-
-An edited output remains detectable when source inputs are missing:
-
-```{r missing-input-and-edited-output}
-output_changed <- retained
-SummarizedExperiment::colData(output_changed)$rec_repeated_deviation[1L] <- 0.5
-before_validation <- serialize(output_changed, NULL)
-output_report <- recoverome::validate_recovery(output_changed, analysis_id = "repeated")
-output_report$summary
-output_report$diagnostics
-stopifnot(identical(serialize(output_changed, NULL), before_validation))
-```
-
-Here `s5` still has status `computed`, but its stored value no longer agrees
-with the original output fingerprint. The report gives `structural_valid = FALSE`,
-`dependencies = "changed"` and incomplete validation because other historical
-inputs remain unavailable. Both findings matter: missing inputs do not hide
-the independently detectable output change.
-
-In general, known changes take precedence over unavailable comparisons in the
-`dependencies` summary. A comparison that detects a difference can be complete;
-a missing or unreadable required input cannot. Unknown schemas or fingerprint
-formats remain incomplete, and an unknown encoding is not treated as proof
-that values changed. Other interpretable stages and analyses are still checked.
-
-Checks use recorded identities, consumed assay blocks, parent records and owned
-outputs. Unrelated annotations and assays are not dependencies. Registration-only
-analyses still need no assay access. Source/result hashes detect ordinary edits;
-manual rewriting of stored snapshots is unsupported. No validation state proves
-biological recovery. See the
-[analytical diagnostic guide](https://github.com/xec-cm/recoverome/blob/devel/dev/analytical-validation.md)
-for the code catalogue and detection boundaries.
-
-## Observed recovery by episode
-
-The implemented rule follows [RFC 003](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/003-observed-recovery.md).
-Every parameter is explicit; this example uses a threshold of 0.25, persistence
-of 4 days, maximum consecutive gap of 3 days and horizon of 10 days.
-These choices illustrate the method rather than establish biological limits.
-
-```{r observed-recovery}
-data("recovery_examples", package = "recoverome")
-example_data <- recovery_examples$observed_recovery
-tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
-  assays = list(counts = example_data$counts),
-  colData = S4Vectors::DataFrame(example_data$col_data)
-)
 tse <- recoverome::setup_recovery(
   tse,
   analysis_id = "observed",
@@ -466,85 +68,233 @@ tse <- recoverome::setup_recovery(
   time_unit = example_data$time_unit,
   time_origin = example_data$time_origin
 )
-tse <- recoverome::add_reference(tse, "observed", reference = "b1", assay = "counts")
+```
+
+The setup/add functions return the TSE. Registration stores its input snapshot,
+original scope and provenance in
+`S4Vectors::metadata(tse)$recoverome$analyses$observed`; it does not read assay
+values or create sample results. Do not edit that historical snapshot as a
+second current data source. Analysis names match `^[a-z][a-z0-9]*$`; the name
+`observed` reserves the `rec_observed_` sample-column prefix. Repeating setup or
+an add stage errors rather than overwriting it. Use a new name and explicit
+calculations for a different analysis.
+
+A start origin permits confirmation during the exposure. Choose an end origin
+at registration if the question requires post-exposure return; that choice
+changes the relative coordinates and is not inferred by the package.
+
+The accepted [registration contract][rfc1] defines required table schemas,
+identities and time declarations. Calendar times require explicit conversion
+to numeric coordinates by the caller. An `NA` episode annotation excludes a
+sample from the analysis while preserving it in the container and original
+scope; every declared episode must still have an included sample.
+
+## 2. Attach an explicit personal reference
+
+Select baseline sample IDs explicitly. Here `b1` at day 8 precedes the origin
+event's start. Selection must precede that **start**, even for an episode that
+uses the event's end as its time origin. No baseline window is inferred and no
+sample is borrowed from a different episode.
+
+```{r personal-reference}
+tse <- recoverome::add_reference(
+  tse,
+  analysis_id = "observed",
+  reference = "b1",
+  assay = "counts",
+  preprocessing = "synthetic counts; no upstream transformations"
+)
+reference <- S4Vectors::metadata(tse)$recoverome$analyses$observed$reference
+reference$baseline_samples
+reference$profiles
+reference$episodes
+```
+
+Counts `(8, 0)` give composition `(1, 0)`. With multiple selected baselines,
+each sample is divided by its own selected-feature total, then compositions
+are averaged with equal sample weight. Larger read totals do not give more
+weight. The [baseline and deviation contract][rfc2] fixes this definition.
+
+One baseline yields `single_sample` support and `NA` baseline diameter: it
+cannot estimate temporal variability. With several baselines the diameter is
+the maximum pairwise Bray--Curtis dissimilarity of their compositions. It is
+not a recovery cutoff or uncertainty interval. Missing baseline support is
+recorded explicitly, with no fabricated zero profile.
+
+The default uses all currently retained features; `features` can declare a
+non-empty subcomposition. Consumed values must be finite and non-negative,
+with positive finite selected-feature totals. Zeros are allowed. No pseudocount,
+implicit filtering or missing-value deletion is applied. Sparse and delayed
+inputs are supported through selected-block extraction, which can realize that
+block in memory. Record relevant upstream preprocessing in your analysis.
+
+## 3. Calculate and check sample deviations
+
+`add_deviation()` uses the reference's recorded assay, features and fixed
+profiles. It checks its required reference dependencies before calculating.
+Complete these analytical stages before removing required inputs.
+
+```{r sample-deviations}
 tse <- recoverome::add_deviation(tse, "observed")
+sample_results <- recoverome::recovery_results(tse, "observed", level = "sample")
+as.data.frame(sample_results)[, c(
+  "sample_id", "relative_time", "is_reference", "deviation", "deviation_status"
+)]
+```
+
+For unit-sum compositions, Bray--Curtis is half the sum of absolute component
+differences. Relative to `(1, 0)`, composition `(1 - d, d)` therefore has
+dissimilarity `d`. The seven count pairs independently give the values below:
+
+```{r verify-deviations}
+expected_deviation <- c(0, 3 / 4, 1 / 4, 1 / 8, 1 / 8, 1 / 2, 1 / 8)
+stopifnot(isTRUE(all.equal(
+  sample_results$deviation, expected_deviation, tolerance = 1e-12
+)))
+```
+
+The tolerance allows floating-point arithmetic; it does not represent
+measurement uncertainty. Dissimilarity lies in `[0, 1]` and describes selected
+proportions, not absolute microbial load or health. Zero self-deviation for this
+single baseline is expected, not evidence of stable baseline variation.
+
+The authoritative sample columns are `rec_observed_deviation` and
+`rec_observed_deviation_status` in `colData(tse)`. Metadata records their method,
+identities, dependencies and provenance. Status `computed` means a past
+calculation exists; it does not assert present validity. Missing-baseline
+samples receive `NA` with `missing_baseline`; excluded samples receive `NA`
+with `excluded`. Unconsumed measurements in those samples are not certified.
+
+## 4. Apply an observed recovery rule
+
+All four rule parameters are explicit. These illustrative choices are not
+estimated from the baseline or recommended as biological thresholds:
+
+| Parameter | Value | Meaning here |
+|:----------|------:|:-------------|
+| `threshold` | 0.25 | Within-band visits have deviation at most 0.25. |
+| `persistence` | 4 | The supporting observed run must span at least four days. |
+| `max_gap` | 3 | Consecutive supporting visits may be at most three days apart. |
+| `horizon` | 10 | Detect and confirm within relative days 0 through 10. |
+
+```{r observed-recovery}
 rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
 recovered <- recoverome::add_recovery(tse, "observed", rule)
-outcome <- S4Vectors::metadata(recovered)$recoverome$analyses$observed$recovery
-outcome$episodes[, c("status", "candidate_time", "confirmation_time", "rebound_time", "coverage")]
+episode_results <- recoverome::recovery_results(recovered, "observed")
+as.data.frame(episode_results)[, c(
+  "status", "first_perturbation_time", "candidate_time", "confirmation_time",
+  "rebound_time", "coverage"
+)]
 ```
 
-Here the observed deviation at day 0 is 0.75. Visits at days 2, 4 and 6 are
-within the band and span four days, with gaps no greater than three days.
-The candidate is day 2 and confirmation is day 6. The outside observation at
-day 8 is a rebound; it does not erase the first confirmation.
+Day 0 has deviation `0.75`, above the threshold. Days 2, 4 and 6 are within
+band and span four days, with two-day gaps. Day 2 is the candidate return;
+day 6 supplies confirmation. Day 8 is a rebound, which preserves the first
+confirmation. Coverage reaches the day-10 horizon.
 
-```{r observed-evidence}
-outcome$evidence$episode_1
-recoverome::validate_recovery(recovered, "observed")$summary
+```{r verify-outcome}
+stopifnot(
+  identical(episode_results$status, "confirmed_return"),
+  identical(episode_results$first_perturbation_time, 0),
+  identical(episode_results$candidate_time, 2),
+  identical(episode_results$confirmation_time, 6),
+  identical(episode_results$rebound_time, 8),
+  identical(episode_results$coverage, "reaches_horizon")
+)
+context <- S4Vectors::metadata(episode_results)$recoverome_view
+context$evidence$episode_1$confirmation_run
+stopifnot(identical(
+  context$evidence$episode_1$confirmation_run, c("s2", "s3", "s4")
+))
 ```
 
-Visits at the same exact time are grouped conservatively: every sample must be
-within the band. A larger gap or outside visit breaks a run. Observations after
-the horizon contribute to coverage only, not to detection, confirmation or
-rebound. Other registered events of the same subject overlapping the episode's
-analysis interval make it not evaluable, even when they occur after a possible
-confirmation. Missing baseline takes precedence over overlapping events, then
-absence of observations in the return window.
+Outcomes and evidence belong to episodes and are stored in metadata, with no
+new recovery columns in `colData()`. The [observed rule contract][rfc3] defines
+same-time grouping, run breaks and evaluation precedence. Same-time samples
+must all be within band; an outside visit or excessive gap breaks a run.
+Observations after the horizon contribute to coverage, not detection,
+confirmation or rebound. Other registered events overlapping the analysis
+interval can make the episode not evaluable.
 
-`status` distinguishes `not_evaluable`, `no_detected_perturbation`,
-`no_observed_return`, `unconfirmed_return` and `confirmed_return`. For
-`not_evaluable`, `reason` records `missing_baseline`, `unresolved_events` or
-`no_observations_in_window`. Coverage is separately `none`,
-`ends_before_horizon` or `reaches_horizon`. A confirmed return need not have
-follow-up through the entire horizon.
+Read status and coverage separately:
 
-Filtering preserves historical confirmation and its evidence:
+| Status | Interpretation |
+|:-------|:---------------|
+| `not_evaluable` | See `reason`: missing baseline, unresolved events or no observations in the window. |
+| `no_detected_perturbation` | No above-threshold perturbation in the eligible detection interval. |
+| `no_observed_return` | An observed perturbation has no later observed within-band return in the window. |
+| `unconfirmed_return` | A return was observed without sufficient supporting persistence under the rule. |
+| `confirmed_return` | A qualifying observed run supplies confirmation; inspect any later rebound. |
 
-```{r filtered-recovery}
-filtered_recovery <- recovered[, colnames(recovered) != "s3"]
-before_validation <- serialize(filtered_recovery, NULL)
-filtered_report <- recoverome::validate_recovery(filtered_recovery, "observed")
+Coverage is `none`, `ends_before_horizon` or `reaches_horizon`. Confirmation
+can occur before follow-up ends short of the horizon. Conversely, no observed
+return before follow-up ends does not establish permanent non-recovery.
+
+## 5. Validate dependencies and plot the complete analysis
+
+Validation returns a plain list with `report_schema_version = 1L`, a `summary`
+DataFrame and a `diagnostics` DataFrame. It checks stored records and relevant
+current dependencies without modifying the TSE or recomputing the rule.
+
+```{r validate-complete}
+report <- recoverome::validate_recovery(recovered, "observed")
+report$summary
+unique(report$diagnostics$code)
+stopifnot(
+  report$summary$structural_valid,
+  report$summary$validation_complete,
+  report$summary$dependencies == "unchanged"
+)
+```
+
+Limited single-baseline support is informational. Structural validity,
+completion of checks and dependency changes are distinct fields, not a single
+scientific-validity verdict. Registration-only validation does not read assays;
+analytical stages compare relevant inputs, parent records and stored outputs.
+The [diagnostic guide][validation] describes checks and detection boundaries.
+
+```{r complete-plot, fig.width=9, fig.height=7, fig.alt="Seven observed deviations with return at day 2, confirmation at day 6 and rebound at day 8."}
+p <- recoverome::plot_recovery(recovered, "observed")
+p + ggplot2::labs(title = "Observed return, confirmation and rebound")
+```
+
+`plot_recovery()` returns an ordinary unprinted ggplot object. Customize it with
+`+ ggplot2::labs(...)` or `+ ggplot2::theme(...)`. Facets identify the episode,
+reference support, origin event and saved outcome. The separate evidence rail
+shows milestones; its candidate-to-confirmation span represents observed
+support, not continuously known recovery. Detection-window shading is a rule
+parameter, not a confidence interval. Before `add_recovery()`, plotting a
+completed deviation stage shows observations without an invented rule.
+
+## 6. Filter without rewriting the completed analysis
+
+Remove day-4 sample `s3`, an intermediate supporting visit. Ordinary TSE
+subsetting preserves the historical reference and episode outcome. It does not
+rerun the rule on the remaining visits or reconstruct removed deviations.
+
+```{r filtered-analysis}
+filtered <- recovered[, colnames(recovered) != "s3"]
+filtered_report <- recoverome::validate_recovery(filtered, "observed")
 filtered_report$summary
+
+historical <- recoverome::recovery_results(filtered, "observed", scope = "historical")
+historical[, c("result_state", "confirmation_time", "validation_complete", "dependencies")]
 stopifnot(
-  identical(serialize(filtered_recovery, NULL), before_validation),
-  identical(
-    S4Vectors::metadata(filtered_recovery)$recoverome$analyses$observed$recovery,
-    outcome
-  )
+  identical(historical$confirmation_time, 6),
+  identical(historical$result_state, "available"),
+  identical(historical$structural_valid, TRUE),
+  identical(historical$validation_complete, FALSE),
+  identical(historical$dependencies, "not_checked")
 )
 ```
 
-Day-4 sample `s3` supported confirmation. Its removal leaves the historical
-outcome intact, with incomplete validation and `not_checked` dependencies.
-It does not turn the episode into a newly evaluated unconfirmed return.
-Changing an available parent or output is diagnosed independently. Read the
-[implementation guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md)
-for storage and validation boundaries.
+Confirmation remains available as a historical result, but missing inputs
+prevent complete comparison with the original analysis. This is not a newly
+evaluated unconfirmed return on the subset.
 
-## Extract ordinary result tables
-
-`recovery_results()` selects one analysis and validates it once, without
-recomputing its saved values. Both levels return an `S4Vectors::DataFrame`
-with atomic identity, availability and validation columns.
-
-```{r episode-results}
-episodes <- recoverome::recovery_results(filtered_recovery, "observed")
-episodes[, c("episode_id", "result_state", "confirmation_time", "dependencies")]
-stopifnot(
-  identical(episodes$confirmation_time, 6),
-  identical(episodes$result_state, "available"),
-  identical(episodes$validation_complete, FALSE)
-)
-```
-
-The authoritative episode outcome remains available even when some supporting
-samples are absent. Its flags describe the selected analysis as a whole.
-At sample level, removed values cannot be reconstructed from fingerprints:
-
-```{r sample-results}
+```{r historical-samples}
 samples <- recoverome::recovery_results(
-  filtered_recovery, "observed", level = "sample", scope = "historical"
+  filtered, "observed", level = "sample", scope = "historical"
 )
 as.data.frame(samples)[, c("sample_id", "relative_time", "result_state", "deviation")]
 removed <- samples[samples$sample_id == "s3", ]
@@ -556,104 +306,121 @@ stopifnot(
 )
 ```
 
-`scope = "current"` is the default and selects retained original sample IDs,
-or episodes with retained included samples. `"historical"` selects all
-original IDs. Both follow registration order. Newly added IDs produce one
-structured warning; they are never enrolled. Excluded samples have no invented
-subject, episode or time. Missing stages use typed NA and `not_computed`;
-a stored `missing_baseline` deviation remains an available result.
+The [extraction and plotting contract][rfc4] keeps availability separate from
+validation. `scope = "current"` selects retained original sample IDs or episodes
+with retained included samples; `"historical"` selects the original scope.
+Both use registration order and saved coordinates. Newly added IDs are not
+enrolled. Validation columns describe the whole selected analysis, not each row.
 
-Saved coordinates are used even after current source annotations change:
+Tables have atomic columns and convert using `as.data.frame()` or, optionally,
+`tibble::as_tibble(as.data.frame(samples))`. The context in
+`S4Vectors::metadata(historical)$recoverome_view` includes full validation,
+registration, definitions, provenance and evidence. This is an extraction-time
+snapshot: filtering or editing a returned table does not refresh it, and
+conversion need not preserve its metadata. Extract again from the TSE for a
+fresh view. Keep the TSE as the authoritative analysis.
 
-```{r saved-result-coordinates}
-changed_times <- recovered
-SummarizedExperiment::colData(changed_times)$day[5] <- 30
-saved <- recoverome::recovery_results(changed_times, "observed", level = "sample")
+```{r historical-plot, fig.width=9, fig.height=7, fig.alt="Historical confirmation remains at day 6, with hollow evidence markers and a dashed span after removal of the day-4 supporting visit."}
+recoverome::plot_recovery(filtered, "observed", scope = "historical") +
+  ggplot2::labs(title = "Historical confirmation after filtering")
+```
+
+The removed time appears on the evidence rail with no invented deviation.
+Hollow milestones and dashed spans mean supporting observation IDs are missing,
+not that timing is uncertain. Confirmation requires the entire saved run, so
+its marker becomes hollow even though the day-6 endpoint sample remains.
+Original evaluated gaps are preserved: filtering does not create a new original
+gap or reclassify a run. Incomplete checks appear in the caption and facet.
+
+For other sampling schedules, original gaps exceeding `max_gap` and follow-up
+ending before the horizon have separate plot annotations. The unsampled region
+does not establish an outside state. Historical episodes with no retained
+values can still display their saved evidence.
+
+### Changed inputs are different from unavailable inputs
+
+An edit to a retained sample's day is a detectable source change. Extraction
+keeps the original time and results, with changed dependency flags:
+
+```{r changed-source}
+changed <- recovered
+annotations <- SummarizedExperiment::colData(changed)
+annotations$day[colnames(changed) == "s4"] <- 30
+SummarizedExperiment::colData(changed) <- annotations
+changed_report <- recoverome::validate_recovery(changed, "observed")
+changed_report$summary
+saved <- recoverome::recovery_results(changed, "observed", level = "sample")
 stopifnot(
   identical(saved$relative_time[saved$sample_id == "s4"], 6),
   all(saved$dependencies == "changed")
 )
 ```
 
-Changed or unavailable current inputs leave readable saved results accessible,
-with their diagnostic severities preserved. Broken identities, inconsistent
-saved outputs or parent records, and required unsupported schemas error.
-The accessor never repairs or refits an analysis.
+A changed comparison can be complete; an unavailable required comparison cannot.
+Known changes take precedence over unavailable comparisons in the dependency
+summary. Editing authoritative deviations or inconsistent parent records is a
+structural problem: extraction errors rather than presenting corrupt outputs
+as coherent results. Validation never repairs records. To ask a different
+analytical question, create a new named analysis and explicitly calculate its
+stages on suitable inputs.
 
-The full context remains outside the atomic columns:
+## Optional tidy sample operations
 
-```{r result-context}
-context <- S4Vectors::metadata(episodes)$recoverome_view
-context$validation$summary
-context$evidence$episode_1$confirmation_run
-stopifnot(identical(context$evidence$episode_1$confirmation_run, c("s2", "s3", "s4")))
+The core examples above require no tidy adapter. The separate
+[tidy interoperability assessment][tidy] verifies bounded filtering and
+reordering directly on the existing TSE, using `tidySingleCellExperiment` 1.22.0
+and dplyr 1.2.1 with TSE 2.20.0. No conversion to a different container is needed.
+The `.cell` adapter column represents sample IDs, not a biological cell unit.
+
+This optional recipe is not executed during the core vignette build because
+those packages are not required dependencies. Its operations are covered by
+the separate assessment; run it only in an environment with that adapter and
+dplyr installed, without simultaneously loading other tidy adapters.
+
+```{r optional-tidy, eval=FALSE}
+stopifnot(requireNamespace("tidySingleCellExperiment", quietly = TRUE))
+selected <- recovered |>
+  dplyr::filter(.cell != "s3") |>
+  dplyr::arrange(dplyr::desc(.cell))
+recoverome::validate_recovery(selected, "observed")$summary
+recoverome::recovery_results(selected, "observed", scope = "historical")
 ```
 
-The context includes registration/events, original and realized scopes,
-definitions, existing provenance and fingerprints, and full evidence even for
-removed samples. It is an extraction-time snapshot. Filtering or editing the
-returned table does not refresh it. Call the accessor again against the TSE
-for a fresh report. `as.data.frame()` preserves the atomic columns;
-`tibble::as_tibble(as.data.frame(samples))` is an optional downstream conversion
-with no promise to preserve metadata. Optional tidy operations on the TSE
-itself are a separate development issue.
+Mutation support is narrower: only ordinary atomic annotations with empty
+`metadata(colData(tse))` and absent `mcols(colData(tse))` descriptors were
+preserved. The tested adapter loses both forms of annotation information on
+mutation, even for an unrelated new column. Use public `colData()` accessors
+when those must survive. Sample identity mutation and row-taxonomy filtering
+are unsupported in this view; other verbs and adapters remain unverified.
+Filtering through a tidy method has the same historical interpretation as base
+subsetting. It does not make the saved analysis current on the subset.
 
-## Plotting observed evidence
+## Further examples, scope and session information
 
-```{r observed-plot, fig.width=9, fig.height=7}
-p <- recoverome::plot_recovery(filtered_recovery, "observed", scope = "historical")
-p + ggplot2::labs(title = "Historical confirmation after filtering")
-```
+The bundled `single_episode` and `repeated_episodes` cases cover smaller
+registration examples, multiple episodes for one subject, different event
+boundaries and excluded samples. See `?recoverome::recovery_examples`, the
+[reference examples][reference] and [history integration examples][history] for
+these additional cases. All use explicit membership; reference selection never
+borrows across episodes.
 
-`plot_recovery()` returns an ordinary unprinted ggplot object. Customize it with
-`+ ggplot2::labs(...)` or `+ ggplot2::theme(...)`. `ggplot2` supplies the layers and
-is a runtime dependency. A deviation stage is required. Before `add_recovery()`,
-the plot shows deviations neutrally with no invented threshold or outcome.
-
-Facets identify the subject, episode, original baseline support and current
-baseline count, selected origin event/boundary, and saved status, reason and
-coverage. `episodes` accepts an ordered vector of IDs within the selected scope.
-All facets share the deviation scale [0, 1] and the original included time
-extent, zero and any declared horizon. Points beyond the horizon remain outside
-the rule window. Edited current annotations cannot move saved observations.
-
-The separate evidence rail shows saved milestone times. A candidate-to-confirmation
-bracket represents observed supporting span, not continuous recovery. Hollow marks
-and dashed spans indicate missing current evidence IDs, not uncertain timing.
-Confirmation needs the entire saved run, so removing an intermediate observation
-leaves its retained endpoint point solid but its confirmation marker hollow.
-Removed times are crosses on the rail, never invented deviations.
-
-Original evaluated gaps greater than the rule's maximum gap remain visible;
-filtering cannot create a new original gap or re-evaluate a run. Yellow shading
-marks the region beyond saved follow-up when coverage ends before the horizon.
-Missing follow-up is labeled separately. Neither region establishes an outside
-state. The declared detection-window shading is not a confidence interval or
-an estimate derived from baseline diameter.
-
-The plot states current or historical scope. Source changes and incomplete
-checks appear in its caption and each facet. Historical episodes with no
-remaining values retain their saved evidence rail. The TSE and its historical
-outcomes are preserved; customizing the plot does not revalidate it.
-
-## Interpretation boundaries
-
-Observed similarity at one visit does not establish a sustained return. A rule
-based on repeated visits must also state the relevant duration and admissible
-gaps. Sparse observations cannot establish continuous behavior between visits
-without additional assumptions.
-
-Likewise, the absence of an observed recovery by the end of follow-up does not
-establish that recovery will never occur. Methods for uncertainty, incomplete
-follow-up, and comparisons between groups will need dedicated statistical
-validation before implementation claims can be made.
-
-The intended outcome is an explicit, auditable description of recovery under
-a stated definition. Recovery to baseline is not a clinical diagnosis or a
-claim that all microbial functions have returned.
-
-## Session information
+Statistical fitting, group comparisons and recovery-time uncertainty methods
+remain future work requiring separate design and validation. The experimental
+GitHub MVP target is `0.2.0`; this vignette does not publish that release or
+claim Bioconductor acceptance. Record session versions alongside real analyses,
+including optional adapters if used. Analysis records also retain their
+creation-time package version and provenance.
 
 ```{r session-info}
-sessionInfo()
+utils::packageVersion("recoverome")
+utils::sessionInfo()
 ```
+
+[rfc1]: https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md
+[rfc2]: https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/002-personal-baseline-deviation.md
+[rfc3]: https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/003-observed-recovery.md
+[rfc4]: https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/004-result-extraction-plotting.md
+[validation]: https://github.com/xec-cm/recoverome/blob/devel/dev/analytical-validation.md
+[tidy]: https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md
+[reference]: https://github.com/xec-cm/recoverome/blob/devel/dev/examples/002-personal-baseline-deviation.R
+[history]: https://github.com/xec-cm/recoverome/blob/devel/dev/recovery-history.md
