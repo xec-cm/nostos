@@ -7,7 +7,9 @@ explicit personal baseline profiles with support and provenance, and
 `add_deviation()` records sample-level deviations against those fixed profiles.
 `add_recovery()` attaches observed outcomes by episode. `recovery_results()`
 extracts sample or episode tables with historical context. `plot_recovery()`
-displays saved observations and evidence.
+displays saved observations and evidence. `recovery_sensitivity()` compares
+explicit rules without changing the TSE; `plot_sensitivity()` displays all
+scenario/episode results, including those that cannot currently be evaluated.
 `validate_recovery()` checks registration, reference, deviation and recovery
 dependencies without changing historical results. Unknown stage schemas remain
 incompletely checked.

@@ -17,13 +17,18 @@ implemented; [integration evidence](README.md) records the tested
 preservation and historical-scope behavior. Later
 analytical stages need their own accepted RFCs.
 
+`recovery_sensitivity()` and `plot_sensitivity()` implement the rule-comparison
+part of accepted [RFC 005](rfcs/005-sensitivity-diagnostic-plots.md). They return
+standalone snapshot tables and plots without writing scenarios back to the TSE.
+The diagnostic plots in that RFC remain separate implementation work in #45.
+
 ## Purpose and scope
 
 recoverome is intended to attach explicit recovery analyses to longitudinal
 microbiome data after known perturbations. Registration establishes data
 identity, analysis scope, and provenance before analytical methods are added.
 
-The initial public interface is limited to seven functions:
+The original seven-function workflow remains available:
 
 | Function | Status | Contract |
 |:---------|:-------|:---------|
@@ -201,8 +206,8 @@ All seven original API functions, including plotting, are implemented. M6 improv
 onboarding and maintenance; M7 qualifies the current descriptive method and adds
 explicit rule sensitivity; M8 adds diagnostics and external user evaluation.
 The [development project](https://github.com/users/xec-cm/projects/10) owns the
-backlog. RFC 005 proposes sensitivity and diagnostic plots; these functions remain
-unimplemented until their dependent issues are completed. Inference, new distance
+backlog. RFC 005 is accepted. Rule sensitivity is implemented; diagnostic plots remain
+the separate work in #45. Inference, new distance
 estimators and automatic calibration require separate decisions.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
