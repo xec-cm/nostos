@@ -7,12 +7,21 @@
 - Recorded a prespecified scientific assessment with independent arithmetic,
   complete baseline/rule/sampling scenarios, and explicit interpretation limits.
 - Consolidated developer evidence and check every installed vignette from the
-  built package. Diagnostic plots are implemented below; rule sensitivity remains
-  separately tracked.
+  built package. Recorded the accepted sensitivity and diagnostic-plot contracts;
+  both extensions are implemented below.
 
 Experimental MVP and initial Bioconductor submission candidate. This replaces
 the unpublished 0.2.0 target by explicit maintainer decision. Publication and
 submission remain separate decisions; this heading does not claim acceptance.
+
+## Rule sensitivity
+
+- Added `recovery_sensitivity()` and `plot_sensitivity()` for explicitly supplied
+  recovery rules. Results retain every scenario/episode and provenance while
+  preserving the original TSE, including existing recovery outcomes.
+- Changed or unavailable historical inputs remain visible as unevaluable
+  scenarios. The plot distinguishes them from evaluated missing-baseline or
+  overlapping-event outcomes; no preferred rule is selected.
 
 ## Submission preparation
 

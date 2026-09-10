@@ -7,15 +7,17 @@ explicit personal baseline profiles with support and provenance, and
 `add_deviation()` records sample-level deviations against those fixed profiles.
 `add_recovery()` attaches observed outcomes by episode. `recovery_results()`
 extracts sample or episode tables with historical context. `plot_recovery()`
-displays saved observations and evidence. `plot_reference()`, `plot_sampling()`
-and `plot_recovery_overview()` display baseline support, observation timing and
-saved episode milestones.
+displays saved observations and evidence. `recovery_sensitivity()` compares
+explicit rules without changing the TSE; `plot_sensitivity()` displays all
+scenario/episode results, including those that cannot currently be evaluated.
+`plot_reference()`, `plot_sampling()` and `plot_recovery_overview()` display
+baseline support, observation timing and saved episode milestones.
 `validate_recovery()` checks registration, reference, deviation and recovery
 dependencies without changing historical results. Unknown stage schemas remain
 incompletely checked.
 
 The current target is the experimental MVP and initial Bioconductor submission
-candidate, version 0.99.0, with the original seven functions and diagnostic
+candidate, version 0.99.0, with the original seven functions, sensitivity and diagnostic
 extensions in `dev/architecture.md`.
 On 2026-09-10 the maintainer explicitly replaced the unpublished 0.2.0 target
 and requested direct Bioconductor preparation in the shared #21/#22 PR.

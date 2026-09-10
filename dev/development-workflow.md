@@ -10,7 +10,7 @@ and `add_reference()` for personal baseline profiles. `add_deviation()` records
 sample deviations from those profiles. `add_recovery()` attaches observed
 episode outcomes. `recovery_results()` extracts tables with historical context;
 `plot_recovery()` displays saved observations and evidence. The next target is an
-experimental **0.99.0 MVP and Bioconductor submission candidate**. Its public API is:
+experimental **0.99.0 MVP and Bioconductor submission candidate**. Its original seven-function workflow is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
 Use the [architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)

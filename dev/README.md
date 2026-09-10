@@ -13,7 +13,7 @@ evidence. It is excluded from the source package by `.Rbuildignore`.
 | Material | Purpose |
 |---|---|
 | [development-workflow.md](development-workflow.md), [r-style.md](r-style.md) | Issue, review and coding rules. |
-| [architecture.md](architecture.md), [rfcs/](rfcs/) | Storage/API contracts and design decisions; RFC 005 is proposed until merged. |
+| [architecture.md](architecture.md), [rfcs/](rfcs/) | Storage/API contracts and design decisions; RFC 005 was accepted through PR #49. |
 | `check-*.R`, `resolve-bioc.R`, `coverage.R`, `tests/` | Executable maintenance and CI checks; retained intentionally. |
 | [qualification/](qualification/) | Prespecified protocol, offline runner, full outputs and independent comparisons. |
 | [tidy-interoperability.md](tidy-interoperability.md) | Bounded optional adapter assessment, versions and caveats; no required adapter. |

@@ -81,6 +81,7 @@ sufficient follow-up. Current equal sample weights and observational semantics
 remain the accepted method. There is no automatic calibration, inference, causal
 attribution or hidden optimization for a preferred outcome.
 
-The proposed [sensitivity/plot contract](../rfcs/005-sensitivity-diagnostic-plots.md)
-is the maintainer's acceptance gate for #44/#45. Approval requires merging this
-shared #41/#43 PR; these APIs are not implemented here.
+The [sensitivity/plot contract](../rfcs/005-sensitivity-diagnostic-plots.md) was
+accepted through maintainer merge of PR #49. Issue #44 implements rule sensitivity;
+#45 covers diagnostic plots. The qualification above remains a dated assessment
+of the existing method, not an evaluation of those later APIs.
