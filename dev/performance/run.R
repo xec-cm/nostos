@@ -50,7 +50,7 @@ profile_fixture <- function(backend, features, samples, directory) {
   list(
     tse = tse, checksum = checksum, density = density,
     episodes = data.frame(episode_id = episode_ids, subject_id = subject_ids,
-                           origin_event_id = episode_ids, origin_boundary = "start"),
+                          origin_event_id = episode_ids, origin_boundary = "start"),
     events = data.frame(event_id = episode_ids, episode_id = episode_ids,
                         start_time = 0, end_time = 0),
     baseline = colnames(tse)[SummarizedExperiment::colData(tse)$day < 0]
