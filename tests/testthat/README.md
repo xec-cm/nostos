@@ -24,3 +24,9 @@ Optional tidy checks live in `dev/tests/test-tidy.R` and run explicitly through
 `dev/check-tidy.R`, outside the mandatory package suite. See the
 [assessment and limitations](../../dev/tidy-interoperability.md), including the
 separate full core test/package check with adapters unavailable.
+
+Error assertions specify the relevant condition class and component. Repeated
+invalid-type matrices are consolidated only where the same normalizer is used;
+each input field retains a dispatch check. `test-reference-contracts.R` protects
+first-error behavior alongside independent cumulative diagnostics. Optional
+[execution-cost measurements](../../dev/performance/) run outside this suite.

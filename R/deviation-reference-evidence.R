@@ -30,21 +30,9 @@
     "reference$episodes",
     call
   )
-  counts <- vapply(c("n_samples", "n_times"), function(column) {
-    value <- episodes[[column]]
-    is.integer(value) && !is.object(value) && is.null(dim(value)) &&
-      !anyNA(value) && all(value >= 0L)
-  }, logical(1))
-  times <- vapply(c("first_time", "last_time", "baseline_diameter"), function(column) {
-    value <- episodes[[column]]
-    is.double(value) && !is.object(value) && is.null(dim(value))
-  }, logical(1))
-  support_states <- c("missing_baseline", "single_sample", "single_time", "multiple_times")
-  valid_episodes <- .recovery_valid_ids(episodes$episode_id, unique = TRUE) &&
-    identical(as.vector(episodes$episode_id), as.vector(record$episodes$episode_id)) &&
-    .recovery_valid_ids(episodes$support) &&
-    all(episodes$support %in% support_states) &&
-    all(counts) && all(times)
+  support <- .recovery_reference_support(episodes)
+  valid_episodes <- all(support) &&
+    identical(as.vector(episodes$episode_id), as.vector(record$episodes$episode_id))
   if (!valid_episodes) {
     .recovery_abort(
       "Reference episodes must retain registered IDs and normalized support, counts and times.",

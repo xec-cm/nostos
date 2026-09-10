@@ -186,7 +186,8 @@ test_that("new registrations preserve historical and unsupported older analysis 
                    c("s1", "s4", "s6"))
   expect_identical(registration_record(out, "antibiotic2")$registration$samples$sample_id,
                    c("s1", "s4"))
-  expect_setup_error(fixture, analysis_id = "future")
+  expect_setup_error(fixture, "analysis_id", analysis_id = "future",
+                     class = "recoverome_error_collision")
 })
 
 test_that("each registration may assign a sample to its own explicit episode", {

@@ -79,7 +79,9 @@ test_that("an assay failure retains the public call and structured offending sam
 
 test_that("an assay name is required and must identify exactly one assay", {
   tse <- register_fixture(reference_fixture())
-  expect_error(add_reference(tse, "antibiotic", "b1"))
+  # Missing required arguments are raised by R before recoverome normalizes them.
+  expect_error(add_reference(tse, "antibiotic", "b1"),
+               'argument "assay" is missing', class = "error")
   expect_reference_error(tse, "b1", assay = "absent")
 
   counts <- SummarizedExperiment::assay(tse, "counts")
