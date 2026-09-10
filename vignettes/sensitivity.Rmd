@@ -1,0 +1,148 @@
+---
+title: "Compare explicit recovery rules"
+author: "Francesc Catala-Moll"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Compare explicit recovery rules}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(recoverome)
+```
+
+## Introduction
+
+A recovery outcome depends on an explicit band, persistence duration, maximum
+visit gap and horizon. `recovery_sensitivity()` compares settings you supply,
+using a fixed personal reference and saved deviations. It shows the consequences
+of those choices without selecting a best setting or replacing your original
+analysis. Install as described in [Get started](recoverome.html).
+
+Choose plausible alternatives before examining which settings produce a return.
+Baseline and sampling sensitivity require new named analyses; this API varies
+only the four observation-rule parameters. See the [real-data assessment](real-data.html)
+for why arithmetic correctness and observation adequacy are separate questions.
+
+## Prepare one analysis and its original outcome
+
+```{r original-analysis}
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$observed_recovery
+tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+tse <- setup_recovery(
+  tse, "observed", example_data$episodes, example_data$events,
+  time_col = "day", time_unit = "days", time_origin = "days since enrolment"
+)
+tse <- add_reference(tse, "observed", "b1", assay = "counts")
+tse <- add_deviation(tse, "observed")
+tse <- add_recovery(tse, "observed", list(
+  threshold = .25, persistence = 4, max_gap = 3, horizon = 10
+))
+before <- serialize(tse, NULL)
+```
+
+The bundled synthetic example has known deviations of .75, .25, .125, .125, .5
+and .125 at follow-up days 0, 2, 4, 6, 8 and 10. Its original outcome confirms at
+6 and records a rebound at 8. The following illustrative alternatives are not
+recommended biological parameters.
+
+## Supply every scenario explicitly
+
+```{r scenarios}
+rules <- data.frame(
+  scenario_id = c("primary", "short_gap", "tight_band", "short_horizon"),
+  threshold = c(.25, .25, .10, .25),
+  persistence = 4,
+  max_gap = c(3, 1, 3, 3),
+  horizon = c(10, 10, 10, 4)
+)
+sensitivity <- recovery_sensitivity(tse, "observed", rules)
+as.data.frame(sensitivity)[, c(
+  "scenario_id", "evaluation_state", "status", "candidate_time", "confirmation_time", "rebound_time"
+)]
+stopifnot(
+  identical(serialize(tse, NULL), before),
+  identical(sensitivity$status, c("confirmed_return", "unconfirmed_return",
+                                  "no_observed_return", "unconfirmed_return")),
+  identical(sensitivity$confirmation_time, c(6, NA_real_, NA_real_, NA_real_))
+)
+```
+
+Shortening the allowed gap to one day prevents confirmation because the visits
+are two days apart. Tightening the band to .10 gives no observed return: the
+smallest follow-up deviation is .125. Ending the horizon at day 4 observes a
+return but not enough persistence. None of these results should be hidden in
+favor of the confirmed setting. Confirmation still does not establish continuous
+or permanent recovery between measurements.
+
+```{r scenario-plot, fig.width=9, fig.height=6, fig.alt="Four explicitly supplied rules produce one confirmed return, two unconfirmed returns and one no-observed-return outcome."}
+plot_sensitivity(sensitivity)
+```
+
+Rows preserve supplied scenario order; columns identify both participant and
+episode. Cell labels give observed first return, confirmation and rebound, while
+colors indicate the categorical outcome. This is a comparison of definitions,
+not uncertainty intervals or a test for an optimal rule. The result is an editable
+ggplot; enlarge the device for many scenarios or episodes.
+
+## Keep unavailable scenarios visible
+
+```{r historical-inputs}
+filtered <- tse[, colnames(tse) != "s3"]
+unavailable <- recovery_sensitivity(filtered, "observed", rules)
+as.data.frame(unavailable)[, c(
+  "scenario_id", "evaluation_state", "evaluation_reason", "status", "confirmation_time"
+)]
+stopifnot(all(unavailable$evaluation_reason == "historical_inputs_unavailable"),
+          all(is.na(unavailable$confirmation_time)))
+recovery_results(filtered, "observed")$confirmation_time
+```
+
+The original historical confirmation remains 6, but it is **not copied into the
+new scenarios**. The removed intermediate visit is required to re-evaluate the
+rule. Changed consumed inputs give `inputs_changed`; otherwise unsupported or
+incomplete comparisons give `validation_incomplete`. These reasons are distinct
+from a scenario that was evaluated and returned `not_evaluable`, for example
+because its episode has no baseline or overlapping exposures.
+
+```{r unavailable-plot, fig.width=9, fig.height=6, fig.alt="All four requested scenarios remain visible as unavailable because an original supporting sample was removed."}
+plot_sensitivity(unavailable)
+```
+
+All originally registered episodes remain represented, even if one has no samples
+left in the current TSE. `current_present` distinguishes that case. Removing only
+features not used by the reference, or reordering samples, does not itself prevent
+evaluation. Added identities are not enrolled. Malformed rules or corrupted
+required records error instead of producing a success-shaped partial result.
+
+## Preserve context when working with tables
+
+```{r context}
+context <- S4Vectors::metadata(sensitivity)$recoverome_sensitivity
+context$rules
+context$validation$summary
+context$evidence$primary$episode_1$confirmation_run
+```
+
+The DataFrame contains atomic columns suitable for conversion to an ordinary
+data.frame or tibble. Its metadata records rules, validation, the original analysis
+context, scenario-specific supporting IDs and provenance. This is a snapshot, not
+a live link to the TSE. Use a separate converted copy for table manipulation.
+`plot_sensitivity()` expects the unchanged result and verifies its versioned
+consistency checksum; edits or row filtering must not silently mismatch the saved
+scenario context. A fresh analysis call makes a fresh snapshot.
+
+## Session information
+
+```{r session-info}
+utils::sessionInfo()
+```

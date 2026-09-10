@@ -1,7 +1,7 @@
 # RFC 005: rule sensitivity and diagnostic plots
 
-Status: proposed for maintainer approval through the shared #41/#43 PR.
-Implementation belongs to #44 and #45, after this document is merged into `devel`.
+Status: accepted through maintainer merge of PR #49 on 2026-09-10
+(commit `d0f8314`). Implementation belongs to #44 and #45.
 This extends the existing descriptive method, not its estimator or inference.
 Evidence: [prespecified qualification](../qualification/README.md).
 

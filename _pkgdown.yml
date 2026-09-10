@@ -19,6 +19,10 @@ reference:
   - title: Attach observed recovery outcomes
     contents:
       - add_recovery
+  - title: Compare explicit recovery rules
+    contents:
+      - recovery_sensitivity
+      - plot_sensitivity
   - title: Extract saved results
     contents:
       - recovery_results
@@ -43,6 +47,7 @@ articles:
       - input-preparation
       - history-and-validation
       - real-data
+      - sensitivity
 navbar:
   structure:
     left: [intro, reference, articles, news]
