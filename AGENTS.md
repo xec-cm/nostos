@@ -6,7 +6,8 @@ for structural and historical-scope diagnostics. `add_reference()` attaches
 explicit personal baseline profiles with support and provenance, and
 `add_deviation()` records sample-level deviations against those fixed profiles.
 `add_recovery()` attaches observed outcomes by episode. `recovery_results()`
-extracts sample or episode tables with historical context; plotting remains planned.
+extracts sample or episode tables with historical context. `plot_recovery()`
+displays saved observations and evidence.
 `validate_recovery()` checks registration, reference, deviation and recovery
 dependencies without changing historical results. Unknown stage schemas remain
 incompletely checked.

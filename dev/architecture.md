@@ -8,7 +8,8 @@ dissimilarities under [RFC 002](rfcs/002-personal-baseline-deviation.md).
 `add_recovery()` attaches observed episode outcomes under
 [RFC 003](rfcs/003-observed-recovery.md). `recovery_results()` extracts sample and
 episode tables under [RFC 004](rfcs/004-result-extraction-plotting.md);
-see [result extraction](result-extraction.md). Plotting remains planned.
+see [result extraction](result-extraction.md). `plot_recovery()` displays saved
+observations and evidence.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
@@ -31,7 +32,7 @@ The initial public interface is limited to seven functions:
 | `add_deviation()` | Available | Add sample-level deviations from the fixed reference. |
 | `add_recovery()` | Available | Attach observed episode outcomes under a recorded recovery rule. |
 | `recovery_results()` | Available | Extract saved tables, availability and historical context. |
-| `plot_recovery()` | Planned | Display data and analysis annotations. |
+| `plot_recovery()` | Available | Display saved observations, evidence and follow-up. |
 | `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
 Statistical model fitting is a future layer outside these seven functions.

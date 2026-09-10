@@ -8,7 +8,8 @@ if (!rmarkdown::pandoc_available()) {
 }
 
 tracked_outputs <- function() {
-  c("DESCRIPTION", "NAMESPACE", "README.md", list.files("man", full.names = TRUE))
+  c("DESCRIPTION", "NAMESPACE", "README.md",
+    list.files("man", pattern = "\\.Rd$", full.names = TRUE))
 }
 before_files <- tracked_outputs()
 before <- tools::md5sum(before_files)

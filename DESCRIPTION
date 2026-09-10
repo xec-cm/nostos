@@ -19,6 +19,8 @@ Description: Registers named longitudinal microbiome recovery analyses in
     Attaches episode-level observed return and confirmation outcomes under an
     explicit threshold, persistence, visit-gap and horizon rule. Extracts saved
     sample or episode results with explicit availability and validation context.
+    Plots observed deviations and saved recovery evidence with historical scope,
+    observation gaps and follow-up limitations.
 License: MIT + file LICENSE
 URL: https://github.com/xec-cm/recoverome,
     https://xec-cm.github.io/recoverome/
@@ -28,6 +30,7 @@ Depends:
 Imports:
     cli (>= 3.2.0),
     digest,
+    ggplot2 (>= 3.4.0),
     methods,
     S4Vectors,
     SummarizedExperiment,

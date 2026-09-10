@@ -15,13 +15,14 @@ explicit personal baseline profiles with support and input provenance.
 \code{\link[=add_deviation]{add_deviation()}} records sample deviations against those fixed profiles.
 \code{\link[=add_recovery]{add_recovery()}} attaches episode outcomes under an explicit observational
 rule. \code{\link[=recovery_results]{recovery_results()}} extracts saved sample or episode tables with their
-historical context. Plotting remains planned. Validation never refits
+historical context. \code{\link[=plot_recovery]{plot_recovery()}} displays saved observations and evidence.
+Validation never refits
 references or recalculates historical results.
 }
 \details{
 The intended workflow enriches a TreeSummarizedExperiment with sample-level
 annotations and named analysis records. See the introductory vignette for
-runnable examples through result extraction, and the project
+runnable examples through result plotting, and the project
 website for development status.
 }
 \seealso{
