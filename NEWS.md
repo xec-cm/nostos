@@ -1,5 +1,10 @@
 # recoverome (development version)
 
+- Provide a continuous, executable README and introductory vignette using the
+  bundled observed-recovery example across all seven functions. Explain and
+  verify numerical outcomes, historical results after filtering, plot evidence
+  and bounded optional tidy operations, with installed-session provenance.
+
 - Add `plot_recovery()` with ordinary customizable ggplot2 layers for retained
   deviations, original reference support and saved observed recovery evidence.
   Show declared windows, original observation gaps and follow-up limitations.
