@@ -128,7 +128,7 @@ intentional tooling change and must include the resulting generated files.
 ## Attribution
 
 Record substantive coding-agent or third-party assistance in issues and PRs.
-The installed [provenance record](../inst/PROVENANCE.md) documents existing
+The installed [provenance record](https://github.com/xec-cm/nostos/blob/devel/inst/PROVENANCE.md) documents existing
 Codex-assisted contributions; the maintainer remains responsible for the code.
 
 ## Reporting a problem

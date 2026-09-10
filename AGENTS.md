@@ -85,7 +85,7 @@ Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
 
 ## R implementation
 
-- Read and follow [the R style guide](dev/r-style.md) before editing R code.
+- Read and follow [the R style guide](https://github.com/xec-cm/nostos/blob/devel/dev/r-style.md) before editing R code.
   It records the maintainer's style from historical dar code and distinguishes
   it from deliberate nostos improvements. Use snake_case, two-space indents,
   one argument per line for long signatures/calls, and visibly separated stages.
