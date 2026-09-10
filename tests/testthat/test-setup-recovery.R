@@ -31,7 +31,7 @@ test_that("registration stores the worked example without derived results", {
                    SummarizedExperiment::colData(fixture$tse))
   expect_type(record$provenance$package_version, "character")
   expect_identical(record$provenance$package_version,
-                   as.character(utils::packageVersion("recoverome")))
+                   as.character(utils::packageVersion("nostos")))
   expect_length(record$provenance$registered_at, 1L)
   expect_match(record$provenance$registered_at,
                "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?Z$")

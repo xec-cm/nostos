@@ -13,7 +13,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(recoverome)
+library(nostos)
 ```
 
 ## Introduction
@@ -22,7 +22,7 @@ A recovery outcome depends on an explicit band, persistence duration, maximum
 visit gap and horizon. `recovery_sensitivity()` compares settings you supply,
 using a fixed personal reference and saved deviations. It shows the consequences
 of those choices without selecting a best setting or replacing your original
-analysis. Install as described in [Get started](recoverome.html).
+analysis. Install as described in [Get started](nostos.html).
 
 Choose plausible alternatives before examining which settings produce a return.
 Baseline and sampling sensitivity require new named analyses; this API varies
@@ -32,7 +32,7 @@ for why arithmetic correctness and observation adequacy are separate questions.
 ## Prepare one analysis and its original outcome
 
 ```{r original-analysis}
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

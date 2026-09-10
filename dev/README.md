@@ -2,7 +2,7 @@
 
 User explanations live in the installed vignettes:
 
-- [Get started](../vignettes/recoverome.Rmd).
+- [Get started](../vignettes/nostos.Rmd).
 - [Input preparation](../vignettes/input-preparation.Rmd).
 - [Filtering, history and validation](../vignettes/history-and-validation.Rmd).
 - [Real data and scientific qualification](../vignettes/real-data.Rmd).
@@ -15,6 +15,7 @@ evidence. It is excluded from the source package by `.Rbuildignore`.
 | [development-workflow.md](development-workflow.md), [r-style.md](r-style.md) | Issue, review and coding rules. |
 | [architecture.md](architecture.md), [rfcs/](rfcs/) | Storage/API contracts and design decisions; RFC 005 was accepted through PR #49. |
 | `check-*.R`, `resolve-bioc.R`, `coverage.R`, `tests/` | Executable maintenance and CI checks; retained intentionally. |
+| [branding/](branding/) | Package-name transition, saved-object compatibility and original PNG provenance. |
 | [performance/](performance/) | Optional runtime/allocation measurements and validation/test maintenance evidence; outside routine CI. |
 | [qualification/](qualification/) | Prespecified protocol, offline runner, full outputs and independent comparisons. |
 | [tidy-interoperability.md](tidy-interoperability.md) | Bounded optional adapter assessment, versions and caveats; no required adapter. |

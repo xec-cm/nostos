@@ -203,7 +203,7 @@ for (i in seq_len(nrow(draws))) {
 }
 
 # Real cohort: every rule, baseline selection and episode is retained.
-data("dethlefsen2008", package = "recoverome")
+data("dethlefsen2008", package = "nostos")
 real_grid <- expand.grid(threshold = c(.10, .25, .40), persistence = c(7, 28),
                          max_gap = c(14, 35), horizon = c(33, 180))
 real_results <- real_samples <- list()

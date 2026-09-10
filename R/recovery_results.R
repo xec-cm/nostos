@@ -60,7 +60,7 @@
 #'   [add_recovery()], [validate_recovery()]
 #' @export
 #' @examples
-#' data("recovery_examples", package = "recoverome")
+#' data("recovery_examples", package = "nostos")
 #' example_data <- recovery_examples$observed_recovery
 #' tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
 #'   assays = list(counts = example_data$counts),

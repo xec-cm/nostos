@@ -40,7 +40,7 @@
     analysis = analysis,
     evidence = evidence,
     provenance = list(
-      package_version = as.character(utils::packageVersion("recoverome")),
+      package_version = as.character(utils::packageVersion("nostos")),
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
       method = "observed_run_v1",
       fingerprint_format = "recoverome_sensitivity_snapshot_v1",

@@ -1,6 +1,6 @@
 test_that("bundled examples load through data() as ordinary R objects", {
   data_env <- new.env(parent = emptyenv())
-  utils::data("recovery_examples", package = "recoverome", envir = data_env)
+  utils::data("recovery_examples", package = "nostos", envir = data_env)
   expect_identical(ls(data_env), "recovery_examples")
 
   examples <- data_env$recovery_examples

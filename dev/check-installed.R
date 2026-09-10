@@ -1,7 +1,7 @@
 # Assisted-by: OpenAI Codex; see inst/PROVENANCE.md.
 # Run from the repository root against an already built source archive.
 check_installed_candidate <- function(archive) {
-  if ("recoverome" %in% loadedNamespaces()) {
+  if ("nostos" %in% loadedNamespaces()) {
     stop("Run this check in a fresh Rscript --vanilla session.")
   }
   archive <- normalizePath(archive, mustWork = TRUE)
@@ -16,22 +16,24 @@ check_installed_candidate <- function(archive) {
   .libPaths(c(library_path, original_libraries))
 
   utils::install.packages(archive, repos = NULL, type = "source", lib = library_path)
-  package_path <- find.package("recoverome", lib.loc = library_path)
-  stopifnot(as.character(utils::packageVersion("recoverome")) == expected_version)
-  vignette_dir <- system.file("doc", package = "recoverome", mustWork = TRUE)
+  package_path <- find.package("nostos", lib.loc = library_path)
+  stopifnot(as.character(utils::packageVersion("nostos")) == expected_version)
+  vignette_dir <- system.file("doc", package = "nostos", mustWork = TRUE)
   installed_sources <- list.files(vignette_dir, pattern = "\\.Rmd$", full.names = TRUE)
   expected_sources <- basename(list.files("vignettes", pattern = "\\.Rmd$"))
   stopifnot(length(installed_sources) > 0L,
             setequal(basename(installed_sources), expected_sources))
   sources <- c("README.Rmd", installed_sources)
   stopifnot(all(file.copy(sources, workspace)))
+  dir.create(file.path(workspace, "man"))
+  stopifnot(file.copy("man/figures", file.path(workspace, "man"), recursive = TRUE))
   for (source in basename(sources)) {
     rmarkdown::render(file.path(workspace, source), quiet = TRUE, envir = new.env())
   }
 
   adapters <- c("tidySingleCellExperiment", "tidySummarizedExperiment", "tidyomics")
   stopifnot(
-    normalizePath(getNamespaceInfo("recoverome", "path")) == normalizePath(package_path),
+    normalizePath(getNamespaceInfo("nostos", "path")) == normalizePath(package_path),
     !any(adapters %in% loadedNamespaces())
   )
   cat("Installed source archive:", archive, "\n")

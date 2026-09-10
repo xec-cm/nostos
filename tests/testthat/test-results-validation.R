@@ -173,13 +173,13 @@ test_that("each extraction validates only its selected analysis exactly once", {
   S4Vectors::metadata(tse)$recoverome$analyses$other <- "unreadable"
   calls <- new.env(parent = emptyenv())
   calls$count <- 0L
-  original <- recoverome:::.recovery_validate_input
+  original <- nostos:::.recovery_validate_input
   local_mocked_bindings(
     .recovery_validate_input = function(tse, analysis_id, error_call, allow_all = TRUE) {
       calls$count <- calls$count + 1L
       original(tse, analysis_id, error_call, allow_all)
     },
-    .package = "recoverome"
+    .package = "nostos"
   )
   first <- results_preserving_input(tse, "sample")
   expect_identical(calls$count, 1L)

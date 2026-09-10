@@ -13,7 +13,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(recoverome)
+library(nostos)
 ```
 
 ## Introduction
@@ -51,7 +51,7 @@ selected baseline compositions with equal sample weights. `add_deviation()`
 calculates Bray--Curtis against that fixed reference.
 
 ```{r complete-analysis}
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

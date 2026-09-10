@@ -36,16 +36,16 @@ expect_validation_diagnostic <- function(report, code, severity, ids = NULL) {
 }
 
 analytical_fixture <- function(registered) {
-  referenced <- recoverome::add_reference(
+  referenced <- nostos::add_reference(
     registered, "antibiotic", c("b1", "b2", "b3"), assay = "counts"
   )
 
-  recoverome::add_deviation(referenced, "antibiotic")
+  nostos::add_deviation(referenced, "antibiotic")
 }
 
 validate_preserving_input <- function(tse, analysis_id = NULL) {
   before <- serialize(tse, NULL)
-  report <- recoverome::validate_recovery(tse, analysis_id = analysis_id)
+  report <- nostos::validate_recovery(tse, analysis_id = analysis_id)
   testthat::expect_identical(serialize(tse, NULL), before)
 
   report
@@ -54,7 +54,7 @@ validate_preserving_input <- function(tse, analysis_id = NULL) {
 results_preserving_input <- function(tse, level = "episode", scope = "current",
                                      analysis_id = "antibiotic") {
   before <- serialize(tse, NULL)
-  result <- recoverome::recovery_results(tse, analysis_id, level, scope)
+  result <- nostos::recovery_results(tse, analysis_id, level, scope)
   testthat::expect_identical(serialize(tse, NULL), before)
 
   result

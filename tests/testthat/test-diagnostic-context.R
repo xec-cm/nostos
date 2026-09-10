@@ -1,6 +1,6 @@
 test_that("all diagnostics validate once, preserve the TSE and return editable unprinted ggplots", {
   tse <- add_recovery(recovery_parent(), "antibiotic", observed_rule())
-  validate <- recoverome:::.recovery_validate_input
+  validate <- nostos:::.recovery_validate_input
   calls <- new.env(parent = emptyenv())
   calls$n <- 0L
   testthat::local_mocked_bindings(.recovery_validate_input = function(...) {

@@ -34,7 +34,7 @@ reference_fixture <- function() {
 expect_reference_error <- function(tse, reference, assay = "counts", ...) {
   before <- serialize(tse, NULL)
   testthat::expect_error(
-    recoverome::add_reference(tse, "antibiotic", reference, assay = assay, ...),
+    nostos::add_reference(tse, "antibiotic", reference, assay = assay, ...),
     class = "recoverome_error"
   )
   testthat::expect_identical(serialize(tse, NULL), before)

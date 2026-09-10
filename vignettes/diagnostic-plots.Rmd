@@ -13,7 +13,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9, fig.height = 5)
-library(recoverome)
+library(nostos)
 ```
 
 ## Three complementary questions
@@ -32,7 +32,7 @@ All examples are offline and use the bundled synthetic data. Their illustrative
 rule values are explicit choices, not defaults or recommended clinical cutoffs.
 
 ```{r register}
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

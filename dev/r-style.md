@@ -1,4 +1,4 @@
-# R style for recoverome
+# R style for nostos
 
 Use this guide alongside [AGENTS.md](../AGENTS.md), the accepted RFCs, and the
 [development workflow](development-workflow.md). It guides implementation;
@@ -43,7 +43,7 @@ these are additional local guidance, not historical permalink evidence.
 - Separate meaningful phases with blank lines: input checks, preparation,
   calculation, and result construction should be easy to distinguish.
 - Use `snake_case` for functions, parameters, and local variables. Follow the
-  existing `.recovery_*` convention for internal recoverome helpers.
+  existing `.recovery_*` convention for internal nostos helpers.
 - Prefer descriptive names such as `sample_ids` or `included_samples` over
   numbered checks or opaque abbreviations. Preserve an external API's own
   argument names when passing arguments to it.
@@ -85,12 +85,12 @@ these are additional local guidance, not historical permalink evidence.
   duplicating a public contract across many helpers or documenting obvious
   assignments in prose.
 - Historical code uses `rlang::abort()`, with a main problem and named bullets
-  containing details or a concrete remedy. Recoverome now uses `cli` at the
+  containing details or a concrete remedy. Nostos now uses `cli` at the
   maintainer's explicit request; see the adaptations below.
 - State which argument or component failed, what was expected, and useful
   offending identifiers. Keep informational messages distinct from errors.
 
-## Recoverome adaptations and quality guardrails
+## Nostos adaptations and quality guardrails
 
 The following are deliberate project choices. They must not be presented as
 proof of historical author preferences.
@@ -149,7 +149,7 @@ proof of historical author preferences.
 - Check input types and normalize them once. Helpers receiving normalized
   tables should trust those types and only check the relationships they own.
   Use the container's own validity checks for structural invariants; keep
-  identity, membership and temporal rules specific to recoverome explicit.
+  identity, membership and temporal rules specific to nostos explicit.
   Do not repeat equivalent checks merely to make every helper defensive.
 - Do not construct executable text with `parse()`/`eval()` or use `<<-` to
   update a caller's object. Do not silently change global options, install
@@ -164,7 +164,7 @@ proof of historical author preferences.
 ## Formatting illustration
 
 This small example illustrates layout and control flow only. It is not a
-new recoverome function or a proposal for a public API.
+new nostos function or a proposal for a public API.
 
 ```r
 format_labels <- function(values,

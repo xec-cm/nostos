@@ -7,51 +7,51 @@ test_that("fingerprinting implements the fixed RFC compatibility vector and cano
     n = 3L
   )
   expected <- "0ebcc76956478405e0d59c09fd5ac022c6f231bd1677471c913c63132d574406"
-  expect_identical(recoverome:::.recovery_fingerprint(value), expected)
+  expect_identical(nostos:::.recovery_fingerprint(value), expected)
 
   equivalent <- value
   equivalent$sample_id <- iconv(value$sample_id, from = "UTF-8", to = "latin1")
   equivalent$missing <- -NA_real_
   equivalent$values[1L] <- -0
   attr(equivalent$values, "annotation") <- "not a consumed field"
-  expect_identical(recoverome:::.recovery_fingerprint(equivalent), expected)
+  expect_identical(nostos:::.recovery_fingerprint(equivalent), expected)
 })
 
 test_that("source fingerprints depend on normalized values rather than R storage details", {
   compact <- as.double(1:3)
   materialized <- c(1, 2, 3)
   named_values <- setNames(materialized, c("a", "b", "c"))
-  expected <- recoverome:::.recovery_hash_source("s1", c("a", "b", "c"), materialized)
+  expected <- nostos:::.recovery_hash_source("s1", c("a", "b", "c"), materialized)
 
   expect_identical(
-    recoverome:::.recovery_hash_source("s1", c("a", "b", "c"), compact), expected
+    nostos:::.recovery_hash_source("s1", c("a", "b", "c"), compact), expected
   )
   expect_identical(
-    recoverome:::.recovery_hash_source("s1", c("a", "b", "c"), 1:3), expected
+    nostos:::.recovery_hash_source("s1", c("a", "b", "c"), 1:3), expected
   )
   expect_identical(
-    recoverome:::.recovery_hash_source("s1", c("a", "b", "c"), named_values),
+    nostos:::.recovery_hash_source("s1", c("a", "b", "c"), named_values),
     expected
   )
   expect_identical(
-    recoverome:::.recovery_hash_source("s1", c("a", "b"), c(-0, 1)),
-    recoverome:::.recovery_hash_source("s1", c("a", "b"), c(0, 1))
+    nostos:::.recovery_hash_source("s1", c("a", "b"), c(-0, 1)),
+    nostos:::.recovery_hash_source("s1", c("a", "b"), c(0, 1))
   )
 })
 
 test_that("parent fingerprints exclude annotations while retaining declared time semantics", {
   record <- registration_record(register_fixture(registration_fixture()))
-  original <- recoverome:::.recovery_hash_registration(record)
+  original <- nostos:::.recovery_hash_registration(record)
   annotated <- record
   annotated$episodes$note <- c("new note", "another note")
   rownames(annotated$events) <- c("annotation-row-a", "annotation-row-b")
   annotated$provenance$registered_at <- "2000-01-01T00:00:00Z"
 
-  expect_identical(recoverome:::.recovery_hash_registration(annotated), original)
+  expect_identical(nostos:::.recovery_hash_registration(annotated), original)
 
   changed <- record
   changed$registration$time_origin <- "days since a different declared origin"
-  expect_false(identical(recoverome:::.recovery_hash_registration(changed), original))
+  expect_false(identical(nostos:::.recovery_hash_registration(changed), original))
 })
 
 test_that("source edits and composition changes have distinct evidence", {
@@ -71,10 +71,10 @@ test_that("source edits and composition changes have distinct evidence", {
   expect_identical(original_reference$dependencies$samples$sample_id, baseline_ids)
   expect_identical(original_reference$dependencies$samples$input_sha256[1L], expected_source)
   expect_identical(original_reference$fingerprint,
-                   recoverome:::.recovery_hash_reference(original_reference))
+                   nostos:::.recovery_hash_reference(original_reference))
   changed_result <- original_reference
   changed_result$profiles["a", "e1"] <- 0.6
-  expect_false(identical(recoverome:::.recovery_hash_reference(changed_result),
+  expect_false(identical(nostos:::.recovery_hash_reference(changed_result),
                          original_reference$fingerprint))
 
   scaled <- tse

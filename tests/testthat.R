@@ -1,4 +1,4 @@
 library(testthat)
-library(recoverome)
+library(nostos)
 
-test_check("recoverome")
+test_check("nostos")

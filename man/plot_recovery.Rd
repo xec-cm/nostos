@@ -58,7 +58,7 @@ historical observations. Scope additions emit the same structured warning as
 \code{\link[=recovery_results]{recovery_results()}}. The TSE is preserved. Customization does not revalidate.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

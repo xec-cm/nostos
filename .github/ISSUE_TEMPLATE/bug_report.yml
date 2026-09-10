@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        recoverome is currently an experimental scaffold. Analysis functions
-        shown as planned API are not implemented. Please omit private data.
+        nostos provides experimental longitudinal microbiome recovery analyses.
+        Include the package version and omit private data.
   - type: textarea
     id: problem
     attributes:

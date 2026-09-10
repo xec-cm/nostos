@@ -1,6 +1,6 @@
 # Repository instructions
 
-recoverome is an experimental R package. The development version implements
+nostos is an experimental R package. The development version implements
 `setup_recovery()` for named analysis registration and `validate_recovery()`
 for structural and historical-scope diagnostics. `add_reference()` attaches
 explicit personal baseline profiles with support and provenance, and
@@ -87,7 +87,7 @@ Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
 
 - Read and follow [the R style guide](dev/r-style.md) before editing R code.
   It records the maintainer's style from historical dar code and distinguishes
-  it from deliberate recoverome improvements. Use snake_case, two-space indents,
+  it from deliberate nostos improvements. Use snake_case, two-space indents,
   one argument per line for long signatures/calls, and visibly separated stages.
   Keep helpers purposeful and dependencies explicit; do not imitate historical
   slot access, implicit coercion or error-handling problems.
@@ -96,7 +96,7 @@ Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
   responsibilities before nesting loops and conditionals several levels deep.
   Review nesting and readability explicitly even when tests and CI pass;
   preserve all independently checkable diagnostics when using early returns.
-- Use `cli::cli_abort()` through `.recovery_abort()` for recoverome errors.
+- Use `cli::cli_abort()` through `.recovery_abort()` for nostos errors.
   Write glue-style templates with semantic markup and interpolate values;
   do not assemble templates from user data. Keep the interpolation environment
   local to the failing check and preserve the public call through helpers.
@@ -104,7 +104,7 @@ Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
   warning or message; successful registration should remain quiet.
 - Validate raw inputs once at the public boundary. Internal helpers should
   trust already normalized types and check only their own relationships.
-  Delegate container structure to TSE/S4 validity; retain recoverome-specific
+  Delegate container structure to TSE/S4 validity; retain nostos-specific
   identity, membership, time and namespace checks that TSE cannot guarantee.
 - Use `Rscript --vanilla` for reproducible command-line execution.
 - Use public accessors for TSE, SummarizedExperiment, and S4Vectors objects.
@@ -160,3 +160,12 @@ Rscript --vanilla dev/check-bioc.R
 The Bioconductor check is informative at this stage. Its presence does not
 mean the package has been submitted to or accepted by Bioconductor. Resolve or
 report relevant findings; never claim that an unrun check passed.
+
+## Package name compatibility
+
+The package is `nostos`; use `nostos::` and load data from `nostos`. Keep the
+legacy `recoverome`, `recoverome_view` and `recoverome_sensitivity` metadata keys,
+`recoverome_*` condition classes, fingerprint identifiers and `rec_` columns.
+These are persisted contracts, not branding. Do not rename them without an
+accepted migration contract. See `dev/branding/README.md` for the coordinated
+repository/Pages transition and preserved historical evidence.
