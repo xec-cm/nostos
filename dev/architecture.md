@@ -76,8 +76,12 @@ Core operations should remain usable without a tidy wrapper or dependency.
 Before documenting a tidy operation as supported, verify that it preserves
 the TSE class, tree links, sample identities, and analysis annotations. Tidy
 filtering and mutation must follow the same historical-scope and invalidation
-contracts as base subsetting and accessor-based edits. No tidy integration is
-implemented or required for registration.
+contracts as base subsetting and accessor-based edits. The bounded
+[tidy interoperability assessment](tidy-interoperability.md) verifies optional
+sample filtering, reordering and ordinary annotation mutation directly on TSE
+with recorded adapter versions. Mutation loses `colData()` metadata and column
+descriptors in the tested adapter and is unsupported when these must be preserved.
+No tidy adapter is required for registration or the core workflow.
 
 ## Storage
 
@@ -197,7 +201,7 @@ observed recovery and result extraction are implemented. [Integration evidence](
 covers incomplete follow-up and historical outcomes after filtering. The next
 steps are:
 
-1. Add plotting that respects historical scope and verify optional tidy operations.
+1. Complete the remaining MVP issues in the development project.
 2. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests

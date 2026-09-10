@@ -356,6 +356,15 @@ Conversion to a data.frame or tibble preserves the columns but need not
 preserve this context. See the [extraction
 guide](https://github.com/xec-cm/recoverome/blob/devel/dev/result-extraction.md).
 
+Optional sample filtering and reordering through
+`tidySingleCellExperiment` were verified directly on TSE objects.
+Mutation support is limited to ordinary atomic annotations: the tested
+adapter loses `colData()` metadata and column descriptors on mutation.
+The [tidy interoperability
+guide](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
+records exact operations, versions, unsupported cases and reproducible
+checks. The core workflow requires no tidy adapter.
+
 ## Available and planned workflow
 
 | Function | Status | Responsibility |
@@ -382,9 +391,9 @@ separate design and validation.
 
 ## Development and contributions
 
-The next steps are plotting and optional tidy interoperability under the
-accepted contracts. No benchmark performance or statistical guarantees
-are claimed for this version.
+Remaining MVP work is tracked in the [development
+project](https://github.com/users/xec-cm/projects/10). No benchmark
+performance or statistical guarantees are claimed for this version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and
 contribution guidelines. Please use the [issue
