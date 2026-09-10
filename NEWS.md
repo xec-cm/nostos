@@ -14,6 +14,11 @@
   changes, and reject inconsistent saved outputs or parent records.
   New identities produce one structured warning and are never enrolled.
 
+- Verify optional sample filtering, reordering and bounded annotation mutation
+  through `tidySingleCellExperiment` on the existing TSE. Document preserved
+  history, base-equivalent diagnostics and unsupported annotation-metadata
+  preservation, with reproducible checks and no new package dependency.
+
 - Document and verify the distinction between incomplete follow-up, filtered
   historical recovery and a new subset analysis, including independent named
   analyses and missing observation evidence. The observed rule is unchanged.
