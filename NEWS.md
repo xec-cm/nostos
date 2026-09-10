@@ -3,6 +3,8 @@
 - Renamed the installable package from `recoverome` to `nostos`. Public function
   names, saved metadata, fingerprint formats and condition classes are unchanged.
   Use `nostos::` for calls; existing analyses require no refitting or migration.
+- Moved the repository and documentation site to `xec-cm/nostos` and
+  `https://xec-cm.github.io/nostos/`; updated current installation and support links.
 - Added the approved NOSTOS watercolor logo, PNG browser icons and the
   maintainer-selected Minty documentation theme.
 

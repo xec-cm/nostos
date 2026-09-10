@@ -6,7 +6,7 @@
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R package
-checks](https://github.com/xec-cm/recoverome/actions/workflows/check-bioc.yml/badge.svg)](https://github.com/xec-cm/recoverome/actions/workflows/check-bioc.yml)
+checks](https://github.com/xec-cm/nostos/actions/workflows/check-bioc.yml/badge.svg)](https://github.com/xec-cm/nostos/actions/workflows/check-bioc.yml)
 
 **Describe microbiome return to a personal baseline under an explicit
 observation rule.** Keep references, deviations, episode outcomes and
@@ -21,14 +21,14 @@ release.
 
 ``` r
 install.packages("remotes")
-remotes::install_github("xec-cm/recoverome", ref = "devel")
+remotes::install_github("xec-cm/nostos", ref = "devel")
 ```
 
 The package was previously named `recoverome`. Install and load it as
 `nostos`; existing saved analyses keep their original storage
-identifiers. The repository and website retain their current addresses
-until the coordinated rename. See the [name
-transition](https://github.com/xec-cm/recoverome/blob/devel/dev/branding/README.md).
+identifiers. The repository and website now use `nostos` too. See the
+[name
+transition](https://github.com/xec-cm/nostos/blob/devel/dev/branding/README.md).
 
 ## A complete example
 
@@ -77,27 +77,26 @@ nostos::plot_recovery(tse, "observed")
 
 ## Learn more
 
-- [Get
-  started](https://xec-cm.github.io/recoverome/articles/nostos.html):
+- [Get started](https://xec-cm.github.io/nostos/articles/nostos.html):
   read the output and understand the seven-function workflow.
 - [Prepare your
-  data](https://xec-cm.github.io/recoverome/articles/input-preparation.html).
+  data](https://xec-cm.github.io/nostos/articles/input-preparation.html).
 - [Filtering and
-  validation](https://xec-cm.github.io/recoverome/articles/history-and-validation.html).
+  validation](https://xec-cm.github.io/nostos/articles/history-and-validation.html).
 - [Real data and scientific
-  limits](https://xec-cm.github.io/recoverome/articles/real-data.html).
+  limits](https://xec-cm.github.io/nostos/articles/real-data.html).
 
 Filtering preserves history; `validate_recovery()` checks available
 dependencies without recalculating results. No tidy adapter is required.
 See the bounded [optional interoperability
-assessment](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
+assessment](https://github.com/xec-cm/nostos/blob/devel/dev/tidy-interoperability.md)
 for verified operations and preservation limits.
 
 Questions and reproducible problems belong in the [issue
-tracker](https://github.com/xec-cm/recoverome/issues). See
+tracker](https://github.com/xec-cm/nostos/issues). See
 [CONTRIBUTING](.github/CONTRIBUTING.md) for development checks and the
 [release preparation
-record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.99.0.md)
+record](https://github.com/xec-cm/nostos/blob/devel/dev/releases/0.99.0.md)
 for publication status. Only the maintainer publishes releases or
 submissions.
 

@@ -10,7 +10,7 @@ maintainer's responsibility for reliability, attribution or ongoing support.
 
 The public issue and pull-request history records the accepted design contracts,
 implementation changes, independent technical reviews and maintainer merges:
-https://github.com/xec-cm/recoverome/pulls
+https://github.com/xec-cm/nostos/pulls
 
 The package uses public APIs from its declared R/Bioconductor dependencies.
 The reference and deviation definitions, observation rule and historical-scope
@@ -20,7 +20,7 @@ nostos or authored its implementation.
 
 The `recovery_examples` dataset is deterministic and synthetic. Its generation
 source is maintained at:
-https://github.com/xec-cm/recoverome/blob/devel/data-raw/recovery_examples.R
+https://github.com/xec-cm/nostos/blob/devel/data-raw/recovery_examples.R
 
 The real `dethlefsen2008` dataset is separate; its help and installed
 `DATA-LICENSE.md` retain source attribution and reuse terms.

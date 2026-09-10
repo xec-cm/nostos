@@ -7,23 +7,23 @@ a concrete, reviewable improvement and distinguish implemented behavior from
 proposals.
 
 The current release candidate is the experimental **0.99.0 GitHub MVP**.
-See the [release preparation record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.99.0.md)
+See the [release preparation record](https://github.com/xec-cm/nostos/blob/devel/dev/releases/0.99.0.md)
 for evidence and maintainer publication steps. Bioconductor assessment is separate
 from submission and does not imply repository acceptance.
 Implementation work is tracked in the public
-[recoverome Development project](https://github.com/users/xec-cm/projects/10)
-and the [issue backlog](https://github.com/xec-cm/recoverome/issues).
+[nostos Development project](https://github.com/users/xec-cm/projects/10)
+and the [issue backlog](https://github.com/xec-cm/nostos/issues).
 
 ## Before changing the interface
 
-Read [the architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)
+Read [the architecture contract](https://github.com/xec-cm/nostos/blob/devel/dev/architecture.md)
 and the repository's
 `AGENTS.md`. Discuss substantial API or statistical changes in an issue before
 investing in an implementation. State the intended user question, estimand,
 input requirements, and limitations.
 
 The development branch is `devel`. The
-[development workflow](https://github.com/xec-cm/recoverome/blob/devel/dev/development-workflow.md)
+[development workflow](https://github.com/xec-cm/nostos/blob/devel/dev/development-workflow.md)
 defines issue readiness, branch ownership, review, and release expectations.
 Keep changes focused and preserve unrelated work. New runtime dependencies
 must support an implemented feature and include a justification in the PR.
@@ -128,7 +128,7 @@ intentional tooling change and must include the resulting generated files.
 ## Attribution
 
 Record substantive coding-agent or third-party assistance in issues and PRs.
-The installed [provenance record](../inst/PROVENANCE.md) documents existing
+The installed [provenance record](https://github.com/xec-cm/nostos/blob/devel/inst/PROVENANCE.md) documents existing
 Codex-assisted contributions; the maintainer remains responsible for the code.
 
 ## Reporting a problem
@@ -161,4 +161,4 @@ milestones do not create releases. Preparation and passing checks imply neither
 submission nor acceptance; consult the release preparation record before acting.
 
 All contributions are covered by the repository's license and
-[Code of Conduct](https://github.com/xec-cm/recoverome/blob/devel/CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/xec-cm/nostos/blob/devel/CODE_OF_CONDUCT.md).

@@ -36,7 +36,7 @@ candidate, not an accepted Bioconductor release. Install from GitHub:
 
 ```{r install, eval=FALSE}
 install.packages("remotes")
-remotes::install_github("xec-cm/recoverome", ref = "devel")
+remotes::install_github("xec-cm/nostos", ref = "devel")
 ```
 
 ## Run a complete analysis

@@ -22,9 +22,9 @@ Description: Registers named longitudinal microbiome recovery analyses in
     Plots observed deviations and saved recovery evidence with historical scope,
     observation gaps and follow-up limitations.
 License: MIT + file LICENSE
-URL: https://github.com/xec-cm/recoverome,
-    https://xec-cm.github.io/recoverome/
-BugReports: https://github.com/xec-cm/recoverome/issues
+URL: https://github.com/xec-cm/nostos,
+    https://xec-cm.github.io/nostos/
+BugReports: https://github.com/xec-cm/nostos/issues
 Depends:
     R (>= 4.6.0)
 Imports:

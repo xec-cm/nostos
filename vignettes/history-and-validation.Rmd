@@ -205,7 +205,7 @@ malformed required records, broken parent/self fingerprints or corrupted retaine
 outputs prevent coherent extraction and error. Some unsupported optional stages
 may remain opaque when the selected level does not need them. See
 `?recovery_results` and the accepted
-[extraction contract](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/004-result-extraction-plotting.md)
+[extraction contract](https://github.com/xec-cm/nostos/blob/devel/dev/rfcs/004-result-extraction-plotting.md)
 for the exact schema and failure policy.
 
 ## Container and practical limits
@@ -218,7 +218,7 @@ renaming, tree editing or adapter transformations.
 
 Analytical validation and extraction may materialize relevant assay blocks.
 They make no general memory/I/O guarantee for arbitrary matrix backends. The
-[optional tidy assessment](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
+[optional tidy assessment](https://github.com/xec-cm/nostos/blob/devel/dev/tidy-interoperability.md)
 records tested versions and operations: ordinary annotation mutation in the tested
 adapter loses colData metadata and column descriptors, so it is unsupported when
 those must be preserved. No adapter is needed for this vignette.
@@ -243,7 +243,7 @@ those must be preserved. No adapter is needed for this vignette.
 | `BASELINE_SUPPORT_LIMITED` | info | Missing baseline, one sample or one sampling time limits interpretation; this is not itself a structural error. |
 
 
-See the [developer evidence map](https://github.com/xec-cm/recoverome/blob/devel/dev/README.md)
+See the [developer evidence map](https://github.com/xec-cm/nostos/blob/devel/dev/README.md)
 for focused integration tests, and the [real-data example](real-data.html) for
 scientific limits. Technical consistency does not establish a valid biological
 threshold, uncertainty interval or clinical interpretation.

@@ -13,7 +13,7 @@ episode outcomes. `recovery_results()` extracts tables with historical context;
 experimental **0.99.0 MVP and Bioconductor submission candidate**. Its original seven-function workflow is:
 `setup_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
 `recovery_results()`, `plot_recovery()`, and `validate_recovery()`.
-Use the [architecture contract](https://github.com/xec-cm/recoverome/blob/devel/dev/architecture.md)
+Use the [architecture contract](https://github.com/xec-cm/nostos/blob/devel/dev/architecture.md)
 for their responsibilities. The maintainer authorized direct Bioconductor
 preparation alongside the MVP on 2026-09-10; publication and submission remain
 separate decisions.
@@ -21,7 +21,7 @@ separate decisions.
 ## Tracking work
 
 Use the public
-[recoverome Development project](https://github.com/users/xec-cm/projects/10)
+[nostos Development project](https://github.com/users/xec-cm/projects/10)
 and repository issues. Native project auto-add includes issues only. Keep one
 project card per issue and link its PR from that issue; do not add a second
 card for the PR. Dependabot PRs remain in the repository's PR list rather than

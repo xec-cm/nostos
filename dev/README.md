@@ -57,5 +57,5 @@ Earlier issue-specific guides (`analytical-validation`, `observed-recovery`,
 `recovery-history`, `result-extraction`, `tse-preservation`) are consolidated into
 the installed guides, function help, architecture/RFCs and this evidence map.
 Their original dated evidence remains in git history at
-[the prior revision](https://github.com/xec-cm/recoverome/tree/663bd0269055c0f825e06267d10b43ed2da41b91/dev).
+[the prior revision](https://github.com/xec-cm/nostos/tree/663bd0269055c0f825e06267d10b43ed2da41b91/dev).
 Do not maintain duplicate current user explanations in new issue reports.
