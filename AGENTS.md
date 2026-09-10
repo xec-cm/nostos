@@ -116,6 +116,14 @@ Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
 ## Documentation and checks
 
 - Write project documentation in English and use readable line lengths.
+- Keep onboarding short and move advanced user guidance into installed vignettes.
+  Use `dev/README.md` to find operational checks and historical design evidence;
+  do not add a duplicate issue-specific user guide in `dev/`.
+- The real `dethlefsen2008` data are normalized abundances, not raw read counts.
+  Preserve source attribution, dates and all published features/samples; regenerate
+  through `data-raw/dethlefsen2008.R`. Synthetic expectations remain independent.
+- Scientific qualification is distinct from technical tests. Follow the committed
+  protocol in `dev/qualification/`; record deviations, never tune for recovery.
 - Edit `README.Rmd`; regenerate `README.md` rather than editing it directly.
 - Mark proposed API examples with `eval=FALSE`. Executed vignette chunks must
   use available functions and make no unsupported analytical claims.

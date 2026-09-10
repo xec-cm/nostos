@@ -204,7 +204,4 @@ render_sketch <- function() {
 grDevices::png("dev/examples/004-result-views.png", width = 2000, height = 2100, res = 170)
 render_sketch()
 grDevices::dev.off()
-grDevices::svg("dev/examples/004-result-views.svg", width = 2000 / 170, height = 2100 / 170)
-render_sketch()
-grDevices::dev.off()
-cat("Atomic view conversions and explicit evidence checks passed; schematic PNG/SVG written.\n")
+cat("Atomic view conversions and explicit evidence checks passed; schematic PNG written.\n")

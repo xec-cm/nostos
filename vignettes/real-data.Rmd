@@ -1,0 +1,169 @@
+---
+title: "A real antibiotic-exposure example and scientific limits"
+author: "Francesc Catala-Moll"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{A real antibiotic-exposure example and scientific limits}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(recoverome)
+```
+
+## Introduction
+
+The bundled `dethlefsen2008` TSE contains **5,670 V3 refOTUs and 18 samples** from
+three participants. Abundances come from Dataset S3 and sampling days from Table 1
+of [Dethlefsen et al. (2008)](https://doi.org/10.1371/journal.pbio.0060280).
+All source features and sample columns are retained. The assay contains published
+normalized abundances, each sample totaling 43,405, **not raw read counts**.
+
+This is an offline example of a descriptive analysis, not an independent estimate
+of when these participants biologically recovered. Sparse visits cannot establish
+continuous states. We prespecified the baseline choices and parameter grid before
+calculating outcomes; the [protocol and complete assessment][assessment] record
+all settings, independent comparisons and limitations.
+
+## Inspect the original calendar
+
+```{r real-input}
+data("dethlefsen2008", package = "recoverome")
+study <- S4Vectors::metadata(dethlefsen2008)$study
+samples <- SummarizedExperiment::colData(dethlefsen2008)
+as.data.frame(samples)[, c("sample_id", "subject_id", "day", "is_baseline")]
+```
+
+Time zero is the first ciprofloxacin administration. The reported five-day course
+is represented as `[0, 5]`, a duration-based operational interval rather than a
+known final-dose timestamp. A has four pretreatment samples; B and C have two.
+There are no imputed visits, fabricated raw depths or inferred phylogenetic trees.
+The data retain the authors' Creative Commons Attribution terms; see
+`?dethlefsen2008` and the installed `DATA-LICENSE.md` for source and modifications.
+
+## Use every pretreatment sample as the primary reference
+
+```{r real-analysis}
+tse <- setup_recovery(
+  dethlefsen2008, "antibiotic", study$episodes, study$events,
+  time_col = "day", time_unit = study$time_unit, time_origin = study$time_origin
+)
+tse <- add_reference(
+  tse, "antibiotic", reference = colnames(tse)[samples$is_baseline],
+  assay = "abundance", preprocessing = study$preprocessing
+)
+tse <- add_deviation(tse, "antibiotic")
+rule <- list(threshold = 0.25, persistence = 7, max_gap = 14, horizon = 180)
+tse <- add_recovery(tse, "antibiotic", rule)
+result <- recovery_results(tse, "antibiotic")
+as.data.frame(result)[, c(
+  "subject_id", "n_baseline_samples", "n_baseline_times", "baseline_diameter", "status", "coverage"
+)]
+```
+
+The primary threshold is an illustrative fixed value, not inferred from these
+outcomes or recommended for antibiotic studies. Baseline diameter is about **0.543**
+for A, **0.298** for B and **0.250** for C. A reference averages an observed range;
+it does not identify a stable healthy composition. A small sample count cannot
+establish how much temporal variability is typical.
+
+All three primary outcomes are `no_observed_return` under this particular band.
+This does not contradict other definitions of recovery or imply permanent change.
+Even if the measured distances had been favorable, **the calendar cannot confirm
+a seven-day run with a fourteen-day maximum gap**: A's days 3 and 5 span only two
+days, the next gap is 28 days, and the final gap is 147 days. B and C have no
+close post-origin pair. This design limit was recorded before the evaluation.
+
+```{r real-plot, fig.width=9, fig.height=8, fig.alt="Observed deviations for participants A, B and C with long unsampled intervals; none has an observed return under the prespecified primary rule."}
+plot_recovery(tse, "antibiotic")
+```
+
+The horizon is reached, but reaching day 180 is not equivalent to observing a
+continuous trajectory. The plot retains the long gaps instead of filling them
+with inferred recovery. The rule starts at first exposure; it does not estimate
+an exposure effect or a causal antibiotic response.
+
+## Check the arithmetic separately from the interpretation
+
+For each sample, Bray--Curtis between compositions equals half the L1 distance.
+The following independent expression rebuilds A's mean reference from the input
+matrix, without using recoverome's stored profile or distance helper:
+
+```{r independent-distance}
+abundance <- SummarizedExperiment::assay(dethlefsen2008, "abundance")
+composition <- sweep(abundance, 2, colSums(abundance), "/")
+reference_a <- rowMeans(composition[, c("A1", "A2a", "A2b", "A2c")])
+expected_a <- colSums(abs(composition[, samples$subject_id == "A"] - reference_a)) / 2
+view <- recovery_results(tse, "antibiotic", level = "sample")
+observed_a <- view$deviation[view$subject_id == "A"]
+stopifnot(max(abs(observed_a - expected_a)) < 1e-12)
+data.frame(sample_id = names(expected_a), independently_calculated = expected_a)
+```
+
+Arithmetic agreement verifies the implementation of the selected calculation.
+It does not validate the threshold, overcome sparse sampling or establish a
+biological recovery time.
+
+## What changed across the prespecified assessment?
+
+The [complete assessment][assessment] includes 96 synthetic baseline/schedule
+cases, 96 synthetic rule settings, 120 finite-depth realizations, and 216 real
+episode outcomes across baseline/rule settings. These are scenarios, not
+independent biological replicates. Every evaluated setting is retained, including
+unfavorable outcomes. The independent direct calculation and `vegan::vegdist()`
+agreed within `1e-12` across 1,703 sample comparisons.
+
+The synthetic return scenario confirms at day 6 under full sampling; thinning to
+visits 0, 4 and 8 loses confirmation, while removing the bridging day 4 delays
+confirmation to day 10 when later supporting visits remain. A discordant second
+sample at day 2 delays the candidate to day 4 and confirmation to day 8. These
+are consequences of a rule applied to available observations, not arithmetic bugs.
+
+In the real grid, 144 episode/settings had no observed return, 56 had an
+unconfirmed return and 16 had no detected perturbation; none confirmed. Changing
+baseline selection also changes the question: for example, C's earliest-only
+reference and a 0.40 band detect a perturbation and an unconfirmed return where
+the all-baseline reference detects no perturbation. These settings were included
+prospectively, not selected to obtain a preferred conclusion.
+
+Finite-count simulations changed the distances despite unchanged generating
+compositions. In this small run all 120 outcomes still confirmed, while the
+maximum target-distance departure decreased from 0.125 at depth 100 to 0.01325 at
+depth 10,000. That is a bounded illustration, not a general error-rate or power
+estimate. The real normalized matrix cannot supply the raw sequencing depths
+needed to repeat such a sampling model for its participants.
+
+## Use this evidence when designing an analysis
+
+Choose a baseline window on scientific grounds, assess support and variability,
+and state the assay, feature scope and preprocessing. Choose a meaningful band,
+persistence duration, tolerated observation gap and horizon before reviewing the
+outcomes; see [input preparation](input-preparation.html). Report plausible
+alternatives explicitly rather than searching for a confirmed setting. Sparse
+follow-up may require a different study design, not a more permissive gap.
+
+This evaluation supports numerical correctness and demonstrates observational
+limits of the current descriptive method. It does not establish clinical validity,
+causality, absolute abundance recovery, functional restoration, a latent event time,
+or transportability from three people to other populations. No method was changed
+to improve the assessment. Future sensitivity and diagnostic plots have a
+[proposed contract][contract]; they are not exported functions in this version.
+
+## Reproduction and session information
+
+The installed dataset and this vignette require no network access. Full assessment
+reproduction and checksum-verified source regeneration are described in the
+[assessment directory][assessment]. Source curation requires `readxl`, and the
+independent comparison uses `vegan`; neither is a runtime dependency of recoverome.
+
+```{r session-info}
+utils::sessionInfo()
+```
+
+[assessment]: https://github.com/xec-cm/recoverome/tree/devel/dev/qualification
+[contract]: https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/005-sensitivity-diagnostic-plots.md

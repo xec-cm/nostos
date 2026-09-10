@@ -7,10 +7,7 @@ output:
 <!-- README.md is generated from README.Rmd. Please edit README.Rmd. -->
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE, comment = "#>", fig.path = "man/figures/README-",
-  fig.alt = "Saved deviations and confirmation after removing an intermediate supporting visit."
-)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.path = "man/figures/README-")
 ```
 
 # recoverome
@@ -18,198 +15,79 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R package checks](https://github.com/xec-cm/recoverome/actions/workflows/check-bioc.yml/badge.svg)](https://github.com/xec-cm/recoverome/actions/workflows/check-bioc.yml)
 
-**Describe microbiome return to a personal baseline under an explicit
-observation rule.**
+**Describe microbiome return to a personal baseline under an explicit observation
+rule.** Keep references, deviations, episode outcomes and provenance in a
+TreeSummarizedExperiment (TSE). Similarity to baseline does not establish health
+or continuous recovery between visits.
 
-`recoverome` keeps the reference, sample deviations, observed episode outcomes
-and their provenance in a `TreeSummarizedExperiment` (TSE). Filtering preserves
-the original analysis; validation explains which dependencies can still be
-checked against the current data.
+## Install
 
-A return at one visit can be followed by a rebound. Sparse visits cannot
-establish continuous recovery, and similarity to a personal baseline does not
-establish health or functional restoration. The package makes these limits
-visible alongside the results.
-
-## Install the development version
-
-This is experimental software. The development branch is `devel`, requires
-R >= 4.6.0, and has no CRAN or Bioconductor release. This checkout prepares the
-`0.99.0` MVP candidate; publication is a separate maintainer decision. See the
-[release preparation record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.99.0.md)
-for candidate validation, limitations and the publication checklist.
+The experimental development branch requires R >= 4.6.0. Version `0.99.0` is an
+MVP and submission candidate, not a CRAN or Bioconductor release.
 
 ```{r install, eval=FALSE}
 install.packages("remotes")
 remotes::install_github("xec-cm/recoverome", ref = "devel")
 ```
 
-## From input to observed recovery
+## A complete example
 
-This workflow uses a bundled synthetic example: two features, one baseline and
-six visits from one participant. No external data download is needed. All
-parameters illustrate the method; they are not recommended biological cutoffs.
-The [full vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
-explains the inputs, verifies the numerical results and records session versions.
+One participant, one explicit baseline (`b1`) and six follow-up visits. This
+bundled synthetic example runs offline. Rule values are illustrative, not
+recommended biological cutoffs.
 
-### Register samples, an episode and its event
-
-The exposure runs from day 10 to day 14 since enrolment. The episode uses its
-**start**, day 10, as time zero. Sample IDs are TSE column names; sample
-annotations explicitly supply subject, episode and day. The constructor below
-also gives the two features their names from the bundled matrix.
-
-```{r register-analysis}
+```{r workflow}
 data("recovery_examples", package = "recoverome")
 example_data <- recovery_examples$observed_recovery
-
-tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),
   colData = S4Vectors::DataFrame(example_data$col_data)
 )
 tse <- recoverome::setup_recovery(
-  tse,
+  raw,
   analysis_id = "observed",
   episodes = example_data$episodes,
   events = example_data$events,
-  time_col = example_data$time_col,
-  time_unit = example_data$time_unit,
-  time_origin = example_data$time_origin
+  time_col = "day",
+  time_unit = "days",
+  time_origin = "days since enrolment"
 )
-```
-
-Setup returns the TSE with a named registration and preserves its assays and
-annotations. Use a new analysis name for a different definition; setup and add
-operations do not overwrite existing stages. See the accepted
-[registration contract](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/001-registration-validation.md).
-
-### Choose a personal reference and calculate deviations
-
-Baseline `b1`, collected before the exposure, has counts `(8, 0)` and composition
-`(1, 0)`. The reference is explicit, with no automatic window selection.
-`add_deviation()` compares each sample's composition with that fixed reference
-using Bray--Curtis dissimilarity, as defined in the
-[reference and deviation contract](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/002-personal-baseline-deviation.md).
-
-```{r sample-deviations}
-tse <- recoverome::add_reference(
-  tse,
-  analysis_id = "observed",
-  reference = "b1",
-  assay = "counts",
-  preprocessing = "synthetic counts; no upstream transformations"
-)
+tse <- recoverome::add_reference(tse, "observed", reference = "b1", assay = "counts",
+                     preprocessing = "synthetic counts; no upstream transformations")
 tse <- recoverome::add_deviation(tse, "observed")
-sample_results <- recoverome::recovery_results(tse, "observed", level = "sample")
-as.data.frame(sample_results)[, c("sample_id", "relative_time", "deviation")]
-```
-
-The values are `0`, `0.75`, `0.25`, `0.125`, `0.125`, `0.5`, `0.125`.
-One baseline defines a descriptive reference but cannot estimate usual temporal
-variation. With several selected baselines, normalized compositions receive
-equal sample weight. The baseline diameter is not a recovery threshold.
-
-### Apply an explicit observation rule
-
-```{r observed-recovery}
 rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
-recovered <- recoverome::add_recovery(tse, "observed", rule)
-episode_results <- recoverome::recovery_results(recovered, "observed")
-as.data.frame(episode_results)[, c(
-  "status", "candidate_time", "confirmation_time", "rebound_time", "coverage"
+tse <- recoverome::add_recovery(tse, "observed", rule)
+
+as.data.frame(recoverome::recovery_results(tse, "observed"))[, c(
+  "status", "candidate_time", "confirmation_time", "rebound_time"
 )]
 ```
 
-After a deviation above `0.25` at day 0, visits at relative days 2, 4 and 6
-are within the band. They span four days with consecutive gaps at most three
-days: the candidate is day 2 and confirmation is day 6. The rebound at day 8
-does not erase the first confirmation. Coverage reaches the declared 10-day
-horizon. This describes observed support, not uninterrupted behavior between
-visits. See the accepted
-[observed recovery rule](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/003-observed-recovery.md).
+Return is observed on day **2**, confirmed by observations through day **6**,
+and followed by a rebound on day **8**. Confirmation is not permanent recovery.
 
-### Validate and interpret a filtered analysis
-
-Calculate the complete workflow before filtering required inputs. A subsequent
-subset keeps the saved outcomes while removing the corresponding sample values.
-Here we remove `s3`, which supported confirmation at relative day 4:
-
-```{r analytical-validation}
-recoverome::validate_recovery(recovered, "observed")$summary
-filtered <- recovered[, colnames(recovered) != "s3"]
-recoverome::validate_recovery(filtered, "observed")$summary
-
-historical <- recoverome::recovery_results(filtered, "observed", scope = "historical")
-historical[, c("result_state", "confirmation_time", "validation_complete", "dependencies")]
+```{r plot-recovery, fig.width=8, fig.height=6, fig.alt="Observed synthetic return at day 2, confirmation at day 6, then rebound at day 8."}
+recoverome::plot_recovery(tse, "observed")
 ```
 
-The original analysis has complete validation and unchanged dependencies.
-After filtering, confirmation remains day 6, but validation is incomplete and
-some dependencies are `not_checked`. An `available` result is a saved result,
-not a claim that it was calculated on the current subset. Changed retained
-inputs would instead be diagnosed as `changed`; validation never recomputes.
+## Learn more
 
-```{r historical-samples}
-samples <- recoverome::recovery_results(
-  filtered, "observed", level = "sample", scope = "historical"
-)
-as.data.frame(samples)[, c("sample_id", "relative_time", "result_state", "deviation")]
-```
+- [Get started](https://xec-cm.github.io/recoverome/articles/recoverome.html): read
+  the output and understand the seven-function workflow.
+- [Prepare your data](https://xec-cm.github.io/recoverome/articles/input-preparation.html).
+- [Filtering and validation](https://xec-cm.github.io/recoverome/articles/history-and-validation.html).
+- [Real data and scientific limits](https://xec-cm.github.io/recoverome/articles/real-data.html).
 
-The removed sample retains its identity and registered time, with a missing
-deviation. Tables are `S4Vectors::DataFrame` objects; their atomic columns
-convert to a data.frame or tibble. Full diagnostics, definitions and supporting
-IDs are in `S4Vectors::metadata(historical)$recoverome_view`. This context is a
-snapshot and need not survive table conversion. Extract again from the TSE to
-refresh it. The default `scope = "current"` selects retained original samples,
-or episodes with retained included samples. See the
-[extraction and plotting contract](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/004-result-extraction-plotting.md).
+Filtering preserves history; `validate_recovery()` checks available dependencies
+without recalculating results. No tidy adapter is required. See the bounded
+[optional interoperability assessment](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
+for verified operations and preservation limits.
 
-### Plot observations and saved evidence
-
-```{r plot-recovery, fig.width=9, fig.height=7}
-p <- recoverome::plot_recovery(filtered, "observed", scope = "historical")
-p + ggplot2::labs(title = "Historical confirmation after filtering")
-```
-
-The separate evidence rail preserves the original milestones. Hollow marks and
-dashed supporting spans show missing current evidence, including the removed
-intermediate visit; they do not express uncertain timing. Window shading marks
-the declared rule, not a confidence interval. The returned ordinary ggplot
-object can be customized with ggplot2.
-
-## Optional tidy operations
-
-The core workflow requires no tidy adapter. Optional sample filtering and
-reordering through `tidySingleCellExperiment` were verified directly on TSE.
-Mutation is limited to ordinary atomic annotations with empty `colData()`
-metadata and no column descriptors: the tested adapter loses those two kinds
-of annotation information on mutation. The
-[tidy interoperability guide](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
-records tested operations, versions, unsupported cases and an optional
-sample-selection recipe. The installed vignette runs the core workflow without
-an optional adapter.
-
-## Reproducibility and further work
-
-Run the examples with the installed package in a fresh R session. Record the
-session alongside your analysis; the rendered vignette includes this output.
-It is omitted here to keep the generated README independent of the build host.
-
-```{r session-info, results='hide'}
-utils::sessionInfo()
-```
-
-All seven functions used above are implemented. Statistical fitting, group
-comparisons and recovery-time uncertainty methods require separate design and
-validation. No benchmark performance or statistical guarantees are claimed.
-Release and Bioconductor submission preparation are tracked in the
-[development project](https://github.com/users/xec-cm/projects/10).
-
-See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and contribution
-guidelines. Please use the [issue tracker](https://github.com/xec-cm/recoverome/issues)
-to discuss designs or report a reproducible problem.
+Questions and reproducible problems belong in the
+[issue tracker](https://github.com/xec-cm/recoverome/issues).
+See [CONTRIBUTING](.github/CONTRIBUTING.md) for development checks and the
+[release preparation record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.99.0.md)
+for publication status. Only the maintainer publishes releases or submissions.
 
 Maintainer: Francesc Catala-Moll
-([ORCID](https://orcid.org/0000-0002-2354-8648)),
-<fcatala@irsicaixa.es>.
+([ORCID](https://orcid.org/0000-0002-2354-8648)), <fcatala@irsicaixa.es>.

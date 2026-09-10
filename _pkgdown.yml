@@ -28,14 +28,21 @@ reference:
   - title: Validate an analysis
     contents:
       - validate_recovery
-  - title: Synthetic example data
+  - title: Example data
     contents:
       - recovery_examples
+      - dethlefsen2008
 articles:
   - title: Getting started
     navbar: ~
     contents:
       - recoverome
+  - title: Work with your data
+    navbar: Guides
+    contents:
+      - input-preparation
+      - history-and-validation
+      - real-data
 navbar:
   structure:
     left: [intro, reference, articles, news]

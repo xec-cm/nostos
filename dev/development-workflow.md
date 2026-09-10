@@ -35,9 +35,9 @@ into account.
 | Priority | Meaning |
 |:---------|:--------|
 | P0 | Urgent blocker preventing reliable development or release. |
-| P1 | Essential work on the next release's critical path. |
-| P2 | Planned work that follows higher-priority dependencies. |
-| P3 | Lower-priority improvement or work for a later phase. |
+| P1 | Essential (imprescindible) work in the current delivery plan. |
+| P2 | High-relevance improvements (alta relevancia). |
+| P3 | Optional work (optativo). |
 
 Issue type labels are `bug`, `enhancement`, `documentation`, `design`, `testing`,
 `infrastructure`, `dependencies`, and `release`. RFCs use `design`; an RFC's
@@ -54,6 +54,17 @@ Milestones group work into these phases:
 | M3 | Observed recovery workflow. |
 | M4 | Experimental GitHub MVP. |
 | M5 | Bioconductor submission preparation. |
+| M6 | Clear documentation and maintainable validation. |
+| M7 | Scientific qualification and explicit rule sensitivity. |
+| M8 | Useful diagnostics and external user evaluation. |
+
+An issue represents a complete reviewable delivery; its internal steps are
+acceptance checkboxes, not issues per helper, file or vignette. The maintainer
+explicitly authorized #41 and #43 in one shared PR on branch `codex/issue-41`.
+Both active issues count toward the two-issue limit; #43 is not assigned separately
+to avoid a duplicate bootstrap PR. Both closure references remain in the shared PR.
+This exception does not authorize starting their dependent implementations before
+RFC 005 is merged or replacing external-user evaluation with agent review.
 
 The published issue backlog is the task inventory. Use its dependencies and
 acceptance criteria rather than creating a second, diverging checklist here.

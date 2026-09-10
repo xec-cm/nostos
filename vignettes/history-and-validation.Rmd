@@ -1,0 +1,255 @@
+---
+title: "Filtering, historical results and validation"
+author: "Francesc Catala-Moll"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Filtering, historical results and validation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(recoverome)
+```
+
+## Introduction
+
+Calculate the complete synthetic analysis from [Get started](recoverome.html).
+Its reference is `(1, 0)`; follow-up deviations are `.75, .25, .125, .125, .5,
+.125` at relative days 0, 2, 4, 6, 8 and 10. Under the declared rule, candidate,
+confirmation and rebound are at days 2, 6 and 8.
+
+```{r original}
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$observed_recovery
+raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+tse <- setup_recovery(
+  raw,
+  analysis_id = "observed",
+  episodes = example_data$episodes,
+  events = example_data$events,
+  time_col = "day",
+  time_unit = "days",
+  time_origin = "days since enrolment"
+)
+tse <- add_reference(tse, "observed", reference = "b1", assay = "counts",
+                     preprocessing = "synthetic counts; no upstream transformations")
+tse <- add_deviation(tse, "observed")
+rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
+tse <- add_recovery(tse, "observed", rule)
+
+```
+
+## Remove an intermediate supporting visit
+
+```{r historical-subset}
+filtered <- tse[, colnames(tse) != "s3"]
+historical <- recovery_results(filtered, "observed", scope = "historical")
+as.data.frame(historical)[, c(
+  "status", "confirmation_time", "rebound_time", "validation_complete", "dependencies"
+)]
+report <- validate_recovery(filtered, "observed")
+report$summary
+stopifnot(historical$confirmation_time == 6, historical$rebound_time == 8,
+          !historical$validation_complete, historical$dependencies == "not_checked")
+```
+
+Filtering **after calculation** preserves the saved reference, evidence and episode
+outcomes. It does not mean that the remaining visits alone could confirm return.
+Missing inputs make some comparisons unavailable; the historical outcome remains
+readable. For a new question, filter raw inputs **before registering a new name**:
+
+```{r new-subset-analysis}
+short <- raw[, colnames(raw) != "s3"]
+short <- setup_recovery(
+  short, "short", example_data$episodes, example_data$events,
+  time_col = "day", time_unit = "days", time_origin = "days since enrolment"
+)
+short <- add_reference(short, "short", "b1", assay = "counts")
+short <- add_deviation(short, "short")
+short <- add_recovery(short, "short", rule)
+new_result <- recovery_results(short, "short")
+new_result[, c("status", "candidate_time", "confirmation_time")]
+stopifnot(new_result$status == "unconfirmed_return", is.na(new_result$confirmation_time))
+```
+
+Without day 4, the gap from day 2 to day 6 is four days, exceeding the allowed
+three. The new analysis has an unconfirmed return. Adding recovery to an old
+deviation stage after dropping inputs is unsupported: start a new analysis.
+New and historical names can coexist on the same TSE without rewriting each other.
+
+```{r historical-plot, fig.width=8, fig.height=6, fig.alt="Historical confirmation persists after day 4 is removed; the evidence rail marks missing supporting evidence."}
+plot_recovery(filtered, "observed", scope = "historical")
+```
+
+Hollow marks and dashed support on the evidence rail indicate missing current
+evidence. They do not represent timing uncertainty. Saved outcomes and current
+measurements occupy separate visual layers.
+
+## Remove a baseline or an entire episode
+
+```{r missing-baseline}
+without_baseline <- tse[, colnames(tse) != "b1"]
+validate_recovery(without_baseline, "observed")$summary
+stopifnot(recovery_results(without_baseline, "observed")$confirmation_time == 6)
+```
+
+Removing `b1` does not refit the reference or erase confirmation. Its input can
+no longer be compared. A newly registered analysis with no eligible baseline
+would instead have `missing_baseline` support and a `not_evaluable` outcome.
+
+This one-episode example loses the whole episode when all its samples disappear:
+
+```{r missing-episode}
+empty <- tse[, FALSE]
+current <- recovery_results(empty, "observed")
+old <- recovery_results(empty, "observed", scope = "historical")
+stopifnot(nrow(current) == 0L, nrow(old) == 1L,
+          !old$current_present, old$confirmation_time == 6)
+old[, c("episode_id", "current_present", "result_state", "confirmation_time")]
+```
+
+The current table is typed and empty. Historical scope retains the episode and
+its saved evidence. In a multi-episode analysis, the same rule applies to each
+episode: a current episode needs at least one retained included sample.
+
+## Change a retained input
+
+```{r changed-input}
+changed <- tse
+SummarizedExperiment::colData(changed)$day[colnames(changed) == "s4"] <- 30
+changed_report <- validate_recovery(changed, "observed")
+changed_report$summary
+stopifnot(changed_report$summary$dependencies == "changed")
+saved <- recovery_results(changed, "observed", level = "sample")
+stopifnot(saved$relative_time[saved$sample_id == "s4"] == 6)
+```
+
+A changed current day does not rewrite the registered day. Extraction returns
+the original coordinates with validation flags. Changes to consumed assay values
+are also checked once analytical stages exist. Even positive rescaling of raw
+abundances changes their source fingerprint despite unchanged compositions.
+Registration alone does not consume assays; unrelated metadata and unselected
+measurements are outside that stage's dependency checks.
+
+## Read validation fields together
+
+| Field | Interpretation |
+|:---|:---|
+| `structural_valid` | FALSE for a demonstrated malformed record, container or authoritative output; NA if unsupported content prevents a conclusion and no failure is known; TRUE otherwise. |
+| `validation_complete` | Whether all required comparisons could run. A fully checked source can still be changed. |
+| `dependencies` | `changed` when a relevant difference is known; otherwise `not_checked` if a comparison is unavailable; `unchanged` only when the required comparisons agree. |
+
+Removing a baseline and editing a retained owned output can yield both missing
+input and output inconsistency findings. Unavailable checks do not suppress
+independent failures. Read `report$diagnostics` for components and IDs; message
+wording and row order are not contracts. `deviation_status = "computed"` records
+a historical computation, not current agreement or biological validity.
+
+Sample/feature scope is separate: reorder is `same`; removal is `subset` or
+`empty`; additions give `expanded` or `mixed`. Renaming an ID means removal plus
+addition; equal values or tree links do not establish identity. New identities
+are never enrolled automatically. Reference-only validation can remain complete
+after removing an unused feature or a non-baseline sample; later stages consume
+more inputs and therefore have more historical dependencies.
+
+Validation never repairs metadata, refits, reclassifies or changes timestamps.
+It checks stored invariants and fingerprints without estimating the reference
+again. Unknown schemas/stages/fingerprint formats remain incompletely checked,
+not falsely certified as unchanged. Fingerprints detect ordinary edits, not an
+adversarial rewrite of all records and hashes. Manual metadata editing is unsupported.
+
+## Extract tables without losing context
+
+```{r sample-availability}
+samples <- recovery_results(filtered, "observed", level = "sample", scope = "historical")
+as.data.frame(samples)[, c("sample_id", "relative_time", "result_state", "deviation")]
+stopifnot(samples$result_state[samples$sample_id == "s3"] == "removed",
+          is.na(samples$deviation[samples$sample_id == "s3"]))
+```
+
+Rows follow original registration order. `available` means a readable saved result,
+including valid missing-baseline or excluded statuses; `removed` sample deviations
+and statuses are missing because hashes cannot reconstruct them. `not_computed`
+means the relevant stage or realized sample result does not exist. Saved episode
+outcomes remain available after their samples disappear. Excluded sample identities
+are retained with missing subject, episode and time fields.
+
+Tables are `S4Vectors::DataFrame` objects with atomic columns. `as.data.frame()`
+and optional tibble conversion give ordinary tables, but do not promise to retain
+context. Validation flags describe the **whole selected analysis**, not individual
+rows. Editing a returned table does not update or revalidate the TSE.
+
+```{r context}
+context <- S4Vectors::metadata(samples)$recoverome_view
+names(context)
+context$validation$summary
+```
+
+Context contains the selection, full validation report, registered time/event
+information, original and realized scopes, reference/deviation/recovery definitions,
+provenance and fingerprints, and full saved evidence IDs. Absent stages have NULL
+entries; unsupported optional stages are listed as uninterpreted. Extract again
+from the TSE for fresh context. Definitions and evidence can remain historical
+even when a current table has fewer rows.
+
+Readable results survive unavailable or changed inputs. Ambiguous identities,
+malformed required records, broken parent/self fingerprints or corrupted retained
+outputs prevent coherent extraction and error. Some unsupported optional stages
+may remain opaque when the selected level does not need them. See
+`?recovery_results` and the accepted
+[extraction contract](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/004-result-extraction-plotting.md)
+for the exact schema and failure policy.
+
+## Container and practical limits
+
+Recoverome uses public TSE accessors and preserves unrelated assays, annotations,
+trees and links supplied to its own calls. Native subsetting is performed by TSE;
+empty axes or unrepresented trees may lose trees/links through the container's own
+behavior. Tested bracket selection does not guarantee arbitrary aggregation,
+renaming, tree editing or adapter transformations.
+
+Analytical validation and extraction may materialize relevant assay blocks.
+They make no general memory/I/O guarantee for arbitrary matrix backends. The
+[optional tidy assessment](https://github.com/xec-cm/recoverome/blob/devel/dev/tidy-interoperability.md)
+records tested versions and operations: ordinary annotation mutation in the tested
+adapter loses colData metadata and column descriptors, so it is unsupported when
+those must be preserved. No adapter is needed for this vignette.
+
+## Diagnostic reference
+
+| Code | Severity | Meaning |
+|:-----|:---------|:--------|
+| `REFERENCE_RECORD_INVALID`, `DEVIATION_RECORD_INVALID`, `RECOVERY_RECORD_INVALID` | error | A known record has malformed fields or inconsistent identities. |
+| `SCHEMA_UNSUPPORTED` | error | A record version is unknown; its inner layout is not interpreted. |
+| `STAGE_UNSUPPORTED` | error | A future stage, or unknown owned content, is outside the implemented checks. |
+| `FINGERPRINT_FORMAT_UNSUPPORTED` | error | The format or current encoding compatibility cannot support fingerprint comparisons. This alone is not a detected data change. |
+| `FINGERPRINT_CHANGED` | error | A stored record or its parent fingerprint does not agree. |
+| `ANALYTICAL_INPUT_CHANGED` | error | A consumed current source differs from its recorded dependency. |
+| `ASSAY_MISSING`, `ASSAY_AMBIGUOUS` | error | The recorded assay cannot be selected uniquely. |
+| `ASSAY_VALUES_INVALID` | error | A consumed source no longer has accepted numeric values. |
+| `ASSAY_READ_FAILED` | error | The required assay block cannot be read or converted; its comparison remains unavailable. |
+| `RESULT_INCONSISTENT` | error | A retained owned output is absent, malformed, or inconsistent with its recorded hash. |
+| `REFERENCE_INPUT_MISSING` | info | Baseline samples or selected features needed for current reference comparison were removed. |
+| `DEVIATION_SAMPLE_MISSING` | info | A sample in the recorded deviation scope is no longer available for comparison. |
+| `RECOVERY_INPUT_MISSING` | info | A recorded recovery input is absent; outcomes retain their historical scope. |
+| `BASELINE_SUPPORT_LIMITED` | info | Missing baseline, one sample or one sampling time limits interpretation; this is not itself a structural error. |
+
+
+See the [developer evidence map](https://github.com/xec-cm/recoverome/blob/devel/dev/README.md)
+for focused integration tests, and the [real-data example](real-data.html) for
+scientific limits. Technical consistency does not establish a valid biological
+threshold, uncertainty interval or clinical interpretation.
+
+## Session information
+
+```{r session-info}
+utils::sessionInfo()
+```
