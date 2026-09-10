@@ -19,6 +19,9 @@ reference:
   - title: Attach observed recovery outcomes
     contents:
       - add_recovery
+  - title: Extract saved results
+    contents:
+      - recovery_results
   - title: Validate an analysis
     contents:
       - validate_recovery

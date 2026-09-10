@@ -5,8 +5,8 @@ recoverome is an experimental R package. The development version implements
 for structural and historical-scope diagnostics. `add_reference()` attaches
 explicit personal baseline profiles with support and provenance, and
 `add_deviation()` records sample-level deviations against those fixed profiles.
-`add_recovery()` attaches observed outcomes by episode; extraction and plotting
-remain planned.
+`add_recovery()` attaches observed outcomes by episode. `recovery_results()`
+extracts sample or episode tables with historical context; plotting remains planned.
 `validate_recovery()` checks registration, reference, deviation and recovery
 dependencies without changing historical results. Unknown stage schemas remain
 incompletely checked.

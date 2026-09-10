@@ -25,7 +25,9 @@ present without changing the TSE. `add_reference()` attaches a personal
 reference from explicitly selected baseline samples. `add_deviation()`
 measures sample dissimilarity from those fixed profiles.
 `add_recovery()` attaches observed episode outcomes under an explicit
-rule. Plotting and extraction remain planned.
+rule. `recovery_results()` extracts sample or episode tables with
+historical context and current validation flags. Plotting remains
+planned.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
 [architecture
@@ -313,6 +315,47 @@ it. See the
 and the [observed recovery
 guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md).
 
+## Extract saved results
+
+``` r
+results <- recoverome::recovery_results(recovered, "observed")
+results[, c("episode_id", "result_state", "confirmation_time", "dependencies")]
+#> DataFrame with 1 row and 4 columns
+#>    episode_id result_state confirmation_time dependencies
+#>   <character>  <character>         <numeric>  <character>
+#> 1   episode_1    available                 6    unchanged
+
+filtered <- recovered[, colnames(recovered) != "s3"]
+samples <- recoverome::recovery_results(
+  filtered, "observed", level = "sample", scope = "historical"
+)
+as.data.frame(samples)[, c("sample_id", "relative_time", "result_state", "deviation")]
+#>   sample_id relative_time result_state deviation
+#> 1        b1            -2    available     0.000
+#> 2        s1             0    available     0.750
+#> 3        s2             2    available     0.250
+#> 4        s3             4      removed        NA
+#> 5        s4             6    available     0.125
+#> 6        s5             8    available     0.500
+#> 7        s6            10    available     0.125
+```
+
+The removed day-4 sample has `result_state = "removed"` and no
+reconstructed value. Episode extraction still returns confirmation at
+day 6. Tables follow registration order and use saved times even if
+current annotations have changed. `scope = "current"` selects retained
+original samples or episodes with retained included samples;
+`"historical"` keeps the full registered scope.
+
+The returned `S4Vectors::DataFrame` has atomic columns. Its validation
+fields describe the selected analysis, not each row. Full diagnostics,
+definitions and supporting IDs are in
+`S4Vectors::metadata(results)$recoverome_view`. That metadata is a
+snapshot: call `recovery_results()` again to refresh it against a TSE.
+Conversion to a data.frame or tibble preserves the columns but need not
+preserve this context. See the [extraction
+guide](https://github.com/xec-cm/recoverome/blob/devel/dev/result-extraction.md).
+
 ## Available and planned workflow
 
 | Function | Status | Responsibility |
@@ -321,7 +364,7 @@ guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md)
 | `add_reference()` | Available | Attach personal reference profiles, support and input provenance. |
 | `add_deviation()` | Available | Attach sample deviations and provenance from the fixed reference. |
 | `add_recovery()` | Available | Attach observed episode outcomes under an explicit recovery rule. |
-| `recovery_results()` | Planned | Extract results at the requested analysis level. |
+| `recovery_results()` | Available | Extract saved results with availability and historical context. |
 | `plot_recovery()` | Planned | Display observations and the recovery definition. |
 | `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
@@ -339,9 +382,9 @@ separate design and validation.
 
 ## Development and contributions
 
-The next steps are recovery integration checks, extraction and plotting
-under the accepted contracts. No benchmark performance or statistical
-guarantees are claimed for this version.
+The next steps are plotting and optional tidy interoperability under the
+accepted contracts. No benchmark performance or statistical guarantees
+are claimed for this version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and
 contribution guidelines. Please use the [issue

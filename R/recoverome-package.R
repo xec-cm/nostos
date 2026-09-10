@@ -8,12 +8,13 @@
 #' explicit personal baseline profiles with support and input provenance.
 #' [add_deviation()] records sample deviations against those fixed profiles.
 #' [add_recovery()] attaches episode outcomes under an explicit observational
-#' rule. Extraction and plotting remain planned. Validation never refits
+#' rule. [recovery_results()] extracts saved sample or episode tables with their
+#' historical context. Plotting remains planned. Validation never refits
 #' references or recalculates historical results.
 #'
 #' The intended workflow enriches a TreeSummarizedExperiment with sample-level
 #' annotations and named analysis records. See the introductory vignette for
-#' runnable examples through observed recovery, and the project
+#' runnable examples through result extraction, and the project
 #' website for development status.
 #'
 #' @keywords internal

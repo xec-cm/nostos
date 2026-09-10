@@ -17,7 +17,8 @@ Description: Registers named longitudinal microbiome recovery analyses in
     recording their support and input provenance. Computes sample deviations
     from fixed personal references while preserving historical results.
     Attaches episode-level observed return and confirmation outcomes under an
-    explicit threshold, persistence, visit-gap and horizon rule.
+    explicit threshold, persistence, visit-gap and horizon rule. Extracts saved
+    sample or episode results with explicit availability and validation context.
 License: MIT + file LICENSE
 URL: https://github.com/xec-cm/recoverome,
     https://xec-cm.github.io/recoverome/
