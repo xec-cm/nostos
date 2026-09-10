@@ -14,23 +14,14 @@
               "dependencies", "provenance", "fingerprint")
   valid <- c(fields = setequal(names(value), fields))
   definition <- value$definition
-  definition_readable <- .recovery_named_list(definition)
-  if (definition_readable && .recovery_valid_text(definition$assay)) {
+  definition_fields <- .recovery_reference_definition(definition)
+  if (definition_fields[["assay"]]) {
     result$assay <- as.vector(definition$assay)
   }
-  if (definition_readable && .recovery_valid_ids(definition$feature_ids, unique = TRUE) &&
-        length(definition$feature_ids) > 0L) {
+  if (definition_fields[["feature_ids"]]) {
     result$features <- as.vector(definition$feature_ids)
   }
-  selection_ready <- definition_readable &&
-    .recovery_valid_ids(definition$sample_ids, unique = TRUE)
-  valid[["definition"]] <- definition_readable &&
-    setequal(names(definition), c("sample_ids", "assay", "feature_ids", "preprocessing",
-                                  "normalization", "estimator")) &&
-    selection_ready && !is.null(result$assay) && !is.null(result$features) &&
-    .recovery_valid_text(definition$preprocessing) &&
-    identical(definition$normalization, "closure_v1") &&
-    identical(definition$estimator, "sample_mean_v1")
+  valid[["definition"]] <- all(definition_fields)
 
   baseline <- value$baseline_samples
   valid[["baseline_samples"]] <- .recovery_stage_table(baseline, c("sample_id", "episode_id")) &&
@@ -103,22 +94,19 @@
   if (!.recovery_stage_table(value, columns)) {
     return(list(valid = FALSE, ids = NULL, support = NULL))
   }
-  ids_ready <- .recovery_valid_ids(value$episode_id, unique = TRUE)
-  support_ready <- .recovery_valid_ids(value$support) &&
-    all(value$support %in% c("missing_baseline", "single_sample", "single_time", "multiple_times"))
-  counts <- vapply(c("n_samples", "n_times"), function(field) {
-    x <- value[[field]]
-    is.integer(x) && !is.object(x) && is.null(dim(x)) && !anyNA(x) && all(x >= 0L)
-  }, logical(1))
-  times <- vapply(c("first_time", "last_time", "baseline_diameter"), function(field) {
-    x <- value[[field]]
-    is.double(x) && !is.object(x) && is.null(dim(x)) && all(is.na(x) | is.finite(x))
-  }, logical(1))
+  fields <- .recovery_reference_support(value)
+  # Diagnostics additionally identify non-finite stored times. Calculation keeps
+  # its existing first-error order, including subsequent fingerprint checks.
+  finite_times <- fields[["times"]] && all(vapply(
+    c("first_time", "last_time", "baseline_diameter"),
+    function(column) all(is.na(value[[column]]) | is.finite(value[[column]])),
+    logical(1)
+  ))
 
   list(
-    valid = ids_ready && support_ready && all(counts) && all(times),
-    ids = if (ids_ready) as.vector(value$episode_id) else NULL,
-    support = if (support_ready) as.vector(value$support) else NULL
+    valid = all(fields) && finite_times,
+    ids = if (fields[["episode_id"]]) as.vector(value$episode_id) else NULL,
+    support = if (fields[["support"]]) as.vector(value$support) else NULL
   )
 }
 

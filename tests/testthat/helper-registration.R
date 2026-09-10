@@ -63,9 +63,10 @@ registration_record <- function(tse, analysis_id = "antibiotic") {
   S4Vectors::metadata(tse)$recoverome$analyses[[analysis_id]]
 }
 
-expect_setup_error <- function(fixture, ...) {
+expect_setup_error <- function(fixture, component, ..., class = "recoverome_error_input") {
   before <- serialize(fixture, NULL)
-  testthat::expect_error(register_fixture(fixture, ...))
+  condition <- testthat::expect_error(register_fixture(fixture, ...), class = class)
+  testthat::expect_identical(condition$component, component)
   testthat::expect_identical(serialize(fixture, NULL), before)
 }
 

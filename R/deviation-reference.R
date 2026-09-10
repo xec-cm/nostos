@@ -29,15 +29,7 @@
     )
   }
 
-  definition <- reference$definition
-  fields <- c("sample_ids", "assay", "feature_ids", "preprocessing", "normalization", "estimator")
-  valid_definition <- .recovery_named_list(definition) && setequal(names(definition), fields) &&
-    .recovery_valid_ids(definition$sample_ids, unique = TRUE) &&
-    .recovery_valid_ids(definition$feature_ids, unique = TRUE) &&
-    length(definition$feature_ids) > 0L &&
-    .recovery_valid_text(definition$assay) && .recovery_valid_text(definition$preprocessing) &&
-    identical(definition$normalization, "closure_v1") &&
-    identical(definition$estimator, "sample_mean_v1")
+  valid_definition <- all(.recovery_reference_definition(reference$definition))
   if (!valid_definition) {
     .recovery_abort(
       "Reference definitions require explicit IDs, assay, preprocessing and supported methods.",
