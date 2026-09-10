@@ -25,9 +25,9 @@ present without changing the TSE. `add_reference()` attaches a personal
 reference from explicitly selected baseline samples. `add_deviation()`
 measures sample dissimilarity from those fixed profiles.
 `add_recovery()` attaches observed episode outcomes under an explicit
-rule. `recovery_results()` extracts sample or episode tables with
-historical context and current validation flags. Plotting remains
-planned.
+rule. `plot_recovery()` displays observations and saved time evidence.
+`recovery_results()` extracts sample or episode tables with historical
+context and current validation flags.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
 [architecture
@@ -315,6 +315,28 @@ it. See the
 and the [observed recovery
 guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md).
 
+## Plot observations and saved evidence
+
+``` r
+recoverome::plot_recovery(recovered[, colnames(recovered) != "s3"], "observed", scope = "historical")
+```
+
+<img src="man/figures/README-plot-recovery-1.png" alt="Saved deviations and confirmation after removing an intermediate supporting visit."  />
+
+Points retain registered times and saved deviations. The separate
+evidence rail preserves first return, candidate, confirmation and
+rebound. Hollow marks and dashed supporting spans mean required
+observation IDs are missing from the current TSE, including intermediate
+confirmation visits. They do not express uncertain timing. Original
+visit gaps and missing follow-up remain visible. The shaded detection
+window is declared by the rule, not a confidence interval.
+
+The function returns an ordinary unprinted `ggplot2` object; use
+`+ ggplot2::labs(title = "My analysis")` or `+ ggplot2::theme_bw()` to
+customize it. Select episodes in display order with
+`episodes = c("episode_1")`. `ggplot2` is a runtime dependency used to
+construct these customizable layers.
+
 ## Extract saved results
 
 ``` r
@@ -365,7 +387,7 @@ guide](https://github.com/xec-cm/recoverome/blob/devel/dev/result-extraction.md)
 | `add_deviation()` | Available | Attach sample deviations and provenance from the fixed reference. |
 | `add_recovery()` | Available | Attach observed episode outcomes under an explicit recovery rule. |
 | `recovery_results()` | Available | Extract saved results with availability and historical context. |
-| `plot_recovery()` | Planned | Display observations and the recovery definition. |
+| `plot_recovery()` | Available | Display observations, saved evidence, gaps and follow-up. |
 | `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
 Analysis IDs match `^[a-z][a-z0-9]*$`. Registration reserves the
@@ -382,9 +404,9 @@ separate design and validation.
 
 ## Development and contributions
 
-The next steps are plotting and optional tidy interoperability under the
-accepted contracts. No benchmark performance or statistical guarantees
-are claimed for this version.
+Remaining MVP work is tracked in the [development
+project](https://github.com/users/xec-cm/projects/10). No benchmark
+performance or statistical guarantees are claimed for this version.
 
 See [CONTRIBUTING](.github/CONTRIBUTING.md) for local checks and
 contribution guidelines. Please use the [issue

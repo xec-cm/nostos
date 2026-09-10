@@ -8,18 +8,21 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.alt = "Observed deviations and saved confirmation with incomplete current evidence."
+)
 ```
 
 ## Current status
 
 The experimental development version provides `setup_recovery()`,
-`validate_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`
-and `recovery_results()`.
+`validate_recovery()`, `add_reference()`, `add_deviation()`, `add_recovery()`,
+`recovery_results()` and `plot_recovery()`.
 This vignette registers an analysis, attaches explicit personal references,
 calculates sample deviations and observed episode outcomes, and checks their
 dependencies while preserving historical records. It then extracts ordinary
-result tables with their context. Plotting remains planned.
+result tables with their context and plots observations with saved time evidence.
 
 ## A small longitudinal input
 
@@ -595,16 +598,43 @@ for a fresh report. `as.data.frame()` preserves the atomic columns;
 with no promise to preserve metadata. Optional tidy operations on the TSE
 itself are a separate development issue.
 
-## Planned plotting
+## Plotting observed evidence
 
-This interface remains **non-executable proposed API**:
-
-```{r planned-workflow, eval=FALSE}
-plot_recovery(recovered, analysis_id = "observed")
+```{r observed-plot, fig.width=9, fig.height=7}
+p <- recoverome::plot_recovery(filtered_recovery, "observed", scope = "historical")
+p + ggplot2::labs(title = "Historical confirmation after filtering")
 ```
 
-Plotting will display saved observations and their evidence under the accepted
-view contract. Statistical fitting is a future layer outside this interface.
+`plot_recovery()` returns an ordinary unprinted ggplot object. Customize it with
+`+ ggplot2::labs(...)` or `+ ggplot2::theme(...)`. `ggplot2` supplies the layers and
+is a runtime dependency. A deviation stage is required. Before `add_recovery()`,
+the plot shows deviations neutrally with no invented threshold or outcome.
+
+Facets identify the subject, episode, original baseline support and current
+baseline count, selected origin event/boundary, and saved status, reason and
+coverage. `episodes` accepts an ordered vector of IDs within the selected scope.
+All facets share the deviation scale [0, 1] and the original included time
+extent, zero and any declared horizon. Points beyond the horizon remain outside
+the rule window. Edited current annotations cannot move saved observations.
+
+The separate evidence rail shows saved milestone times. A candidate-to-confirmation
+bracket represents observed supporting span, not continuous recovery. Hollow marks
+and dashed spans indicate missing current evidence IDs, not uncertain timing.
+Confirmation needs the entire saved run, so removing an intermediate observation
+leaves its retained endpoint point solid but its confirmation marker hollow.
+Removed times are crosses on the rail, never invented deviations.
+
+Original evaluated gaps greater than the rule's maximum gap remain visible;
+filtering cannot create a new original gap or re-evaluate a run. Yellow shading
+marks the region beyond saved follow-up when coverage ends before the horizon.
+Missing follow-up is labeled separately. Neither region establishes an outside
+state. The declared detection-window shading is not a confidence interval or
+an estimate derived from baseline diameter.
+
+The plot states current or historical scope. Source changes and incomplete
+checks appear in its caption and each facet. Historical episodes with no
+remaining values retain their saved evidence rail. The TSE and its historical
+outcomes are preserved; customizing the plot does not revalidate it.
 
 ## Interpretation boundaries
 

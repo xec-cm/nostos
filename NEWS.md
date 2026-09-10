@@ -1,5 +1,12 @@
 # recoverome (development version)
 
+- Add `plot_recovery()` with ordinary customizable ggplot2 layers for retained
+  deviations, original reference support and saved observed recovery evidence.
+  Show declared windows, original observation gaps and follow-up limitations.
+  Preserve historical times and outcomes after filtering; missing evidence
+  produces hollow milestones and dashed supporting spans. Validate once and
+  expose changed sources or incomplete checks. Add the used ggplot2 dependency.
+
 - Add `recovery_results()` for sample and episode DataFrame views with explicit
   current or historical scope, saved coordinates and result availability.
   Retain validation, definitions, provenance and evidence in view metadata.

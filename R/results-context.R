@@ -45,7 +45,9 @@
       component = "analysis", ids = present, call = call
     )
   }
-  required <- if (level == "sample" || "recovery" %in% present) {
+  required <- if (level == "plot") {
+    c("reference", "deviation", "recovery")
+  } else if (level == "sample" || "recovery" %in% present) {
     c("reference", "deviation", if (level == "episode") "recovery")
   } else {
     "reference"
