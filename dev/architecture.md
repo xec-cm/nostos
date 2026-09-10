@@ -20,7 +20,8 @@ analytical stages need their own accepted RFCs.
 `recovery_sensitivity()` and `plot_sensitivity()` implement the rule-comparison
 part of accepted [RFC 005](rfcs/005-sensitivity-diagnostic-plots.md). They return
 standalone snapshot tables and plots without writing scenarios back to the TSE.
-The diagnostic plots in that RFC remain separate implementation work in #45.
+`plot_reference()`, `plot_sampling()` and `plot_recovery_overview()` implement
+the diagnostic views in the same contract.
 
 ## Purpose and scope
 
@@ -28,7 +29,8 @@ recoverome is intended to attach explicit recovery analyses to longitudinal
 microbiome data after known perturbations. Registration establishes data
 identity, analysis scope, and provenance before analytical methods are added.
 
-The original seven-function workflow remains available:
+The original seven-function workflow is extended by rule sensitivity and
+three diagnostic plots:
 
 | Function | Status | Contract |
 |:---------|:-------|:---------|
@@ -38,9 +40,14 @@ The original seven-function workflow remains available:
 | `add_recovery()` | Available | Attach observed episode outcomes under a recorded recovery rule. |
 | `recovery_results()` | Available | Extract saved tables, availability and historical context. |
 | `plot_recovery()` | Available | Display saved observations, evidence and follow-up. |
+| `recovery_sensitivity()` | Available | Compare explicit rules without changing the saved analysis. |
+| `plot_sensitivity()` | Available | Display all requested scenario and episode outcomes. |
+| `plot_reference()` | Available | Inspect recorded baseline support and available distances. |
+| `plot_sampling()` | Available | Inspect registered visits, events and original observation gaps. |
+| `plot_recovery_overview()` | Available | Compare saved episode milestones and evidence availability. |
 | `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
-Statistical model fitting is a future layer outside these seven functions.
+Statistical model fitting is a future layer outside these descriptive functions.
 Do not introduce exported fitting stubs, unvalidated estimators, synthetic
 benchmark claims, or placeholder result objects into the package.
 
@@ -206,8 +213,8 @@ All seven original API functions, including plotting, are implemented. M6 improv
 onboarding and maintenance; M7 qualifies the current descriptive method and adds
 explicit rule sensitivity; M8 adds diagnostics and external user evaluation.
 The [development project](https://github.com/users/xec-cm/projects/10) owns the
-backlog. RFC 005 is accepted. Rule sensitivity is implemented; diagnostic plots remain
-the separate work in #45. Inference, new distance
+backlog. Rule sensitivity and the diagnostic plots accepted in RFC 005 are
+implemented. Inference, new distance
 estimators and automatic calibration require separate decisions.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests

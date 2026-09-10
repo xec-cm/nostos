@@ -151,9 +151,10 @@ This evaluation supports numerical correctness and demonstrates observational
 limits of the current descriptive method. It does not establish clinical validity,
 causality, absolute abundance recovery, functional restoration, a latent event time,
 or transportability from three people to other populations. No method was changed
-to improve the assessment. [Rule sensitivity](sensitivity.html) implements explicit comparisons under the
-[accepted contract][contract]; the additional diagnostic plots remain separate
-implementation work.
+to improve the assessment. [Rule sensitivity](sensitivity.html) implements
+explicit comparisons under the [accepted contract][contract]. The
+[diagnostic plotting guide](diagnostic-plots.html) shows baseline support,
+observation timing and saved milestones.
 
 ## Reproduction and session information
 
