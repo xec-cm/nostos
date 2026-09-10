@@ -8,12 +8,12 @@ dissimilarities under [RFC 002](rfcs/002-personal-baseline-deviation.md).
 `add_recovery()` attaches observed episode outcomes under
 [RFC 003](rfcs/003-observed-recovery.md). `recovery_results()` extracts sample and
 episode tables under [RFC 004](rfcs/004-result-extraction-plotting.md);
-see [result extraction](result-extraction.md). `plot_recovery()` displays saved
+see [result extraction](https://xec-cm.github.io/recoverome/articles/history-and-validation.html). `plot_recovery()` displays saved
 observations and evidence.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
-implemented; [integration evidence](tse-preservation.md) records the tested
+implemented; [integration evidence](README.md) records the tested
 preservation and historical-scope behavior. Later
 analytical stages need their own accepted RFCs.
 
@@ -129,7 +129,7 @@ The sample columns remain the sole authoritative deviation values; later
 filtering preserves their original metadata scope. `add_recovery()` adds only
 an episode-level `recovery` record, with rule, outcomes, evidence, dependencies
 and provenance. It does not extend `owned_columns` or duplicate deviations.
-See [observed recovery](observed-recovery.md) for the implemented storage.
+See [observed recovery](https://xec-cm.github.io/recoverome/articles/history-and-validation.html) for the implemented storage.
 
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
@@ -175,7 +175,7 @@ dependency finding. An analysis containing registration only does not require
 assay access. Supported analytical stages add selected-block source and stored
 result comparisons using the RFC 002 fingerprints and RFC 003 recovery records.
 Unknown schemas remain incompletely checked. See RFC 001 for the report schema and
-[analytical validation](analytical-validation.md) for the additional diagnostics
+[analytical validation](https://xec-cm.github.io/recoverome/articles/history-and-validation.html) for the additional diagnostics
 and detection boundaries.
 
 ## Analytical boundaries
@@ -195,15 +195,15 @@ comparisons, and model fitting require separately specified estimands and
 validation. The first storage contracts must leave room to represent those
 distinctions without claiming those methods already exist.
 
-## Implementation sequence
+## Current implementation and next work
 
-Registration, validation, reference attachment, deviation calculation and
-observed recovery and result extraction are implemented. [Integration evidence](recovery-history.md)
-covers incomplete follow-up and historical outcomes after filtering. The next
-steps are:
-
-1. Complete the remaining MVP issues in the development project.
-2. Design statistical fitting only after these contracts are usable.
+All seven original API functions, including plotting, are implemented. M6 improves
+onboarding and maintenance; M7 qualifies the current descriptive method and adds
+explicit rule sensitivity; M8 adds diagnostics and external user evaluation.
+The [development project](https://github.com/users/xec-cm/projects/10) owns the
+backlog. RFC 005 proposes sensitivity and diagnostic plots; these functions remain
+unimplemented until their dependent issues are completed. Inference, new distance
+estimators and automatic calibration require separate decisions.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
 should verify meaningful behavior and contract failures rather than preserve

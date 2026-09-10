@@ -88,7 +88,7 @@ recoverome::recovery_results(selected, "observed", scope = "historical")
 Keep the TSE as the authoritative analysis. For downstream table operations, use
 `as.data.frame(recovery_results(...))` and optionally a tibble conversion, keeping
 IDs and validation flags as columns. Table conversions need not preserve the
-contextual metadata; see [result extraction](result-extraction.md).
+contextual metadata; see [result extraction](https://xec-cm.github.io/recoverome/articles/history-and-validation.html).
 
 ## Reproduce the evidence
 

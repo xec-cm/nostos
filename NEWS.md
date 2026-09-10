@@ -1,5 +1,14 @@
 # recoverome 0.99.0
 
+- Shortened onboarding and added installed guides for input preparation,
+  filtering/history/validation, and a real antibiotic-exposure example.
+- Added `dethlefsen2008`, all 5,670 V3 refOTUs and 18 samples from the published
+  normalized abundance table, with original dates and source attribution.
+- Recorded a prespecified scientific assessment with independent arithmetic,
+  complete baseline/rule/sampling scenarios, and explicit interpretation limits.
+- Consolidated developer evidence and check every installed vignette from the
+  built package. Future sensitivity and diagnostic plots remain proposed APIs.
+
 Experimental MVP and initial Bioconductor submission candidate. This replaces
 the unpublished 0.2.0 target by explicit maintainer decision. Publication and
 submission remain separate decisions; this heading does not claim acceptance.

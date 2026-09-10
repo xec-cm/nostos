@@ -1,0 +1,154 @@
+---
+title: "Prepare longitudinal inputs and an explicit recovery rule"
+author: "Francesc Catala-Moll"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Prepare longitudinal inputs and an explicit recovery rule}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(recoverome)
+```
+
+## Introduction
+
+A TSE has features in rows and samples in columns. Use unique, stable row and
+column names; sample metadata must align with those column names. Give the assay
+an explicit name and describe its preprocessing. Counts or nonnegative normalized
+abundances are accepted; negative log-transformed values are not. Selected samples
+need finite, nonnegative values and a positive total over selected features.
+Recoverome closes those values to compositions; it does not normalize sequencing
+bias, infer absolute abundance, add pseudocounts or select taxa automatically.
+
+```{r repeated-input}
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$repeated_episodes
+tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+SummarizedExperiment::colData(tse)
+example_data$episodes
+example_data$events
+```
+
+This example has **two episodes in the same participant**. Each included sample
+belongs to exactly one episode, and each episode belongs to one subject. Sample
+`s6` has no episode and remains excluded. Excluded samples stay in the TSE but do
+not supply a reference or outcome. Every supplied episode needs at least one
+included sample at registration. Explicit subject and episode identities prevent
+accidentally combining repeated exposures or borrowing another person's baseline.
+
+## Keep event boundaries and time units explicit
+
+Events have an `event_id`, `episode_id`, `start_time` and `end_time`. Equal start
+and end represents a point event; an interval represents a duration. Each episode
+selects an origin event and either its `start` or `end` boundary as time zero.
+In this fixture episode `e1` uses day 10 (start), whereas `e2` uses day 42 (end).
+Baseline eligibility always uses **exposure start**, even for an end origin.
+
+```{r register}
+tse <- setup_recovery(
+  tse, "courses", example_data$episodes, example_data$events,
+  time_col = "time", time_unit = "days", time_origin = example_data$time_origin
+)
+registered <- recovery_results(tse, "courses", level = "sample")
+as.data.frame(registered)[, c("sample_id", "episode_id", "included", "relative_time")]
+stopifnot(identical(registered$relative_time, c(-7, 0, 7, -8, 1, NA_real_)))
+```
+
+Times are finite numeric coordinates, not Date/POSIXct columns. Convert dates
+explicitly before registration, using the same origin for samples and events.
+The illustrative conversion below does not change the fixture:
+
+```{r calendar-conversion}
+enrolment <- as.Date("2025-01-01")
+sample_dates <- as.Date(c("2025-01-04", "2025-01-11", "2025-01-18"))
+as.numeric(difftime(sample_dates, enrolment, units = "days"))
+```
+
+If participants have different enrolment dates, convert within participant.
+Document timezone and duration conventions when converting timestamps. A time
+unit string records your choice; the package does not convert it or infer dates.
+Events from another episode of the **same subject** can block recovery when they
+overlap the evaluation window, even after an apparent early confirmation. This
+avoids silently attributing observations to one of overlapping exposures.
+
+## Select a defensible personal baseline
+
+```{r reference}
+tse <- add_reference(tse, "courses", reference = c("s1", "s4"), assay = "counts",
+                     preprocessing = "bundled synthetic counts; all features retained")
+tse <- add_deviation(tse, "courses")
+as.data.frame(recovery_results(tse, "courses"))[, c(
+  "episode_id", "reference_support", "n_baseline_samples", "n_baseline_times", "baseline_diameter"
+)]
+```
+
+References average **sample compositions**, not pooled counts. Each selected
+sample has equal weight, including simultaneous samples. An explicit `features`
+selection changes the compositional scope and must be justified before examining
+outcomes. Do not compare distances computed on different feature sets as though
+they measured the same quantity.
+
+Support distinguishes `missing_baseline`, `single_sample`, `single_time` and
+`multiple_times`. Diameter is the largest pairwise baseline Bray--Curtis distance;
+it is missing with fewer than two samples. Replicates at one time do not establish
+temporal stability. One baseline is usable but cannot measure baseline variation.
+No baseline (`reference = character()`) is represented explicitly, without
+borrowing another episode's profile. Support and diameter are descriptive, not
+uncertainty intervals or automatically calibrated thresholds.
+
+## State a rule before examining its outcome
+
+Choose parameters for the biological question, measurement process and feasible
+sampling design; record the rationale and plausible alternatives prospectively.
+There are no universal settings:
+
+| Parameter | Question to justify |
+|:---|:---|
+| `threshold` (0 to 1) | Which compositional departure is meaningful for this assay and feature scope? What baseline/technical variability can be assessed independently? |
+| `persistence` (> 0) | Over what observed duration would return be relevant? Can the planned visits span it? |
+| `max_gap` (> 0) | Which unobserved interval is tolerable between supporting visits? Is that assumption defensible? |
+| `horizon` (> 0) | How long after the selected origin is the question defined, considering follow-up and other exposures? |
+
+```{r rule}
+rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
+tse <- add_recovery(tse, "courses", rule)
+as.data.frame(recovery_results(tse, "courses"))[, c("episode_id", "status", "reason", "coverage")]
+```
+
+The sparse fixture illustrates the API, not a useful rule for that study. An
+outside visit detects perturbation; a later within-band visit is a return.
+Confirmation needs at least two distinct times spanning persistence, with no
+outside visit between them and every supporting gap at most `max_gap`. Tied
+samples count as one visit, which is within only if **all** are within. A rebound
+is the first outside visit after confirmation, through the horizon. The gap from
+perturbation to a candidate is not restricted by `max_gap`.
+
+For an end origin, perturbation detection starts at exposure start (possibly
+negative relative time); eligible returns start at zero. Boundaries are inclusive,
+comparisons exact, and no interpolation or tolerance is silently added. Persistence
+greater than the horizon is allowed but cannot yield confirmation.
+
+`not_evaluable` reasons take precedence as missing baseline, overlapping events,
+then no visits in the return window. A lack of return is not permanent non-return.
+A single return is not continuous recovery. Visits after the horizon contribute
+follow-up coverage only. Consult `?add_recovery` for the complete rule.
+
+See the [real-data example](real-data.html) and its prespecified assessment for
+baseline, sampling and rule sensitivity. To change a definition, register a new
+analysis name and run its stages explicitly. There is no overwrite or implicit
+refresh; an unsuccessful call leaves the input unchanged.
+
+## Session information
+
+```{r session-info}
+utils::sessionInfo()
+```

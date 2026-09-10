@@ -1,0 +1,2 @@
+"analysis_id","view_scope","current_present","result_state","structural_valid","validation_complete","dependencies","episode_id","subject_id","reference_support","n_baseline_samples","n_baseline_times","baseline_diameter","status","reason","coverage","first_perturbation_time","first_return_time","candidate_time","confirmation_time","rebound_time","last_observed_time","n_window_visits"
+"qualification","current",TRUE,"available",TRUE,FALSE,"not_checked","e1","p1","multiple_times",2,2,0,"confirmed_return",NA,"reaches_horizon",0,2,2,6,NA,10,6

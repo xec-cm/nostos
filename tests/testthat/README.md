@@ -8,13 +8,13 @@ identities and coordinates come from the RFC's worked example.
 `test-tse-preservation.R` combines registration, linked-tree subsetting,
 reordering, new analysis registration and accessor-based edits. It complements
 the focused contract tests without duplicating their invalid-input matrix.
-The [preservation evidence map](../../dev/tse-preservation.md) describes the
+The [preservation evidence map](../../dev/README.md#integration-evidence-map) describes the
 operations covered and the limits of those checks.
 
 Recovery tests exercise the accepted RFC 003 trajectories and observation rule.
 `test-recovery-history.R` contrasts short follow-up with a filtered completed
 analysis, while `test-recovery-multi-analysis.R` checks distinct histories and
-diagnostics in the same TSE. The [recovery evidence map](../../dev/recovery-history.md)
+diagnostics in the same TSE. The [recovery evidence map](../../dev/README.md#integration-evidence-map)
 links the acceptance criteria to these tests and the existing calculation cases.
 
 Add tests alongside each implemented behavior. Registration tests make no

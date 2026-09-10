@@ -18,10 +18,12 @@ check_installed_candidate <- function(archive) {
   utils::install.packages(archive, repos = NULL, type = "source", lib = library_path)
   package_path <- find.package("recoverome", lib.loc = library_path)
   stopifnot(as.character(utils::packageVersion("recoverome")) == expected_version)
-  sources <- c(
-    "README.Rmd",
-    system.file("doc", "recoverome.Rmd", package = "recoverome", mustWork = TRUE)
-  )
+  vignette_dir <- system.file("doc", package = "recoverome", mustWork = TRUE)
+  installed_sources <- list.files(vignette_dir, pattern = "\\.Rmd$", full.names = TRUE)
+  expected_sources <- basename(list.files("vignettes", pattern = "\\.Rmd$"))
+  stopifnot(length(installed_sources) > 0L,
+            setequal(basename(installed_sources), expected_sources))
+  sources <- c("README.Rmd", installed_sources)
   stopifnot(all(file.copy(sources, workspace)))
   for (source in basename(sources)) {
     rmarkdown::render(file.path(workspace, source), quiet = TRUE, envir = new.env())
@@ -34,7 +36,7 @@ check_installed_candidate <- function(archive) {
   )
   cat("Installed source archive:", archive, "\n")
   cat("Package version:", expected_version, "\n")
-  cat("README and installed vignette completed without loading a tidy adapter.\n")
+  cat("README and all installed vignettes completed without loading a tidy adapter.\n")
   print(utils::sessionInfo())
 }
 
