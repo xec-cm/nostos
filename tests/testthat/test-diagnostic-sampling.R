@@ -1,0 +1,61 @@
+test_that("sampling works before reference and preserves original events and visit identities", {
+  registered <- register_fixture(recovery_fixture(c(0, 2, 2, 7, 9), c(.75, .25, .125, .125, .125)))
+  before <- serialize(registered, NULL)
+  plot <- plot_sampling(registered, "antibiotic")
+  expect_identical(serialize(registered, NULL), before)
+  expect_identical(plot$data$sample_id, c("b1", paste0("s", 1:5)))
+  expect_identical(plot$data$relative_time, c(-2, 0, 2, 2, 7, 9))
+  expect_equal(plot$data$sample_rank, c(1, 1, 1, 2, 1, 1))
+  gaps <- diagnostic_layer(plot, "gap_class")
+  expect_identical(gaps$start, c(-2, 0, 2, 7))
+  expect_identical(gaps$end, c(0, 2, 7, 9))
+  expect_identical(gaps$gap, c(2, 2, 5, 2))
+  expect_identical(gaps$gap_class, rep("Registered gap; no cutoff", 4))
+  events <- diagnostic_layer(plot, "event_id")
+  expect_identical(events$event_id, "exposure_1")
+  expect_identical(events$start, 0)
+  expect_identical(events$end, 4)
+  expect_true(events$selected_origin)
+  expect_true(all(is.na(diagnostic_layer(plot, "horizon")$horizon)))
+  expect_false(grepl("Stored horizon", plot$labels$subtitle))
+  expect_true(plot$scales$get_scales("y")$limits[[1L]] < -0.5)
+  expect_silent(ggplot2::ggplotGrob(plot))
+})
+
+test_that("sampling keeps original gaps after removal and distinguishes the stored cutoff", {
+  fixture <- recovery_fixture(c(0, 2, 7, 9), c(.75, .125, .125, .125))
+  recovered <- add_recovery(recovery_parent(fixture), "antibiotic", observed_rule())
+  filtered <- recovered[, colnames(recovered) != "s3"]
+  SummarizedExperiment::colData(filtered)$day[colnames(filtered) == "s4"] <- 90
+  plot <- plot_sampling(filtered, "antibiotic", "historical")
+  expect_identical(plot$data$relative_time, c(-2, 0, 2, 7, 9))
+  expect_identical(plot$data$availability,
+                   c(rep("Retained sample", 3), "Removed sample", "Retained sample"))
+  gaps <- diagnostic_layer(plot, "gap_class")
+  expect_identical(gaps$gap, c(2, 2, 5, 2))
+  expect_identical(gaps$gap_class,
+                   c("Gap <= stored max_gap", "Gap <= stored max_gap",
+                     "Gap > stored max_gap", "Gap <= stored max_gap"))
+  expect_identical(diagnostic_layer(plot, "horizon")$horizon, 10)
+  expect_match(plot$labels$caption, "sources changed")
+  expect_match(plot$labels$subtitle, "max_gap = 3")
+  expect_identical(plot$scales$get_scales("x")$limits, c(-2, 10))
+  expect_silent(ggplot2::ggplotGrob(plot))
+})
+
+test_that("sampling distinguishes end origins, point events and repeated episodes", {
+  fixture <- registration_fixture()
+  fixture$events$end_time[[1L]] <- fixture$events$start_time[[1L]]
+  registered <- register_fixture(fixture)
+  plot <- plot_sampling(registered, "antibiotic")
+  expect_identical(levels(plot$data$episode_id), c("e1", "e2"))
+  expect_identical(plot$data$relative_time, c(-7, 0, 7, -8, 1))
+  expect_false("s6" %in% plot$data$sample_id)
+  events <- diagnostic_layer(plot, "event_id")
+  expect_equal(events$start, c(0, -2))
+  expect_equal(events$end, c(0, 0))
+  origins <- diagnostic_layer(plot, "origin_boundary")
+  expect_identical(origins$subject_id, c("p1", "p1"))
+  expect_identical(origins$origin_boundary, c("start", "end"))
+  expect_silent(ggplot2::ggplotGrob(plot))
+})

@@ -10,6 +10,8 @@
 #' [add_recovery()] attaches episode outcomes under an explicit observational
 #' rule. [recovery_results()] extracts saved sample or episode tables with their
 #' historical context. [plot_recovery()] displays saved observations and evidence.
+#' [plot_reference()], [plot_sampling()] and [plot_recovery_overview()] expose
+#' baseline support, observation timing and saved episode milestones.
 #' Validation never refits
 #' references or recalculates historical results.
 #'

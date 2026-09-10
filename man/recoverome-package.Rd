@@ -16,6 +16,8 @@ explicit personal baseline profiles with support and input provenance.
 \code{\link[=add_recovery]{add_recovery()}} attaches episode outcomes under an explicit observational
 rule. \code{\link[=recovery_results]{recovery_results()}} extracts saved sample or episode tables with their
 historical context. \code{\link[=plot_recovery]{plot_recovery()}} displays saved observations and evidence.
+\code{\link[=plot_reference]{plot_reference()}}, \code{\link[=plot_sampling]{plot_sampling()}} and \code{\link[=plot_recovery_overview]{plot_recovery_overview()}} expose
+baseline support, observation timing and saved episode milestones.
 Validation never refits
 references or recalculates historical results.
 }

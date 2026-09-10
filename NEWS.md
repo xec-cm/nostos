@@ -7,7 +7,8 @@
 - Recorded a prespecified scientific assessment with independent arithmetic,
   complete baseline/rule/sampling scenarios, and explicit interpretation limits.
 - Consolidated developer evidence and check every installed vignette from the
-  built package. Future sensitivity and diagnostic plots remain proposed APIs.
+  built package. Diagnostic plots are implemented below; rule sensitivity remains
+  separately tracked.
 
 Experimental MVP and initial Bioconductor submission candidate. This replaces
 the unpublished 0.2.0 target by explicit maintainer decision. Publication and
@@ -59,6 +60,16 @@ submission remain separate decisions; this heading does not claim acceptance.
   stability; observed confirmation does not imply continuous or clinical recovery.
   Statistical fitting, group comparisons and recovery-time uncertainty methods
   are outside this release.
+
+## Diagnostic plots
+
+- Add `plot_reference()`, `plot_sampling()` and `plot_recovery_overview()` as
+  ordinary editable ggplots. Distinguish recorded baseline support from available
+  distances, original observation gaps from removed samples, and saved milestones
+  from their current evidence availability. Preserve historical times and
+  outcomes, show source-validation context, and handle empty scope explicitly.
+- Add an offline diagnostic plotting guide with executable synthetic examples.
+  The existing reference, deviation and recovery definitions are unchanged.
 
 # recoverome 0.1.0
 

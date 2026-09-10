@@ -23,7 +23,7 @@ recoverome is intended to attach explicit recovery analyses to longitudinal
 microbiome data after known perturbations. Registration establishes data
 identity, analysis scope, and provenance before analytical methods are added.
 
-The initial public interface is limited to seven functions:
+The original seven-function interface is extended by three diagnostic plots:
 
 | Function | Status | Contract |
 |:---------|:-------|:---------|
@@ -33,6 +33,9 @@ The initial public interface is limited to seven functions:
 | `add_recovery()` | Available | Attach observed episode outcomes under a recorded recovery rule. |
 | `recovery_results()` | Available | Extract saved tables, availability and historical context. |
 | `plot_recovery()` | Available | Display saved observations, evidence and follow-up. |
+| `plot_reference()` | Available | Inspect recorded baseline support and available distances. |
+| `plot_sampling()` | Available | Inspect registered visits, events and original observation gaps. |
+| `plot_recovery_overview()` | Available | Compare saved episode milestones and evidence availability. |
 | `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
 Statistical model fitting is a future layer outside these seven functions.
@@ -201,8 +204,8 @@ All seven original API functions, including plotting, are implemented. M6 improv
 onboarding and maintenance; M7 qualifies the current descriptive method and adds
 explicit rule sensitivity; M8 adds diagnostics and external user evaluation.
 The [development project](https://github.com/users/xec-cm/projects/10) owns the
-backlog. RFC 005 proposes sensitivity and diagnostic plots; these functions remain
-unimplemented until their dependent issues are completed. Inference, new distance
+backlog. The diagnostic plots accepted in RFC 005 are implemented. Rule
+sensitivity remains separately tracked in issue #44. Inference, new distance
 estimators and automatic calibration require separate decisions.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests

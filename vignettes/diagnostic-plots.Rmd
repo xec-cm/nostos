@@ -1,0 +1,183 @@
+---
+title: "Diagnose baseline support, sampling and saved outcomes"
+author: "Francesc Catala-Moll"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Diagnose baseline support, sampling and saved outcomes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9, fig.height = 5)
+library(recoverome)
+```
+
+## Three complementary questions
+
+The diagnostic plots inspect recorded support and observations. They do not
+refit a reference, infer a continuous trajectory, rerun a recovery rule or
+establish clinical recovery. Use `plot_recovery()` for a detailed deviation plot;
+these three views answer narrower questions:
+
+- `plot_reference()`: which baseline samples support the fixed personal profile?
+- `plot_sampling()`: when were samples collected, and where are original gaps?
+- `plot_recovery_overview()`: which observed milestones and follow-up were saved
+  for each subject and episode?
+
+All examples are offline and use the bundled synthetic data. Their illustrative
+rule values are explicit choices, not defaults or recommended clinical cutoffs.
+
+```{r register}
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$observed_recovery
+raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+tse <- setup_recovery(
+  raw,
+  analysis_id = "observed",
+  episodes = example_data$episodes,
+  events = example_data$events,
+  time_col = example_data$time_col,
+  time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
+)
+```
+
+## Recorded reference support
+
+Attach the explicitly selected baseline and inspect it before any deviation
+stage exists. Here the single sample is identical to its fixed profile, so its
+distance is zero. That supplies no estimate of pairwise baseline variation and
+makes no stability claim.
+
+```{r reference, fig.alt="One baseline sample with zero verified distance and no estimable pairwise variation."}
+tse <- add_reference(tse, "observed", "b1", assay = "counts")
+plot_reference(tse, "observed")
+```
+
+The facet summary preserves the recorded sample count, distinct-time count,
+support state and diameter. Multiple samples at one time do not supply independent
+temporal replication. Individual sample IDs remain visible even when their time
+and distance coincide.
+
+Before deviations exist, a distance is derived only from baseline assay values
+verified against their stored input fingerprints, using the saved profile. The
+legend labels these as current verified baseline distances. Once deviations have
+been stored, the plot uses those retained values. It never substitutes a new
+measurement after a source edit. Missing or unverifiable values use identity/time
+markers below the distance panel, rather than points at zero. The fixed assay,
+feature scope and mean-composition definition remain explicit.
+
+## Registered sampling calendar
+
+`plot_sampling()` can be called immediately after registration. Later, a stored
+recovery rule adds its horizon and maximum-gap context. The calendar continues to
+use the original times even if current annotations are edited.
+
+```{r calculate}
+tse <- add_deviation(tse, "observed")
+tse <- add_recovery(tse, "observed", list(
+  threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10
+))
+filtered <- tse[, colnames(tse) != "s3"]
+```
+
+```{r sampling, fig.alt="Original visits and two-day gaps remain after removing the time-four sample."}
+plot_sampling(filtered, "observed", scope = "historical")
+```
+
+Hollow markers show removed samples at their original coordinates. The two-day
+gaps around the removed time-four sample remain original two-day gaps: filtering
+does not manufacture a four-day original gap. Distinct samples collected at one
+time stack vertically without moving the underlying time coordinate.
+
+Event intervals and point events are recorded context, not causal attribution.
+The solid vertical line marks the chosen event boundary at zero; a dashed line
+marks the stored horizon, when present. All consecutive registered-time gaps are
+shown, including those outside the recovery window. Highlighting a gap against a
+stored cutoff does not re-evaluate an outcome or prove an outside state.
+
+## Saved episode outcomes
+
+The overview distinguishes perturbation, first return, winning candidate,
+confirmation, rebound and last observed follow-up. First return and the winning
+candidate need not agree. Confirmation can coexist with a later rebound.
+
+```{r overview, fig.alt="Saved confirmation is incomplete after an intermediate supporting sample was removed."}
+plot_recovery_overview(filtered, "observed", scope = "historical")
+```
+
+Small vertical offsets separate coincident milestones within an episode row;
+their times are unchanged. Status and coverage are separate recorded categories.
+A confirmed return with incomplete follow-up remains different from complete
+observation, and a non-evaluable outcome retains its original reason.
+
+Evidence availability refers to retained IDs. A confirmation marker requires
+its entire saved run, including intermediate visits, so removing only time four
+makes confirmation evidence incomplete even though the endpoint at time six is
+retained. Fully removed evidence is historical. These labels describe current
+availability, not uncertainty in the saved milestone's time. Source changes and
+incomplete validation are reported separately in the caption.
+
+Subjects and episodes remain explicit when one participant has repeated exposures:
+
+```{r repeated, fig.height=6, fig.alt="Two episodes from the same participant retain separate status and coverage rows."}
+example_data <- recovery_examples$repeated_episodes
+repeated <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+repeated <- setup_recovery(
+  repeated, "repeat", example_data$episodes, example_data$events,
+  time_col = example_data$time_col, time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
+)
+repeated <- add_reference(repeated, "repeat", c("s1", "s4"), assay = "counts")
+repeated <- add_deviation(repeated, "repeat")
+repeated <- add_recovery(repeated, "repeat", list(
+  threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10
+))
+plot_recovery_overview(repeated, "repeat")
+```
+
+A shared relative-time axis does not establish biological comparability across
+personal reference definitions. No survival model, confidence interval or
+continuous recovery trajectory is estimated by these views.
+
+## Scope and customization
+
+Current scope selects episodes with any retained originally included sample.
+Historical scope includes all registered episodes. Within selected episodes,
+original observations remain visible with their availability marked. Added
+samples are not enrolled and generate the usual structured scope warning.
+
+Empty selections return an informative plot with scope and validation context.
+A reference that has not been computed is explicitly labeled; an overview before
+recovery retains episodes as not computed. This differs intentionally from
+`plot_recovery()`, which requires an eligible episode and deviation stage.
+
+Every function returns an ordinary unprinted ggplot and preserves the input TSE,
+its other analyses, provenance and fingerprints. Customize the returned object:
+
+```{r customize, eval=TRUE}
+p <- plot_sampling(tse, "observed")
+custom <- p + ggplot2::labs(title = "Observation schedule") + ggplot2::theme_bw()
+inherits(custom, "ggplot")
+```
+
+Printing draws the plot. Customization does not refresh validation; call the
+function again against a TSE for a fresh view. See
+[history and validation](history-and-validation.html) for the distinction between
+saved results and a newly computed analysis after filtering.
+
+## Session information
+
+```{r session}
+sessionInfo()
+```

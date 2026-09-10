@@ -25,6 +25,9 @@ reference:
   - title: Plot observed evidence
     contents:
       - plot_recovery
+      - plot_reference
+      - plot_sampling
+      - plot_recovery_overview
   - title: Validate an analysis
     contents:
       - validate_recovery
@@ -43,6 +46,7 @@ articles:
       - input-preparation
       - history-and-validation
       - real-data
+      - diagnostic-plots
 navbar:
   structure:
     left: [intro, reference, articles, news]
