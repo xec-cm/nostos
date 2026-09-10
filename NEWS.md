@@ -1,7 +1,16 @@
-# recoverome 0.2.0
+# recoverome 0.99.0
 
-Experimental GitHub MVP candidate. Publication is a maintainer decision; this
-version heading does not announce a published release or Bioconductor acceptance.
+Experimental MVP and initial Bioconductor submission candidate. This replaces
+the unpublished 0.2.0 target by explicit maintainer decision. Publication and
+submission remain separate decisions; this heading does not claim acceptance.
+
+## Submission preparation
+
+- Use BiocStyle for the executable vignette, with an introduction, related-method
+  references, installation instructions and session information. Keep optional
+  tidy recipes in the external integration guide.
+- Keep RStudio project settings local and record coding-agent provenance in the
+  installed package. Document remaining account obligations and justified notes.
 
 ## Personal-baseline workflow
 

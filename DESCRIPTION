@@ -1,6 +1,6 @@
 Package: recoverome
 Title: Infrastructure for Longitudinal Microbiome Recovery Analysis
-Version: 0.2.0
+Version: 0.99.0
 Authors@R:
     person(given = "Francesc",
            family = "Catala-Moll",
@@ -37,6 +37,7 @@ Imports:
     TreeSummarizedExperiment,
     utils
 Suggests:
+    BiocStyle,
     DelayedArray,
     knitr,
     Matrix,

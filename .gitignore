@@ -17,3 +17,6 @@ Rplots.pdf
 /coverage-report/
 /inst/doc/
 /README.html
+
+# Keep personal RStudio settings local.
+/recoverome.Rproj

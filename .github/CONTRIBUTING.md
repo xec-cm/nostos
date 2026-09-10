@@ -6,8 +6,8 @@ observed recovery, validation, extraction and plotting. Contributions should mak
 a concrete, reviewable improvement and distinguish implemented behavior from
 proposals.
 
-The current release candidate is the experimental **0.2.0 GitHub MVP**.
-See the [release preparation record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.2.0.md)
+The current release candidate is the experimental **0.99.0 GitHub MVP**.
+See the [release preparation record](https://github.com/xec-cm/recoverome/blob/devel/dev/releases/0.99.0.md)
 for evidence and maintainer publication steps. Bioconductor assessment is separate
 from submission and does not imply repository acceptance.
 Implementation work is tracked in the public
@@ -125,6 +125,12 @@ intentional tooling change and must include the resulting generated files.
   an internal change needs no NEWS entry or additional tests.
 - Keep documentation in English and wrap prose to a readable line length.
 
+## Attribution
+
+Record substantive coding-agent or third-party assistance in issues and PRs.
+The installed [provenance record](../inst/PROVENANCE.md) documents existing
+Codex-assisted contributions; the maintainer remains responsible for the code.
+
 ## Reporting a problem
 
 Use the bug report form for observed behavior and a small reproducible example,
@@ -148,11 +154,11 @@ applicable and obtain an updated technical review where needed.
 
 ## Releases
 
-Only the maintainer decides and publishes releases. Intermediate milestones
-do not generate releases; the next planned release is the experimental
-`0.2.0` GitHub MVP once its agreed scope is complete. Later Bioconductor
-preparation targets `0.99.0` through a separate maintainer decision. This is
-a future target, not the current version or a claim of acceptance.
+Only the maintainer decides and publishes releases or submits to Bioconductor.
+The current `0.99.0` experimental MVP and submission candidate replaces the
+unpublished `0.2.0` target by maintainer decision on 2026-09-10. Intermediate
+milestones do not create releases. Preparation and passing checks imply neither
+submission nor acceptance; consult the release preparation record before acting.
 
 All contributions are covered by the repository's license and
 [Code of Conduct](https://github.com/xec-cm/recoverome/blob/devel/CODE_OF_CONDUCT.md).

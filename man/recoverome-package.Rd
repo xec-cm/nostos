@@ -24,6 +24,10 @@ The intended workflow enriches a TreeSummarizedExperiment with sample-level
 annotations and named analysis records. See the introductory vignette for
 runnable examples through result plotting, and the project
 website for development status.
+
+Implementation and documentation were assisted by OpenAI Codex. The installed
+\code{PROVENANCE.md} records that assistance and links the review history. The
+maintainer retains responsibility for the package and its support.
 }
 \seealso{
 Useful links:

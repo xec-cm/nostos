@@ -12,14 +12,16 @@ displays saved observations and evidence.
 dependencies without changing historical results. Unknown stage schemas remain
 incompletely checked.
 
-The next release target is the experimental GitHub MVP, version 0.2.0, with
-the seven functions in `dev/architecture.md`. Bioconductor preparation is a
-later milestone. Do not expand the statistical scope while implementing the
-development workflow.
+The current target is the experimental MVP and initial Bioconductor submission
+candidate, version 0.99.0, with the seven functions in `dev/architecture.md`.
+On 2026-09-10 the maintainer explicitly replaced the unpublished 0.2.0 target
+and requested direct Bioconductor preparation in the shared #21/#22 PR.
+Do not expand statistical scope as part of submission preparation.
 
-Only the maintainer decides and publishes releases. Do not release at
-intermediate milestones. A future Bioconductor preparation phase targets
-0.99.0; it is not the current version or an accepted Bioconductor release.
+Only the maintainer decides and publishes releases or submits to Bioconductor.
+Do not create tags, release at intermediate milestones, change external accounts
+or claim acceptance. Version 0.99.0 is a submission candidate, not an accepted
+Bioconductor release. Follow `dev/releases/0.99.0.md` for the current plan.
 
 ## Issue and review workflow
 
