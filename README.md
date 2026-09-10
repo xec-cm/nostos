@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit README.Rmd. -->
 
-# recoverome
+# nostos <img src="man/figures/logo.png" align="right" height="180" alt="NOSTOS: stacked stones and an orbit in a watercolor coastal hexagon." />
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -24,6 +24,12 @@ install.packages("remotes")
 remotes::install_github("xec-cm/recoverome", ref = "devel")
 ```
 
+The package was previously named `recoverome`. Install and load it as
+`nostos`; existing saved analyses keep their original storage
+identifiers. The repository and website retain their current addresses
+until the coordinated rename. See the [name
+transition](https://github.com/xec-cm/recoverome/blob/devel/dev/branding/README.md).
+
 ## A complete example
 
 One participant, one explicit baseline (`b1`) and six follow-up visits.
@@ -31,13 +37,13 @@ This bundled synthetic example runs offline. Rule values are
 illustrative, not recommended biological cutoffs.
 
 ``` r
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),
   colData = S4Vectors::DataFrame(example_data$col_data)
 )
-tse <- recoverome::setup_recovery(
+tse <- nostos::setup_recovery(
   raw,
   analysis_id = "observed",
   episodes = example_data$episodes,
@@ -46,13 +52,13 @@ tse <- recoverome::setup_recovery(
   time_unit = "days",
   time_origin = "days since enrolment"
 )
-tse <- recoverome::add_reference(tse, "observed", reference = "b1", assay = "counts",
+tse <- nostos::add_reference(tse, "observed", reference = "b1", assay = "counts",
                      preprocessing = "synthetic counts; no upstream transformations")
-tse <- recoverome::add_deviation(tse, "observed")
+tse <- nostos::add_deviation(tse, "observed")
 rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
-tse <- recoverome::add_recovery(tse, "observed", rule)
+tse <- nostos::add_recovery(tse, "observed", rule)
 
-as.data.frame(recoverome::recovery_results(tse, "observed"))[, c(
+as.data.frame(nostos::recovery_results(tse, "observed"))[, c(
   "status", "candidate_time", "confirmation_time", "rebound_time"
 )]
 #>             status candidate_time confirmation_time rebound_time
@@ -64,7 +70,7 @@ Return is observed on day **2**, confirmed by observations through day
 permanent recovery.
 
 ``` r
-recoverome::plot_recovery(tse, "observed")
+nostos::plot_recovery(tse, "observed")
 ```
 
 <img src="man/figures/README-plot-recovery-1.png" alt="Observed synthetic return at day 2, confirmation at day 6, then rebound at day 8."  />
@@ -72,7 +78,7 @@ recoverome::plot_recovery(tse, "observed")
 ## Learn more
 
 - [Get
-  started](https://xec-cm.github.io/recoverome/articles/recoverome.html):
+  started](https://xec-cm.github.io/recoverome/articles/nostos.html):
   read the output and understand the seven-function workflow.
 - [Prepare your
   data](https://xec-cm.github.io/recoverome/articles/input-preparation.html).

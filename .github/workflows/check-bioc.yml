@@ -91,7 +91,7 @@ jobs:
           path: |
             check/*.tar.gz
             check/candidate.txt
-            check/recoverome.Rcheck/00check.log
+            check/nostos.Rcheck/00check.log
           if-no-files-found: error
           retention-days: 14
       - name: Report Bioconductor readiness

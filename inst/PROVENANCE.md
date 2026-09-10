@@ -2,7 +2,7 @@
 
 Assisted-by: OpenAI Codex.
 
-Substantial parts of recoverome's R implementation, tests, synthetic examples,
+Substantial parts of nostos's R implementation, tests, synthetic examples,
 documentation and development tooling were produced with coding-agent assistance.
 The maintainer defines scope and methodological decisions, reviews contributions,
 and controls merges and publication. Agent assistance does not transfer the
@@ -16,11 +16,18 @@ The package uses public APIs from its declared R/Bioconductor dependencies.
 The reference and deviation definitions, observation rule and historical-scope
 contracts are documented in the vignette and accepted RFCs. Citations to methods
 and related packages are references, not claims that those projects validated
-recoverome or authored its implementation.
+nostos or authored its implementation.
 
-The bundled examples are deterministic synthetic data; they contain no participant
-records or downloaded study measurements. Their generation source is maintained at:
+The `recovery_examples` dataset is deterministic and synthetic. Its generation
+source is maintained at:
 https://github.com/xec-cm/recoverome/blob/devel/data-raw/recovery_examples.R
+
+The real `dethlefsen2008` dataset is separate; its help and installed
+`DATA-LICENSE.md` retain source attribution and reuse terms.
+The maintainer supplied and approved the NOSTOS watercolor logo on 2026-09-10
+from the ChatGPT artwork task. The canonical PNG is preserved byte-for-byte;
+browser icons are resized PNG derivatives. See `dev/branding/README.md` in the
+repository for artwork provenance and reproducible icon generation.
 
 The package declares the MIT license. Before any Bioconductor submission, the
 maintainer should confirm the provenance record against the exact submitted

@@ -1,6 +1,6 @@
 # Code of Conduct
 
-recoverome welcomes contributors and users with different backgrounds,
+nostos welcomes contributors and users with different backgrounds,
 identities, and levels of experience. Everyone participating in project
 discussions, issues, pull requests, and other project spaces is expected to
 treat others with respect.

@@ -13,18 +13,18 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(recoverome)
+library(nostos)
 ```
 
 ## Introduction
 
-Calculate the complete synthetic analysis from [Get started](recoverome.html).
+Calculate the complete synthetic analysis from [Get started](nostos.html).
 Its reference is `(1, 0)`; follow-up deviations are `.75, .25, .125, .125, .5,
 .125` at relative days 0, 2, 4, 6, 8 and 10. Under the declared rule, candidate,
 confirmation and rebound are at days 2, 6 and 8.
 
 ```{r original}
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 raw <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

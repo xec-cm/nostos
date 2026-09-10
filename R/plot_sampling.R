@@ -32,7 +32,7 @@
 #' @seealso [plot_reference()], [plot_recovery_overview()], [plot_recovery()]
 #' @export
 #' @examples
-#' data("recovery_examples", package = "recoverome")
+#' data("recovery_examples", package = "nostos")
 #' example_data <- recovery_examples$repeated_episodes
 #' tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
 #'   assays = list(counts = example_data$counts),

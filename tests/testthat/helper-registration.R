@@ -1,6 +1,6 @@
 load_recovery_examples <- function() {
   data_env <- new.env(parent = emptyenv())
-  utils::data("recovery_examples", package = "recoverome", envir = data_env)
+  utils::data("recovery_examples", package = "nostos", envir = data_env)
 
   data_env$recovery_examples
 }
@@ -56,7 +56,7 @@ register_fixture <- function(fixture, ...) {
   overrides <- list(...)
   args[names(overrides)] <- overrides
 
-  do.call(recoverome::setup_recovery, args)
+  do.call(nostos::setup_recovery, args)
 }
 
 registration_record <- function(tse, analysis_id = "antibiotic") {
@@ -95,11 +95,11 @@ recovery_fixture <- function(times = c(0, 2, 4, 6, 8, 10),
 
 recovery_parent <- function(fixture = recovery_fixture(), reference = "b1", features = NULL) {
   registered <- register_fixture(fixture)
-  referenced <- recoverome::add_reference(
+  referenced <- nostos::add_reference(
     registered, "antibiotic", reference, assay = "counts", features = features
   )
 
-  recoverome::add_deviation(referenced, "antibiotic")
+  nostos::add_deviation(referenced, "antibiotic")
 }
 
 observed_rule <- function() {
@@ -109,7 +109,7 @@ observed_rule <- function() {
 expect_outcome_error <- function(tse, rule = observed_rule(), analysis_id = "antibiotic") {
   before <- serialize(tse, NULL)
   testthat::expect_error(
-    recoverome::add_recovery(tse, analysis_id, rule), class = "recoverome_error"
+    nostos::add_recovery(tse, analysis_id, rule), class = "recoverome_error"
   )
   testthat::expect_identical(serialize(tse, NULL), before)
 }

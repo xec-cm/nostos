@@ -25,7 +25,7 @@ the diagnostic views in the same contract.
 
 ## Purpose and scope
 
-recoverome is intended to attach explicit recovery analyses to longitudinal
+nostos is intended to attach explicit recovery analyses to longitudinal
 microbiome data after known perturbations. Registration establishes data
 identity, analysis scope, and provenance before analytical methods are added.
 
@@ -97,6 +97,10 @@ descriptors in the tested adapter and is unsupported when these must be preserve
 No tidy adapter is required for registration or the core workflow.
 
 ## Storage
+
+The package name is now `nostos`. The `recoverome` storage keys, condition
+classes and fingerprint identifiers below are deliberately retained for saved
+object compatibility; see [the name transition](branding/README.md).
 
 The implemented registration namespace is:
 

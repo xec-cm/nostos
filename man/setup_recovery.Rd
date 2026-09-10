@@ -90,7 +90,7 @@ are not intended for manual editing.
 }
 \section{Errors}{
 
-Checks performed by recoverome signal errors with \code{\link[cli:cli_abort]{cli::cli_abort()}}. They
+Checks performed by nostos signal errors with \code{\link[cli:cli_abort]{cli::cli_abort()}}. They
 inherit from \code{recoverome_error} and one of \code{recoverome_error_input} (invalid
 inputs), \code{recoverome_error_namespace} (malformed or unsupported metadata), or
 \code{recoverome_error_collision} (an occupied analysis name or column prefix).
@@ -103,7 +103,7 @@ retain their own classes.
 }
 
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$single_episode
 
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(

@@ -1,6 +1,6 @@
 # Development workflow
 
-This document defines how recoverome work moves from a proposal to a reviewed
+This document defines how nostos work moves from a proposal to a reviewed
 change. It does not select statistical methods or make unimplemented API
 functions available.
 

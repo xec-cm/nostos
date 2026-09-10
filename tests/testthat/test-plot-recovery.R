@@ -168,7 +168,7 @@ test_that("episode selectors preserve requested order and reject out-of-scope id
 
 test_that("plotting validates once and rejects every unsupported displayed stage", {
   tse <- add_recovery(recovery_parent(), "antibiotic", observed_rule())
-  validate <- recoverome:::.recovery_validate_input
+  validate <- nostos:::.recovery_validate_input
   calls <- new.env(parent = emptyenv())
   calls$count <- 0L
   testthat::local_mocked_bindings(.recovery_validate_input = function(...) {

@@ -13,7 +13,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(recoverome)
+library(nostos)
 ```
 
 ## Introduction
@@ -27,7 +27,7 @@ Recoverome closes those values to compositions; it does not normalize sequencing
 bias, infer absolute abundance, add pseudocounts or select taxa automatically.
 
 ```{r repeated-input}
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$repeated_episodes
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

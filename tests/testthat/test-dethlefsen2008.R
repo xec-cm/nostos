@@ -1,5 +1,5 @@
 test_that("the curated real example preserves source dimensions and calendar", {
-  data("dethlefsen2008", package = "recoverome")
+  data("dethlefsen2008", package = "nostos")
   expect_s4_class(dethlefsen2008, "TreeSummarizedExperiment")
   expect_identical(dim(dethlefsen2008), c(5670L, 18L))
   abundance <- SummarizedExperiment::assay(dethlefsen2008, "abundance")

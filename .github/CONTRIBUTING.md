@@ -1,4 +1,4 @@
-# Contributing to recoverome
+# Contributing to nostos
 
 The experimental development version implements the seven-function
 personal-baseline workflow: registration, reference attachment, sample deviation,

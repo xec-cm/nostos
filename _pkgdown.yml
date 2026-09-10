@@ -1,12 +1,16 @@
 url: https://xec-cm.github.io/recoverome/
 template:
   bootstrap: 5
+  bootswatch: minty
+  bslib:
+    link-color: "#355e4e"
+    link-hover-color: "#244438"
 development:
   mode: release
 reference:
   - title: Package overview
     contents:
-      - recoverome-package
+      - nostos-package
   - title: Register an analysis
     contents:
       - setup_recovery
@@ -43,7 +47,7 @@ articles:
   - title: Getting started
     navbar: ~
     contents:
-      - recoverome
+      - nostos
   - title: Work with your data
     navbar: Guides
     contents:
@@ -53,6 +57,13 @@ articles:
       - sensitivity
       - diagnostic-plots
 navbar:
+  bg: primary
+  type: light
   structure:
     left: [intro, reference, articles, news]
     right: [search, github]
+
+redirects:
+  - [articles/recoverome.html, articles/nostos.html]
+  - [reference/recoverome-package.html, reference/nostos-package.html]
+  - [reference/recoverome.html, reference/nostos-package.html]

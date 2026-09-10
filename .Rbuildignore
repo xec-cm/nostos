@@ -6,6 +6,7 @@
 ^\.lintr$
 ^\.pre-commit-config\.yaml$
 ^\.Rproj\.user$
+^nostos\.Rproj$
 ^recoverome\.Rproj$
 ^README\.Rmd$
 ^README\.html$
@@ -19,8 +20,10 @@
 ^codecov\.yml$
 ^check$
 ^.*\.Rcheck$
+^nostos_[0-9.]+\.tar\.gz$
 ^recoverome_[0-9.]+\.tar\.gz$
 ^bioccheck-report\.txt$
 ^coverage\.xml$
 ^coverage-report$
 ^tests/testthat/README\.md$
+^pkgdown$

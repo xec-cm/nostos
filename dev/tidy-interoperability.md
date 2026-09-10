@@ -28,7 +28,7 @@ deviation and recovery records; the other contains registration only.
 | `dplyr::mutate(tse, rec_antibiotic_deviation = 0)` | Matches an invalid accessor edit: validation reports inconsistent results and extraction errors. The other named analysis remains unaffected. |
 | `dplyr::filter(tse, taxonomy == "taxon-a")` | Unsupported: row annotations are not in this sample view, and the tested expression errors. Use TSE row subsetting for features. |
 | `dplyr::mutate(tse, .cell = ...)` | Unsupported: the sample identity column is view-only and the adapter rejects mutation. |
-| Mutation when `metadata(colData(tse))` or `mcols(colData(tse))` contains information | **Unsupported for preservation:** the adapter rebuilds `colData()` through an ordinary table and loses that annotation metadata and column descriptors, even when adding an unrelated column. TSE-level metadata and recoverome records survive. |
+| Mutation when `metadata(colData(tse))` or `mcols(colData(tse))` contains information | **Unsupported for preservation:** the adapter rebuilds `colData()` through an ordinary table and loses that annotation metadata and column descriptors, even when adding an unrelated column. TSE-level metadata and nostos records survive. |
 
 For mutation, the positive evidence covers atomic annotation columns with empty
 `metadata(colData(tse))` and absent `mcols(colData(tse))` column descriptors.
@@ -81,8 +81,8 @@ stopifnot(requireNamespace("tidySingleCellExperiment", quietly = TRUE))
 selected <- recovered |>
   dplyr::filter(.cell != "s3") |>
   dplyr::arrange(dplyr::desc(.cell))
-recoverome::validate_recovery(selected)
-recoverome::recovery_results(selected, "observed", scope = "historical")
+nostos::validate_recovery(selected)
+nostos::recovery_results(selected, "observed", scope = "historical")
 ```
 
 Keep the TSE as the authoritative analysis. For downstream table operations, use

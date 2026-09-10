@@ -102,7 +102,7 @@ test_that("additions produce one structured warning without enrolling their iden
   expect_identical(warning$sample_ids, added_samples)
   expect_identical(warning$feature_ids, added_features)
   expect_identical(warning$ids, c(added_samples, added_features))
-  expect_identical(warning$call[[1L]], quote(recoverome::recovery_results))
+  expect_identical(warning$call[[1L]], quote(nostos::recovery_results))
   expect_identical(view$sample_id, c("b1", paste0("s", 1:6)))
   expect_identical(view$deviation[3], 0.25)
   report <- S4Vectors::metadata(view)$recoverome_view$validation

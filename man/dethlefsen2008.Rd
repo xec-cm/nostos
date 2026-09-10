@@ -47,7 +47,7 @@ Sparse observations and three participants do not provide recovery ground
 truth or calibration of a universal recovery rule.
 }
 \examples{
-data("dethlefsen2008", package = "recoverome")
+data("dethlefsen2008", package = "nostos")
 dim(dethlefsen2008)
 SummarizedExperiment::colData(dethlefsen2008)[, c("sample_id", "day")]
 }

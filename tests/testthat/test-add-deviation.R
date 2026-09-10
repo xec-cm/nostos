@@ -53,7 +53,7 @@ test_that("repeated episodes use their own references and record actual result o
   expect_identical(deviation$results$sample_id, paste0("s", 1:6))
   expect_identical(deviation$provenance$fingerprint_format, "recoverome_inputs_v1")
   expect_identical(
-    deviation$provenance$package_version, as.character(utils::packageVersion("recoverome"))
+    deviation$provenance$package_version, as.character(utils::packageVersion("nostos"))
   )
   expect_match(deviation$provenance$created_at, "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$")
 })

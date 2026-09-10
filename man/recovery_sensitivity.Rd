@@ -63,7 +63,7 @@ outputs error using the existing extraction policy. Invalid rules error before
 any scenario is calculated, with offending scenario IDs in condition data.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

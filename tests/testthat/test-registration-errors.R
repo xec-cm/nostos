@@ -75,14 +75,14 @@ test_that("errors at different validation depths identify the public call", {
 test_that("namespaced calls retain their attribution through a wrapper and include a trace", {
   fixture <- registration_fixture()
   wrapped_setup <- function(input) {
-    recoverome::setup_recovery(
+    nostos::setup_recovery(
       input$tse, "antibiotic", input$episodes, input$events,
       time_unit = "unsupported", time_origin = "days since enrolment"
     )
   }
   condition <- tryCatch(wrapped_setup(fixture), recoverome_error = identity)
 
-  expect_identical(conditionCall(condition)[[1]], quote(recoverome::setup_recovery))
+  expect_identical(conditionCall(condition)[[1]], quote(nostos::setup_recovery))
   expect_s3_class(condition$trace, "rlang_trace")
   expect_gt(length(condition$trace$call), 0L)
   trace_calls <- vapply(condition$trace$call, function(call) {

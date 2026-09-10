@@ -1,4 +1,10 @@
-# recoverome 0.99.0
+# nostos 0.99.0
+
+- Renamed the installable package from `recoverome` to `nostos`. Public function
+  names, saved metadata, fingerprint formats and condition classes are unchanged.
+  Use `nostos::` for calls; existing analyses require no refitting or migration.
+- Added the approved NOSTOS watercolor logo, PNG browser icons and the
+  maintainer-selected Minty documentation theme.
 
 - Shortened onboarding and added installed guides for input preparation,
   filtering/history/validation, and a real antibiotic-exposure example.
@@ -80,7 +86,7 @@ submission remain separate decisions; this heading does not claim acceptance.
 - Add an offline diagnostic plotting guide with executable synthetic examples.
   The existing reference, deviation and recovery definitions are unchanged.
 
-# recoverome 0.1.0
+# nostos 0.1.0
 
 - Establish an experimental package scaffold and development infrastructure.
 - Document the proposed TSE-based recovery workflow and seven-function API.

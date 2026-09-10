@@ -66,7 +66,7 @@ base R, no random draws, and saves version-3 serialization with xz
 compression.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 names(recovery_examples)
 
 example_input <- recovery_examples$single_episode

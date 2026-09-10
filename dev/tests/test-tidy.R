@@ -12,11 +12,11 @@ tidy_fixture <- function() {
   col_tree$tip.label <- c("s4", "s1", "s6", "s2", "s5", "s3")
   TreeSummarizedExperiment::colTree(fixture$tse) <- col_tree
   registered <- fixture_helpers$register_fixture(fixture)
-  referenced <- recoverome::add_reference(
+  referenced <- nostos::add_reference(
     registered, "antibiotic", c("s1", "s4"), assay = "counts"
   )
-  deviated <- recoverome::add_deviation(referenced, "antibiotic")
-  fixture$tse <- recoverome::add_recovery(deviated, "antibiotic", fixture_helpers$observed_rule())
+  deviated <- nostos::add_deviation(referenced, "antibiotic")
+  fixture$tse <- nostos::add_recovery(deviated, "antibiotic", fixture_helpers$observed_rule())
 
   fixture_helpers$register_fixture(fixture, analysis_id = "control")
 }
@@ -52,7 +52,7 @@ expect_tidy_preservation <- function(actual, expected, original) {
     names(S4Vectors::metadata(actual)$recoverome$analyses), c("antibiotic", "control")
   )
   testthat::expect_identical(
-    recoverome::validate_recovery(actual), recoverome::validate_recovery(expected)
+    nostos::validate_recovery(actual), nostos::validate_recovery(expected)
   )
 }
 
@@ -60,8 +60,8 @@ expect_tidy_views <- function(actual, expected) {
   for (level in c("sample", "episode")) {
     for (scope in c("current", "historical")) {
       testthat::expect_identical(
-        recoverome::recovery_results(actual, "antibiotic", level, scope),
-        recoverome::recovery_results(expected, "antibiotic", level, scope)
+        nostos::recovery_results(actual, "antibiotic", level, scope),
+        nostos::recovery_results(expected, "antibiotic", level, scope)
       )
     }
   }
@@ -78,7 +78,7 @@ testthat::test_that("sample filtering retains trees, annotations and two named h
   testthat::expect_identical(
     unname(TreeSummarizedExperiment::colLinks(actual)$nodeNum), c(2L, 6L, 3L)
   )
-  report <- recoverome::validate_recovery(actual, "antibiotic")
+  report <- nostos::validate_recovery(actual, "antibiotic")
   testthat::expect_identical(report$summary$sample_scope, "subset")
   testthat::expect_identical(report$summary$dependencies, "not_checked")
   testthat::expect_false(report$summary$validation_complete)
@@ -101,8 +101,8 @@ testthat::test_that("annotation filters and empty or excluded-only selections ma
     expected <- original[, ids, drop = FALSE]
     expect_tidy_preservation(actual, expected, original)
     expect_tidy_views(actual, expected)
-    current <- recoverome::recovery_results(actual, "antibiotic")
-    historical <- recoverome::recovery_results(actual, "antibiotic", scope = "historical")
+    current <- nostos::recovery_results(actual, "antibiotic")
+    historical <- nostos::recovery_results(actual, "antibiotic", scope = "historical")
     testthat::expect_identical(nrow(current), 0L)
     testthat::expect_identical(historical$episode_id, c("e1", "e2"))
     testthat::expect_identical(historical$result_state, c("available", "available"))
@@ -118,7 +118,7 @@ testthat::test_that("sample reordering preserves ID links and original extractio
   testthat::expect_identical(
     unname(TreeSummarizedExperiment::colLinks(actual)$nodeNum), c(3L, 5L, 1L, 6L, 4L, 2L)
   )
-  view <- recoverome::recovery_results(actual, "antibiotic", "sample")
+  view <- nostos::recovery_results(actual, "antibiotic", "sample")
   testthat::expect_identical(view$sample_id, paste0("s", 1:6))
   testthat::expect_true(all(view$dependencies == "unchanged"))
 })
@@ -143,10 +143,10 @@ testthat::test_that("source mutation is diagnosed without rewriting saved coordi
   SummarizedExperiment::colData(expected) <- annotations
   expect_tidy_preservation(actual, expected, original)
   expect_tidy_views(actual, expected)
-  report <- recoverome::validate_recovery(actual)
+  report <- nostos::validate_recovery(actual)
   testthat::expect_identical(report$summary$dependencies, c("changed", "changed"))
   testthat::expect_true("DEPENDENCY_VALUE_CHANGED" %in% report$diagnostics$code)
-  view <- recoverome::recovery_results(actual, "antibiotic", "sample")
+  view <- nostos::recovery_results(actual, "antibiotic", "sample")
   testthat::expect_identical(view$time, c(3, 10, 17, 34, 43, NA_real_))
 })
 
@@ -158,16 +158,16 @@ testthat::test_that("owned deviation mutation remains an error, isolated to its 
   annotations$rec_antibiotic_deviation <- rep(0, 6L)
   SummarizedExperiment::colData(expected) <- annotations
   expect_tidy_preservation(actual, expected, original)
-  report <- recoverome::validate_recovery(actual)
+  report <- nostos::validate_recovery(actual)
   testthat::expect_identical(report$summary$structural_valid, c(FALSE, TRUE))
   testthat::expect_identical(report$summary$dependencies, c("changed", "unchanged"))
   testthat::expect_true("RESULT_INCONSISTENT" %in% report$diagnostics$code)
   for (level in c("sample", "episode")) {
     testthat::expect_error(
-      recoverome::recovery_results(actual, "antibiotic", level), class = "recoverome_error"
+      nostos::recovery_results(actual, "antibiotic", level), class = "recoverome_error"
     )
     testthat::expect_error(
-      recoverome::recovery_results(expected, "antibiotic", level), class = "recoverome_error"
+      nostos::recovery_results(expected, "antibiotic", level), class = "recoverome_error"
     )
   }
 })

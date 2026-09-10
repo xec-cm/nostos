@@ -75,7 +75,7 @@
 #'   links, identities, `colData()`, other metadata and other analyses are unchanged.
 #' @export
 #' @examples
-#' data("recovery_examples", package = "recoverome")
+#' data("recovery_examples", package = "nostos")
 #' example_data <- recovery_examples$single_episode
 #' tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
 #'   assays = list(counts = example_data$counts),
@@ -145,7 +145,7 @@ add_reference <- function(tse,
       samples = S4Vectors::DataFrame(sample_id = sample_ids, input_sha256 = input_sha256)
     ),
     provenance = list(
-      package_version = as.character(utils::packageVersion("recoverome")),
+      package_version = as.character(utils::packageVersion("nostos")),
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
       fingerprint_format = "recoverome_inputs_v1"
     )

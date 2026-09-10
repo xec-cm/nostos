@@ -70,7 +70,7 @@ fingerprint formats leave checks incomplete but permit readable results.
 Validation may read the relevant assay blocks; extraction is not assay-free.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

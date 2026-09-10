@@ -47,7 +47,7 @@ the registered calendar. Added identities are not enrolled and emit the
 structured scope warning described in \code{\link[=recovery_results]{recovery_results()}}.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$repeated_episodes
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

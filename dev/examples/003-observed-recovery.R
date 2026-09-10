@@ -179,7 +179,7 @@ blocking <- events$event_id != "origin" & events$subject_id == "p1" &
 stopifnot(identical(events$event_id[blocking], c("later", "touches_horizon")))
 
 # The bundled episodes retain their own baselines and never borrow one another's.
-utils::data("recovery_examples", package = "recoverome")
+utils::data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$repeated_episodes
 selected_baselines <- "s1"
 baseline_episode <- example_data$col_data[selected_baselines, "episode_id"]

@@ -1,4 +1,4 @@
-Package: recoverome
+Package: nostos
 Title: Infrastructure for Longitudinal Microbiome Recovery Analysis
 Version: 0.99.0
 Authors@R:

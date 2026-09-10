@@ -58,13 +58,13 @@ profile_fixture <- function(backend, features, samples, directory) {
 }
 
 profile_workflow <- function(fixture) {
-  tse <- recoverome::setup_recovery(
+  tse <- nostos::setup_recovery(
     fixture$tse, "profile", fixture$episodes, fixture$events,
     time_col = "day", time_unit = "days", time_origin = "days since synthetic exposure"
   )
-  tse <- recoverome::add_reference(tse, "profile", fixture$baseline, assay = "counts")
-  tse <- recoverome::add_deviation(tse, "profile")
-  recoverome::add_recovery(tse, "profile", list(
+  tse <- nostos::add_reference(tse, "profile", fixture$baseline, assay = "counts")
+  tse <- nostos::add_deviation(tse, "profile")
+  nostos::add_recovery(tse, "profile", list(
     threshold = .25, persistence = 2, max_gap = 1, horizon = 7
   ))
 }
@@ -115,15 +115,15 @@ measure_workflow <- function(backend, features, samples, output) {
     load = function() readRDS(raw_path),
     materialize = function() as.matrix(SummarizedExperiment::assay(fixture$tse, "counts")),
     workflow = function() profile_workflow(fixture),
-    validate = function() recoverome::validate_recovery(prepared, "profile"),
+    validate = function() nostos::validate_recovery(prepared, "profile"),
     extract_samples = function() {
-      recoverome::recovery_results(prepared, "profile", level = "sample")
+      nostos::recovery_results(prepared, "profile", level = "sample")
     },
-    extract_episodes = function() recoverome::recovery_results(prepared, "profile"),
-    plot_recovery = function() render(recoverome::plot_recovery),
-    plot_reference = function() render(recoverome::plot_reference),
-    plot_sampling = function() render(recoverome::plot_sampling),
-    plot_overview = function() render(recoverome::plot_recovery_overview)
+    extract_episodes = function() nostos::recovery_results(prepared, "profile"),
+    plot_recovery = function() render(nostos::plot_recovery),
+    plot_reference = function() render(nostos::plot_reference),
+    plot_sampling = function() render(nostos::plot_sampling),
+    plot_overview = function() render(nostos::plot_recovery_overview)
   )
   rows <- lapply(names(operations), function(name) {
     cat(backend, features, samples, name, "\n")
@@ -137,9 +137,9 @@ measure_workflow <- function(backend, features, samples, output) {
                capture.output(utils::sessionInfo())), paste0(output, ".session.txt"))
   # Cross-backend comparison concerns values and diagnostics, not new timestamps.
   saveRDS(list(
-    validation = recoverome::validate_recovery(prepared, "profile"),
-    samples = as.data.frame(recoverome::recovery_results(prepared, "profile", level = "sample")),
-    episodes = as.data.frame(recoverome::recovery_results(prepared, "profile"))
+    validation = nostos::validate_recovery(prepared, "profile"),
+    samples = as.data.frame(nostos::recovery_results(prepared, "profile", level = "sample")),
+    episodes = as.data.frame(nostos::recovery_results(prepared, "profile"))
   ), paste0(output, ".results.rds"))
 }
 

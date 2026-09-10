@@ -13,7 +13,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(recoverome)
+library(nostos)
 ```
 
 ## Introduction
@@ -33,7 +33,7 @@ all settings, independent comparisons and limitations.
 ## Inspect the original calendar
 
 ```{r real-input}
-data("dethlefsen2008", package = "recoverome")
+data("dethlefsen2008", package = "nostos")
 study <- S4Vectors::metadata(dethlefsen2008)$study
 samples <- SummarizedExperiment::colData(dethlefsen2008)
 as.data.frame(samples)[, c("sample_id", "subject_id", "day", "is_baseline")]
@@ -92,7 +92,7 @@ an exposure effect or a causal antibiotic response.
 
 For each sample, Bray--Curtis between compositions equals half the L1 distance.
 The following independent expression rebuilds A's mean reference from the input
-matrix, without using recoverome's stored profile or distance helper:
+matrix, without using nostos's stored profile or distance helper:
 
 ```{r independent-distance}
 abundance <- SummarizedExperiment::assay(dethlefsen2008, "abundance")
@@ -161,7 +161,7 @@ observation timing and saved milestones.
 The installed dataset and this vignette require no network access. Full assessment
 reproduction and checksum-verified source regeneration are described in the
 [assessment directory][assessment]. Source curation requires `readxl`, and the
-independent comparison uses `vegan`; neither is a runtime dependency of recoverome.
+independent comparison uses `vegan`; neither is a runtime dependency of nostos.
 
 ```{r session-info}
 utils::sessionInfo()

@@ -6,7 +6,7 @@ if (length(missing)) {
 }
 
 packages <- c(
-  "recoverome", "TreeSummarizedExperiment", "SingleCellExperiment",
+  "nostos", "TreeSummarizedExperiment", "SingleCellExperiment",
   "SummarizedExperiment", "S4Vectors", "tidySingleCellExperiment", "dplyr"
 )
 pkgload::load_all(".", quiet = TRUE, export_all = FALSE, helpers = FALSE)

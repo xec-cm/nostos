@@ -36,7 +36,7 @@
 #'   \doi{10.1371/journal.pbio.0060280}. Dataset S3 and Table 1.
 #' @seealso [recovery_examples], [setup_recovery()], [add_reference()]
 #' @examples
-#' data("dethlefsen2008", package = "recoverome")
+#' data("dethlefsen2008", package = "nostos")
 #' dim(dethlefsen2008)
 #' SummarizedExperiment::colData(dethlefsen2008)[, c("sample_id", "day")]
 "dethlefsen2008"

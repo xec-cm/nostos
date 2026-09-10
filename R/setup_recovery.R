@@ -60,7 +60,7 @@
 #' are not intended for manual editing.
 #'
 #' @section Errors:
-#' Checks performed by recoverome signal errors with [cli::cli_abort()]. They
+#' Checks performed by nostos signal errors with [cli::cli_abort()]. They
 #' inherit from `recoverome_error` and one of `recoverome_error_input` (invalid
 #' inputs), `recoverome_error_namespace` (malformed or unsupported metadata), or
 #' `recoverome_error_collision` (an occupied analysis name or column prefix).
@@ -77,7 +77,7 @@
 #' @importClassesFrom TreeSummarizedExperiment TreeSummarizedExperiment
 #' @export
 #' @examples
-#' data("recovery_examples", package = "recoverome")
+#' data("recovery_examples", package = "nostos")
 #' example_data <- recovery_examples$single_episode
 #'
 #' tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
@@ -177,7 +177,7 @@ setup_recovery <- function(tse,
     ),
     owned_columns = character(),
     provenance = list(
-      package_version = as.character(utils::packageVersion("recoverome")),
+      package_version = as.character(utils::packageVersion("nostos")),
       registered_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     )
   )

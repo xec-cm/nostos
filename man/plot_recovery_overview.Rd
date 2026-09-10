@@ -52,7 +52,7 @@ warning described in \code{\link[=recovery_results]{recovery_results()}} and are
 retain the scope, time unit, validation findings and observation limitations.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

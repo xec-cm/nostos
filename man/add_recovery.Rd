@@ -66,13 +66,13 @@ diagnoses unavailable supporting observations or changed dependencies without
 recomputing outcomes. The version-1 validation report remains unchanged.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$observed_recovery
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),
   colData = S4Vectors::DataFrame(example_data$col_data)
 )
-tse <- recoverome::setup_recovery(
+tse <- nostos::setup_recovery(
   tse,
   analysis_id = "observed",
   episodes = example_data$episodes,
@@ -81,10 +81,10 @@ tse <- recoverome::setup_recovery(
   time_unit = example_data$time_unit,
   time_origin = example_data$time_origin
 )
-tse <- recoverome::add_reference(tse, "observed", reference = "b1", assay = "counts")
-tse <- recoverome::add_deviation(tse, "observed")
+tse <- nostos::add_reference(tse, "observed", reference = "b1", assay = "counts")
+tse <- nostos::add_deviation(tse, "observed")
 rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
-recovered <- recoverome::add_recovery(tse, "observed", rule)
+recovered <- nostos::add_recovery(tse, "observed", rule)
 outcome <- S4Vectors::metadata(recovered)$recoverome$analyses$observed$recovery
 outcome$episodes[, c("status", "candidate_time", "confirmation_time", "rebound_time")]
 }

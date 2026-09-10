@@ -57,7 +57,7 @@
 #' @keywords datasets
 #' @seealso [setup_recovery()], [add_recovery()]
 #' @examples
-#' data("recovery_examples", package = "recoverome")
+#' data("recovery_examples", package = "nostos")
 #' names(recovery_examples)
 #'
 #' example_input <- recovery_examples$single_episode

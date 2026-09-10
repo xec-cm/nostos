@@ -106,7 +106,7 @@ raise \code{recoverome_error_input} through \code{\link[cli:cli_abort]{cli::cli_
 malformed stored records and formal S4 validity failures are report findings.
 }
 \examples{
-data("recovery_examples", package = "recoverome")
+data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$single_episode
 tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
   assays = list(counts = example_data$counts),

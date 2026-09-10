@@ -77,7 +77,7 @@ stopifnot(
 )
 
 # Repeated episodes use separate references in the bundled registration case.
-utils::data("recovery_examples", package = "recoverome")
+utils::data("recovery_examples", package = "nostos")
 example_data <- recovery_examples$repeated_episodes
 episode_1_samples <- c("s1", "s2", "s3")
 episode_2_samples <- c("s4", "s5")
