@@ -113,3 +113,8 @@ The executable README, vignette and `add_recovery()` example use the bundled
 `observed_recovery` data: an explicit rule detects perturbation at day 0, a
 candidate at day 2, confirmation at day 6 and rebound at day 8. Those numbers
 illustrate the rule and do not calibrate or validate a biological threshold.
+
+
+The [follow-up and filtering evidence map](recovery-history.md) contrasts a
+fresh analysis with a filtered historical record, including independent named
+analyses, removal of supporting visits and coverage beyond the horizon.

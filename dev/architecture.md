@@ -191,11 +191,12 @@ distinctions without claiming those methods already exist.
 ## Implementation sequence
 
 Registration, validation, reference attachment, deviation calculation and
-observed recovery are implemented. The next steps are:
+observed recovery are implemented. [Integration evidence](recovery-history.md)
+covers incomplete follow-up and historical outcomes after filtering. The next
+steps are:
 
-1. Verify observed recovery under incomplete follow-up and filtering.
-2. Add extraction and plotting that respect historical scope.
-3. Design statistical fitting only after these contracts are usable.
+1. Add extraction and plotting that respect historical scope.
+2. Design statistical fitting only after these contracts are usable.
 
 Introduce runtime dependencies when an implemented feature uses them. Tests
 should verify meaningful behavior and contract failures rather than preserve

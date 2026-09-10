@@ -11,6 +11,11 @@ the focused contract tests without duplicating their invalid-input matrix.
 The [preservation evidence map](../../dev/tse-preservation.md) describes the
 operations covered and the limits of those checks.
 
-Add tests alongside each implemented behavior. Future stages need their own
-accepted examples for recovery outcomes and incomplete observations; registration
-tests make no analytical recovery claims. Do not download cohorts in unit tests.
+Recovery tests exercise the accepted RFC 003 trajectories and observation rule.
+`test-recovery-history.R` contrasts short follow-up with a filtered completed
+analysis, while `test-recovery-multi-analysis.R` checks distinct histories and
+diagnostics in the same TSE. The [recovery evidence map](../../dev/recovery-history.md)
+links the acceptance criteria to these tests and the existing calculation cases.
+
+Add tests alongside each implemented behavior. Registration tests make no
+analytical recovery claims. Do not download cohorts in unit tests.

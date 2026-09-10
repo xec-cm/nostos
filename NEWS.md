@@ -1,5 +1,9 @@
 # recoverome (development version)
 
+- Document and verify the distinction between incomplete follow-up, filtered
+  historical recovery and a new subset analysis, including independent named
+  analyses and missing observation evidence. The observed rule is unchanged.
+
 - Add `add_recovery()` for the accepted observed-run rule, with explicit threshold,
   persistence, maximum gap and horizon. Store episode outcomes, visit evidence,
   separate follow-up coverage and full parent fingerprints without new sample
