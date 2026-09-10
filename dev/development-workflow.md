@@ -53,7 +53,7 @@ Milestones group work into these phases:
 | M2 | Reference and deviation infrastructure. |
 | M3 | Observed recovery workflow. |
 | M4 | Experimental GitHub MVP. |
-| M5 | Later Bioconductor preparation. |
+| M5 | Bioconductor submission preparation. |
 
 The published issue backlog is the task inventory. Use its dependencies and
 acceptance criteria rather than creating a second, diverging checklist here.
