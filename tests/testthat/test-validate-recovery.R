@@ -408,7 +408,7 @@ test_that("unknown analysis schemas do not prevent checking independent analyses
 
 test_that("unknown stages are incomplete while independent dependency checks still run", {
   tse <- register_fixture(registration_fixture())
-  S4Vectors::metadata(tse)$recoverome$analyses$antibiotic$recovery <- list(method = "future")
+  S4Vectors::metadata(tse)$recoverome$analyses$antibiotic$fitting <- list(method = "future")
   cd <- SummarizedExperiment::colData(tse)
   cd$time[1] <- 4
   SummarizedExperiment::colData(tse) <- cd

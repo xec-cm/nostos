@@ -3,7 +3,7 @@
   result <- list(
     check = header, readable = header$readable, value = value,
     sample_ids = NULL, input_ids = NULL, columns = NULL, inputs = NULL, outputs = NULL,
-    parent_hash = NULL, format_ready = FALSE
+    parent_hash = NULL, format_ready = FALSE, hash_ready = FALSE
   )
   if (!header$readable) {
     return(result)
@@ -55,6 +55,8 @@
   }
   provenance <- .recovery_stage_provenance(value$provenance, "deviation", compatible)
   result$format_ready <- provenance$format_ready
+  result$hash_ready <- all(valid) && result$inputs$complete && result$outputs$complete &&
+    isTRUE(provenance$structural_valid)
   relations <- .recovery_deviation_links(result, registration, reference)
   result$input_ids <- relations$input_ids
   result$check <- .recovery_merge_checks(list(

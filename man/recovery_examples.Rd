@@ -3,9 +3,9 @@
 \docType{data}
 \name{recovery_examples}
 \alias{recovery_examples}
-\title{Synthetic inputs for analysis registration}
+\title{Synthetic inputs for registration and observed recovery}
 \format{
-A named list of two examples:
+A named list of three examples:
 \describe{
 \item{single_episode}{Two features and three samples from one participant,
 with one episode and an exposure interval starting on day 10. The
@@ -14,6 +14,10 @@ episode origin is the start of that interval.}
 participant \code{p1} belong to two episodes; sample \code{s6} is explicitly
 excluded by its missing episode membership. The episodes use the start
 and end of their respective exposure intervals as origins.}
+\item{observed_recovery}{Two features and seven samples, with baseline b1
+at day 8 and follow-up at days 10, 12, 14, 16, 18 and 20. Relative to
+baseline (1, 0), follow-up deviations are 0.75, 0.25, 0.125, 0.125,
+0.5 and 0.125. These illustrate an observed return and later rebound.}
 }
 
 Each example contains these seven components:
@@ -70,6 +74,6 @@ example_input$episodes
 example_input$events
 }
 \seealso{
-\code{\link[=setup_recovery]{setup_recovery()}}
+\code{\link[=setup_recovery]{setup_recovery()}}, \code{\link[=add_recovery]{add_recovery()}}
 }
 \keyword{datasets}

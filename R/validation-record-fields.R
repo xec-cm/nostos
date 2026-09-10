@@ -99,6 +99,8 @@
   list(
     findings = c(findings, relations$findings),
     samples = samples,
+    episodes = episodes,
+    events = events,
     hash_ready = all(samples$valid) && all(episodes$valid) && all(events$valid),
     complete = all(samples$valid) && all(episodes$valid) && all(events$valid) &&
       relations$complete

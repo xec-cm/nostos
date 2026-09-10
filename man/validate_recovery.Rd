@@ -58,11 +58,13 @@ Episode and event references are checked against the historical snapshot.
 Filtering away all observations of an episode does not break that history.
 No record is repaired, sorted, recomputed, or timestamped by validation.
 Registration-only validation reads no assay values. With analytical stages,
-validation checks supported schema-1 reference/deviation records, canonical
+validation checks supported schema-1 reference/deviation/recovery records, canonical
 fingerprint formats, saved parent/self fingerprints, consumed source hashes
 and retained owned output hashes. It does not refit profiles, close samples
-to recompute deviations, or reconstruct missing output values. Unsupported
-recovery stages remain incomplete while earlier independent checks continue.
+to recompute deviations, reconstruct missing output values, or rerun the
+observed recovery rule. Recovery checks include episode/evidence invariants,
+the complete parent chain and its own fingerprint. Unsupported stages remain
+incomplete while earlier independent checks continue.
 
 Only fixed reference features and samples recorded as baseline or computed
 deviation inputs are requested from an assay. Unselected features, excluded
@@ -75,7 +77,7 @@ Across stages, a known change takes precedence over unavailable comparisons;
 \code{"not_checked"} takes precedence over \code{"unchanged"}. Unknown/incompatible
 fingerprint formats prevent affected comparisons and never establish a change
 solely from encoding. Removing required baseline inputs, fixed features or
-realized deviation samples leaves their historical records intact and makes
+realized deviation/recovery samples leaves historical records intact and makes
 the affected checks incomplete. Reordering does not change dependencies.
 
 Analytical diagnostics include \code{REFERENCE_RECORD_INVALID} and

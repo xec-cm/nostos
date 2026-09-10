@@ -68,3 +68,47 @@ expect_setup_error <- function(fixture, ...) {
   testthat::expect_error(register_fixture(fixture, ...))
   testthat::expect_identical(serialize(fixture, NULL), before)
 }
+
+recovery_fixture <- function(times = c(0, 2, 4, 6, 8, 10),
+                             deviations = c(0.75, 0.25, 0.125, 0.125, 0.5, 0.125),
+                             origin = "start") {
+  example <- load_recovery_examples()$observed_recovery
+  origin_time <- if (origin == "start") 10 else 14
+  ids <- c("b1", paste0("s", seq_along(times)))
+  # For a (1, 0) reference, (1-d, d) has Bray--Curtis distance d.
+  counts <- rbind(8 * (1 - c(0, deviations)), 8 * c(0, deviations))
+  dimnames(counts) <- list(rownames(example$counts), ids)
+  example$episodes$origin_boundary <- origin
+  annotation <- S4Vectors::DataFrame(
+    subject_id = rep("participant_1", length(ids)),
+    episode_id = rep("episode_1", length(ids)),
+    day = c(8, origin_time + times), row.names = ids
+  )
+  example$tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+    assays = list(counts = counts), colData = annotation,
+    metadata = list(study = "observed recovery fixture")
+  )
+
+  example
+}
+
+recovery_parent <- function(fixture = recovery_fixture(), reference = "b1", features = NULL) {
+  registered <- register_fixture(fixture)
+  referenced <- recoverome::add_reference(
+    registered, "antibiotic", reference, assay = "counts", features = features
+  )
+
+  recoverome::add_deviation(referenced, "antibiotic")
+}
+
+observed_rule <- function() {
+  list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
+}
+
+expect_outcome_error <- function(tse, rule = observed_rule(), analysis_id = "antibiotic") {
+  before <- serialize(tse, NULL)
+  testthat::expect_error(
+    recoverome::add_recovery(tse, analysis_id, rule), class = "recoverome_error"
+  )
+  testthat::expect_identical(serialize(tse, NULL), before)
+}

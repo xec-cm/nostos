@@ -16,6 +16,9 @@ reference:
   - title: Calculate sample deviations
     contents:
       - add_deviation
+  - title: Attach observed recovery outcomes
+    contents:
+      - add_recovery
   - title: Validate an analysis
     contents:
       - validate_recovery

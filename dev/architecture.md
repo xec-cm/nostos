@@ -2,10 +2,11 @@
 
 Status: the experimental development version implements named analysis
 registration through `setup_recovery()` and registration plus analytical
-dependency diagnostics through `validate_recovery()`. `add_reference()` attaches explicit personal baseline
-profiles and `add_deviation()` records sample dissimilarities under
-[RFC 002](rfcs/002-personal-baseline-deviation.md). Recovery, extraction and
-plotting remain planned.
+dependency diagnostics through `validate_recovery()`. `add_reference()` attaches
+explicit personal baseline profiles and `add_deviation()` records sample
+dissimilarities under [RFC 002](rfcs/002-personal-baseline-deviation.md).
+`add_recovery()` attaches observed episode outcomes under
+[RFC 003](rfcs/003-observed-recovery.md). Extraction and plotting remain planned.
 
 [RFC 001](rfcs/001-registration-validation.md) is the accepted registration and
 validation contract for issues #6--#8. Registration and its validator are
@@ -26,10 +27,10 @@ The initial public interface is limited to seven functions:
 | `setup_recovery()` | Available | Register a named analysis and its episodes/events. |
 | `add_reference()` | Available | Attach personal reference profiles, support and realized scope. |
 | `add_deviation()` | Available | Add sample-level deviations from the fixed reference. |
-| `add_recovery()` | Planned | Add outcomes under a recorded recovery rule. |
+| `add_recovery()` | Available | Attach observed episode outcomes under a recorded recovery rule. |
 | `recovery_results()` | Planned | Extract the requested results with their scope. |
 | `plot_recovery()` | Planned | Display data and analysis annotations. |
-| `validate_recovery()` | Available | Diagnose registration, reference/deviation dependencies and historical scope. |
+| `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
 Statistical model fitting is a future layer outside these seven functions.
 Do not introduce exported fitting stubs, unvalidated estimators, synthetic
@@ -112,12 +113,16 @@ No reference, deviation, or recovery records are preallocated at registration.
 `add_reference()` adds its versioned record explicitly, retaining the definition,
 realized baseline samples, episode support, profile matrix, dependencies and
 provenance specified in RFC 002. It adds no sample result columns. The validator
-checks the supported reference and deviation records and their dependencies,
-reporting unavailable historical comparisons separately from detected changes. `add_deviation()` checks its own required reference dependencies before
+checks supported reference, deviation and recovery records and their dependencies,
+reporting unavailable historical comparisons separately from detected changes.
+`add_deviation()` checks its own required reference dependencies before
 creating the deviation and status columns. Its versioned metadata stores method,
 column mapping, realized sample scope, source/result fingerprints and provenance.
 The sample columns remain the sole authoritative deviation values; later
-filtering preserves their original metadata scope.
+filtering preserves their original metadata scope. `add_recovery()` adds only
+an episode-level `recovery` record, with rule, outcomes, evidence, dependencies
+and provenance. It does not extend `owned_columns` or duplicate deviations.
+See [observed recovery](observed-recovery.md) for the implemented storage.
 
 Sample-level results belong in `colData(tse)` with the prefix
 `rec_<analysis>_`, where `<analysis>` is the named analysis ID. For example,
@@ -142,7 +147,8 @@ It diagnoses removed baseline inputs and computed samples, missing selected
 features, changes to consumed assay values or registration metadata, inconsistent
 parent records and altered authoritative deviations. Broken sample, subject,
 event and episode references retain their registration diagnostics. Recovery
-supporting visits and episode outcomes require the later recovery implementation.
+validation also checks episode outcomes, evidence and their complete parent chain
+without re-running the observed rule.
 
 A subset can carry valid historical records without being a fresh analysis of
 that subset. Extraction and plotting must identify this distinction and must
@@ -160,8 +166,8 @@ are separate report fields. Removing samples preserves historical episode
 records; changing a retained sample's consumed source metadata will produce a
 dependency finding. An analysis containing registration only does not require
 assay access. Supported analytical stages add selected-block source and stored
-result comparisons using the RFC 002 fingerprints. Unknown schemas and recovery
-records remain incompletely checked. See RFC 001 for the report schema and
+result comparisons using the RFC 002 fingerprints and RFC 003 recovery records.
+Unknown schemas remain incompletely checked. See RFC 001 for the report schema and
 [analytical validation](analytical-validation.md) for the additional diagnostics
 and detection boundaries.
 
@@ -184,10 +190,10 @@ distinctions without claiming those methods already exist.
 
 ## Implementation sequence
 
-Registration, its validator, reference attachment and deviation calculation are
-implemented. The next steps are:
+Registration, validation, reference attachment, deviation calculation and
+observed recovery are implemented. The next steps are:
 
-1. Implement the accepted observation-based recovery rule and its validation.
+1. Verify observed recovery under incomplete follow-up and filtering.
 2. Add extraction and plotting that respect historical scope.
 3. Design statistical fitting only after these contracts are usable.
 

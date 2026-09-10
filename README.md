@@ -23,8 +23,9 @@ changes to consumed inputs or stored results, and the relationship
 between current and original scope. It checks the stages that are
 present without changing the TSE. `add_reference()` attaches a personal
 reference from explicitly selected baseline samples. `add_deviation()`
-measures sample dissimilarity from those fixed profiles. Recovery
-outcomes, plotting, and extraction remain planned.
+measures sample dissimilarity from those fixed profiles.
+`add_recovery()` attaches observed episode outcomes under an explicit
+rule. Plotting and extraction remain planned.
 
 Read the [documentation](https://xec-cm.github.io/recoverome/) and the
 [architecture
@@ -38,8 +39,8 @@ away at the next. A single pre-intervention sample cannot describe an
 individual’s usual variation. Long gaps between visits also limit the
 precision of a recovery time.
 
-The planned package will distinguish observed return from sustained
-return under a stated observation rule. It will keep the reference
+The package distinguishes an observed return from confirmation supported
+by later visits under a stated observation rule. It keeps the reference
 definition, sampling coverage, and analysis provenance attached to the
 data. A lack of statistical significance against baseline will not be
 treated as proof of recovery.
@@ -65,10 +66,11 @@ remotes::install_github("xec-cm/recoverome", ref = "devel")
 it with a registration in its metadata. It preserves assays and sample
 annotations. Here, three samples belong to one episode, whose origin is
 the start of an exposure interval. All times are numeric days since
-enrolment. The package includes two small synthetic cases:
-`single_episode` and `repeated_episodes`. The latter adds a second
-episode and an explicitly excluded sample. Their matrices and tables are
-shared by the executable examples and tests.
+enrolment. The package includes small synthetic cases: `single_episode`,
+`repeated_episodes`, and `observed_recovery`. `repeated_episodes` adds a
+second episode and an explicitly excluded sample; `observed_recovery`
+illustrates confirmation followed by a rebound. Their matrices and
+tables are shared by the executable examples and tests.
 
 ``` r
 data("recovery_examples", package = "recoverome")
@@ -257,6 +259,60 @@ for filtering and output edits, and the [diagnostic
 guide](https://github.com/xec-cm/recoverome/blob/devel/dev/analytical-validation.md)
 for supported codes and detection boundaries.
 
+## Attach observed recovery outcomes
+
+This seven-sample example uses one explicit baseline and six follow-up
+visits. The rule below is illustrative, not a recommended biological
+threshold; all four parameters must be supplied and justified for an
+analysis.
+
+``` r
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$observed_recovery
+tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+tse <- recoverome::setup_recovery(
+  tse,
+  analysis_id = "observed",
+  episodes = example_data$episodes,
+  events = example_data$events,
+  time_col = example_data$time_col,
+  time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
+)
+tse <- recoverome::add_reference(tse, "observed", reference = "b1", assay = "counts")
+tse <- recoverome::add_deviation(tse, "observed")
+rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
+recovered <- recoverome::add_recovery(tse, "observed", rule)
+outcome <- S4Vectors::metadata(recovered)$recoverome$analyses$observed$recovery
+outcome$episodes[, c("status", "candidate_time", "confirmation_time", "rebound_time", "coverage")]
+#> DataFrame with 1 row and 5 columns
+#>             status candidate_time confirmation_time rebound_time
+#>        <character>      <numeric>         <numeric>    <numeric>
+#> 1 confirmed_return              2                 6            8
+#>          coverage
+#>       <character>
+#> 1 reaches_horizon
+```
+
+The candidate return is observed at relative day 2 and confirmed at day
+6. A rebound at day 8 preserves that first confirmation. Coverage
+reaches the 10-day horizon; it does not establish uninterrupted recovery
+between visits. Outcomes belong to episodes and are stored in metadata,
+with supporting sample IDs in `outcome$evidence`. No recovery columns
+are added to `colData()`.
+
+`add_recovery()` requires the complete realized deviation scope and
+unchanged parent dependencies. Calculate before filtering. Later subsets
+retain the original outcome; `validate_recovery()` reports missing
+inputs and any independently detectable changes without reclassifying
+it. See the
+[vignette](https://xec-cm.github.io/recoverome/articles/recoverome.html)
+and the [observed recovery
+guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md).
+
 ## Available and planned workflow
 
 | Function | Status | Responsibility |
@@ -264,10 +320,10 @@ for supported codes and detection boundaries.
 | `setup_recovery()` | Available | Register a named analysis, episodes, and events. |
 | `add_reference()` | Available | Attach personal reference profiles, support and input provenance. |
 | `add_deviation()` | Available | Attach sample deviations and provenance from the fixed reference. |
-| `add_recovery()` | Planned | Attach outcomes under an explicit recovery rule. |
+| `add_recovery()` | Available | Attach observed episode outcomes under an explicit recovery rule. |
 | `recovery_results()` | Planned | Extract results at the requested analysis level. |
 | `plot_recovery()` | Planned | Display observations and the recovery definition. |
-| `validate_recovery()` | Available | Diagnose registration, reference/deviation dependencies and historical scope. |
+| `validate_recovery()` | Available | Diagnose analytical dependencies and historical scope. |
 
 Analysis IDs match `^[a-z][a-z0-9]*$`. Registration reserves the
 corresponding `rec_<analysis>_` prefix but creates no sample result
@@ -283,7 +339,7 @@ separate design and validation.
 
 ## Development and contributions
 
-The next steps are observed recovery outcomes, extraction and plotting
+The next steps are recovery integration checks, extraction and plotting
 under the accepted contracts. No benchmark performance or statistical
 guarantees are claimed for this version.
 

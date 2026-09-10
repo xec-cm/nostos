@@ -1,5 +1,13 @@
 # recoverome (development version)
 
+- Add `add_recovery()` for the accepted observed-run rule, with explicit threshold,
+  persistence, maximum gap and horizon. Store episode outcomes, visit evidence,
+  separate follow-up coverage and full parent fingerprints without new sample
+  columns or changes to parent data.
+- Extend `validate_recovery()` to recovery records, their parent chain and
+  historical inputs, preserving independent findings without recomputing outcomes.
+  Add the small synthetic `observed_recovery` example and executable documentation.
+
 - Extend `validate_recovery()` to reference and deviation records, comparing
   consumed sources, stored parent fingerprints and authoritative sample outputs.
   Report changed dependencies, unavailable historical inputs and limited baseline

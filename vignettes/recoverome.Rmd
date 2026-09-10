@@ -1,8 +1,8 @@
 ---
-title: "Personal references, deviations and analysis history"
+title: "Personal baselines, observed recovery and analysis history"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Personal references, deviations and analysis history}
+  %\VignetteIndexEntry{Personal baselines, observed recovery and analysis history}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,10 +14,11 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ## Current status
 
 The experimental development version provides `setup_recovery()`,
-`validate_recovery()`, `add_reference()` and `add_deviation()`. This vignette
-registers an analysis, attaches explicit personal references, calculates sample
-deviations and checks their dependencies while preserving historical records. Recovery classification,
-extraction and plotting remain planned.
+`validate_recovery()`, `add_reference()`, `add_deviation()` and `add_recovery()`.
+This vignette registers an analysis, attaches explicit personal references,
+calculates sample deviations and observed episode outcomes, and checks their
+dependencies while preserving historical records. Extraction and plotting remain
+planned.
 
 ## A small longitudinal input
 
@@ -29,8 +30,9 @@ This deliberately small example has two features and three samples from one
 subject. The time coordinate is days since enrolment, with an illustrative
 exposure beginning on day 10. It demonstrates structure only; it cannot establish
 sustained recovery or calibrate a statistical method. `recovery_examples`
-contains this case and a second case with repeated episodes. Both are fully
-synthetic; the package stores ordinary matrices and tables and constructs a
+contains this case, a second case with repeated episodes, and a third case for
+observed recovery. All are synthetic; the package stores ordinary matrices and
+tables and constructs a
 TSE when needed.
 
 ```{r input-tse}
@@ -283,8 +285,8 @@ The reference is structurally valid, validation is complete and dependencies
 are unchanged. Its two single-sample baselines produce an informational support
 finding, not an estimate of uncertainty. The validator compares the reference
 fingerprint, registration parent and baseline measurements; it never estimates
-the profiles again. Recovery records and unsupported schemas still require
-checks outside the implemented scope.
+the profiles again. Recovery records add their own checks when present;
+unsupported schemas remain incompletely checked.
 
 ## Calculate deviations from the fixed references
 
@@ -437,21 +439,95 @@ biological recovery. See the
 [analytical diagnostic guide](https://github.com/xec-cm/recoverome/blob/devel/dev/analytical-validation.md)
 for the code catalogue and detection boundaries.
 
-## Planned analytical stages
+## Observed recovery by episode
 
-A recovery rule will define an acceptable deviation and observational requirements.
-The following is **non-executable proposed API**; these three functions are not
-implemented. Their accepted design contracts remain distinct from available code.
+The implemented rule follows [RFC 003](https://github.com/xec-cm/recoverome/blob/devel/dev/rfcs/003-observed-recovery.md).
+Every parameter is explicit; this example uses a threshold of 0.25, persistence
+of 4 days, maximum consecutive gap of 3 days and horizon of 10 days.
+These choices illustrate the method rather than establish biological limits.
 
-```{r planned-workflow, eval=FALSE}
-analysed <- add_recovery(analysed, analysis_id = "repeated", rule = recovery_rule)
-
-recovery_results(analysed, analysis_id = "repeated", level = "episode")
-plot_recovery(analysed, analysis_id = "repeated")
+```{r observed-recovery}
+data("recovery_examples", package = "recoverome")
+example_data <- recovery_examples$observed_recovery
+tse <- TreeSummarizedExperiment::TreeSummarizedExperiment(
+  assays = list(counts = example_data$counts),
+  colData = S4Vectors::DataFrame(example_data$col_data)
+)
+tse <- recoverome::setup_recovery(
+  tse,
+  analysis_id = "observed",
+  episodes = example_data$episodes,
+  events = example_data$events,
+  time_col = example_data$time_col,
+  time_unit = example_data$time_unit,
+  time_origin = example_data$time_origin
+)
+tse <- recoverome::add_reference(tse, "observed", reference = "b1", assay = "counts")
+tse <- recoverome::add_deviation(tse, "observed")
+rule <- list(threshold = 0.25, persistence = 4, max_gap = 3, horizon = 10)
+recovered <- recoverome::add_recovery(tse, "observed", rule)
+outcome <- S4Vectors::metadata(recovered)$recoverome$analyses$observed$recovery
+outcome$episodes[, c("status", "candidate_time", "confirmation_time", "rebound_time", "coverage")]
 ```
 
-The add functions are intended to return a TSE. Extraction, plotting, and
-validation have separate roles and must not silently alter an analysis.
+Here the observed deviation at day 0 is 0.75. Visits at days 2, 4 and 6 are
+within the band and span four days, with gaps no greater than three days.
+The candidate is day 2 and confirmation is day 6. The outside observation at
+day 8 is a rebound; it does not erase the first confirmation.
+
+```{r observed-evidence}
+outcome$evidence$episode_1
+recoverome::validate_recovery(recovered, "observed")$summary
+```
+
+Visits at the same exact time are grouped conservatively: every sample must be
+within the band. A larger gap or outside visit breaks a run. Observations after
+the horizon contribute to coverage only, not to detection, confirmation or
+rebound. Other registered events of the same subject overlapping the episode's
+analysis interval make it not evaluable, even when they occur after a possible
+confirmation. Missing baseline takes precedence over overlapping events, then
+absence of observations in the return window.
+
+`status` distinguishes `not_evaluable`, `no_detected_perturbation`,
+`no_observed_return`, `unconfirmed_return` and `confirmed_return`. For
+`not_evaluable`, `reason` records `missing_baseline`, `unresolved_events` or
+`no_observations_in_window`. Coverage is separately `none`,
+`ends_before_horizon` or `reaches_horizon`. A confirmed return need not have
+follow-up through the entire horizon.
+
+Filtering preserves historical confirmation and its evidence:
+
+```{r filtered-recovery}
+filtered_recovery <- recovered[, colnames(recovered) != "s3"]
+before_validation <- serialize(filtered_recovery, NULL)
+filtered_report <- recoverome::validate_recovery(filtered_recovery, "observed")
+filtered_report$summary
+stopifnot(
+  identical(serialize(filtered_recovery, NULL), before_validation),
+  identical(
+    S4Vectors::metadata(filtered_recovery)$recoverome$analyses$observed$recovery,
+    outcome
+  )
+)
+```
+
+Day-4 sample `s3` supported confirmation. Its removal leaves the historical
+outcome intact, with incomplete validation and `not_checked` dependencies.
+It does not turn the episode into a newly evaluated unconfirmed return.
+Changing an available parent or output is diagnosed independently. Read the
+[implementation guide](https://github.com/xec-cm/recoverome/blob/devel/dev/observed-recovery.md)
+for storage and validation boundaries.
+
+## Planned extraction and plotting
+
+These two interfaces remain **non-executable proposed API**:
+
+```{r planned-workflow, eval=FALSE}
+recovery_results(recovered, analysis_id = "observed", level = "episode")
+plot_recovery(recovered, analysis_id = "observed")
+```
+
+Extraction and plotting will derive views without silently altering an analysis.
 Statistical fitting is a future layer outside this initial interface.
 
 ## Interpretation boundaries
