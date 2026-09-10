@@ -115,3 +115,12 @@ assessment; no future API is exported in this PR.
 
 None at registration. Append dated deviations here without rewriting the
 prespecified sections after observing outcomes.
+
+### Source review before execution (2026-09-10)
+
+Independent reviewer `audit_science_data` verified Table 1 against the PDF and
+XLS. A uses days -60/-6/-2/-1/3/5/33/180; B and C use -60/-1/5/33/180.
+With the primary real-data rule, confirmation is impossible from this schedule
+alone: A's only close follow-up pair spans two days, less than seven, and the
+next gap is 28 days, greater than 14. B/C have no close pair. This is an a priori
+observation-design limitation, not an absence-of-recovery conclusion.
