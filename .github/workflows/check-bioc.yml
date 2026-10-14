@@ -85,7 +85,7 @@ jobs:
           sha256sum check/*.tar.gz >> check/candidate.txt
       - name: Preserve the checked source package
         if: matrix.channel == 'release' && matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: checked-source-package
           path: |
@@ -100,7 +100,7 @@ jobs:
         run: Rscript --vanilla dev/check-bioc.R
       - name: Preserve Bioconductor readiness report
         if: always() && matrix.channel == 'devel'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bioccheck-readiness
           path: bioccheck-report.txt
@@ -108,7 +108,7 @@ jobs:
           retention-days: 14
       - name: Preserve check logs on failure
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: check-${{ matrix.channel }}-${{ matrix.os }}
           path: check
